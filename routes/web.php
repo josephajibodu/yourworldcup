@@ -19,7 +19,7 @@ Route::middleware('auth')->group(function () {
         ->name('predict.store');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 

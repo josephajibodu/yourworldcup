@@ -42,34 +42,41 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Predict',
-        href: predict(),
-        icon: Target,
-    },
-    {
-        title: 'Bracket',
-        href: bracket(),
-        icon: Network,
-    },
-    {
-        title: 'Leaderboard',
-        href: leaderboard(),
-        icon: Trophy,
-    },
-];
+function mainNavItems(isAdmin: boolean): NavItem[] {
+    const items: NavItem[] = [
+        {
+            title: 'Predict',
+            href: predict(),
+            icon: Target,
+        },
+        {
+            title: 'Bracket',
+            href: bracket(),
+            icon: Network,
+        },
+        {
+            title: 'Leaderboard',
+            href: leaderboard(),
+            icon: Trophy,
+        },
+    ];
+
+    if (isAdmin) {
+        items.unshift({
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        });
+    }
+
+    return items;
+}
 
 const rightNavItems: NavItem[] = [
     {
@@ -89,7 +96,9 @@ const activeItemStyles =
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
-    const { auth } = page.props;
+    const { auth } = page.props as { auth: Auth };
+    const navItems = mainNavItems(auth.isAdmin);
+    const homeHref = auth.isAdmin ? dashboard() : predict();
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
@@ -122,7 +131,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map((item) => (
+                                            {navItems.map((item) => (
                                                 <Link
                                                     key={item.title}
                                                     href={item.href}
@@ -159,7 +168,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={dashboard()}
+                        href={homeHref}
                         prefetch
                         className="flex items-center space-x-2"
                     >
@@ -170,7 +179,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
+                                {navItems.map((item, index) => (
                                     <NavigationMenuItem
                                         key={index}
                                         className="relative flex h-full items-center"

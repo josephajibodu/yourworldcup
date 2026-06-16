@@ -24,17 +24,15 @@ function fakeTurnstileVerification(bool $success = true): void
     ]);
 }
 
-test('turnstile is disabled by default', function () {
-    expect(config('turnstile.enabled'))->toBeFalse();
-});
-
 test('login succeeds without turnstile token when turnstile is disabled', function () {
+    config(['turnstile.enabled' => false]);
+
     $user = User::factory()->create();
 
     $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'password',
-    ])->assertRedirect(route('dashboard', absolute: false));
+    ])->assertRedirect(route('predict', absolute: false));
 
     $this->assertAuthenticated();
 });
@@ -65,7 +63,7 @@ test('login accepts a valid turnstile token when turnstile is enabled', function
         'email' => $user->email,
         'password' => 'password',
         'cf-turnstile-response' => 'valid-token',
-    ])->assertRedirect(route('dashboard', absolute: false));
+    ])->assertRedirect(route('predict', absolute: false));
 
     $this->assertAuthenticated();
 

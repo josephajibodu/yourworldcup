@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
     FolderGit2,
@@ -21,30 +21,37 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
-import type { NavItem } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Predict',
-        href: predict(),
-        icon: Target,
-    },
-    {
-        title: 'Bracket',
-        href: bracket(),
-        icon: Network,
-    },
-    {
-        title: 'Leaderboard',
-        href: leaderboard(),
-        icon: Trophy,
-    },
-];
+function mainNavItems(isAdmin: boolean): NavItem[] {
+    const items: NavItem[] = [
+        {
+            title: 'Predict',
+            href: predict(),
+            icon: Target,
+        },
+        {
+            title: 'Bracket',
+            href: bracket(),
+            icon: Network,
+        },
+        {
+            title: 'Leaderboard',
+            href: leaderboard(),
+            icon: Trophy,
+        },
+    ];
+
+    if (isAdmin) {
+        items.unshift({
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        });
+    }
+
+    return items;
+}
 
 const footerNavItems: NavItem[] = [
     {
@@ -60,13 +67,17 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const navItems = mainNavItems(auth.isAdmin);
+    const homeHref = auth.isAdmin ? dashboard() : predict();
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -75,7 +86,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>
