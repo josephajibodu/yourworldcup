@@ -38,17 +38,9 @@ export default function Leaderboard() {
             <div className="min-h-screen bg-background font-sans text-foreground">
                 <SiteHeader />
 
-                <section className="relative overflow-hidden bg-wc-primary text-white">
-                    <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0"
-                        style={{
-                            background:
-                                'radial-gradient(120% 90% at 50% 120%, #E9A721 0%, rgba(233,167,33,0.3) 32%, transparent 64%)',
-                        }}
-                    />
-                    <div className="relative mx-auto max-w-5xl px-5 py-10">
-                        <h1 className="font-display text-4xl tracking-tight uppercase md:text-5xl">
+                <section className="bg-wc-primary text-white">
+                    <div className="mx-auto max-w-5xl px-5 py-10">
+                        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
                             Leaderboard
                         </h1>
                         <p className="mt-2 max-w-lg text-sm text-white/90">

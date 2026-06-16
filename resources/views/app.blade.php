@@ -33,10 +33,10 @@
 
         @fonts
 
-        {{-- yourworldcup brand faces: Anton (display), Inter (body), JetBrains Mono (numerals) --}}
+        {{-- yourworldcup brand numerals; Instrument Sans is loaded by Vite's font plugin. --}}
         <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link
-            href="https://fonts.bunny.net/css?family=anton:400|inter:400,500,600,700|jetbrains-mono:400,500,700&display=swap"
+            href="https://fonts.bunny.net/css?family=jetbrains-mono:400,500,700&display=swap"
             rel="stylesheet"
         />
 

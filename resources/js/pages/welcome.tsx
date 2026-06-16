@@ -1,9 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, Gift, Network, Target } from 'lucide-react';
+import { TeamMarquee } from '@/components/landing/team-marquee';
 import { SiteHeader } from '@/components/site-header';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { bracket, dashboard, register } from '@/routes';
+import { bracket, predict, register } from '@/routes';
 
 const features = [
     {
@@ -35,57 +35,47 @@ export default function Welcome() {
             <div className="min-h-screen bg-background font-sans text-foreground">
                 <SiteHeader />
 
-                <section className="relative overflow-hidden bg-wc-primary text-white">
-                    <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0"
-                        style={{
-                            background:
-                                'radial-gradient(120% 85% at 50% 115%, #E9A721 0%, rgba(233,167,33,0.35) 30%, transparent 62%)',
-                        }}
-                    />
-                    <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
-                        <Badge
-                            variant="ink"
-                            className="mb-6 gap-1.5 font-mono text-[11px] tracking-wider"
-                        >
-                            <span className="inline-block size-1.5 rounded-full bg-wc-gold" />
-                            TODAY · 3 MATCHES · LOCKS 17:00 WAT
-                        </Badge>
-                        <h1 className="max-w-3xl font-display text-5xl leading-[0.95] tracking-tight uppercase md:text-7xl">
-                            Predict every match.
-                            <br />
-                            <span className="text-wc-gold">Climb the board.</span>
-                        </h1>
-                        <p className="mt-6 max-w-xl text-lg text-white/90">
-                            Make your daily picks before kickoff, watch the living
-                            bracket update in real time, and top the leaderboard for
-                            airtime — and the grand prize.
-                        </p>
-                        <div className="mt-9 flex flex-wrap items-center gap-3">
-                            <Button asChild variant="gold" size="lg">
-                                <Link href={auth.user ? dashboard() : register()}>
-                                    Make today’s picks
-                                    <ArrowRight className="size-4" />
+                <section className="overflow-hidden bg-wc-surface text-wc-ink">
+                    <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-20">
+                        <div className="max-w-4xl">
+                            <p className="mx-auto mb-6 max-w-xs font-mono text-xs leading-relaxed tracking-wider text-muted-foreground uppercase">
+                                Living bracket · daily predictions · skill-ranked
+                                rewards
+                            </p>
+                            <h1 className="text-5xl leading-[0.96] font-extrabold tracking-tight text-balance sm:text-6xl md:text-7xl">
+                                Follow the World Cup like it is happening in
+                                your hands.
+                            </h1>
+                            <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">
+                                Pick match winners, call exact scores, track the
+                                bracket as teams move forward, and climb daily
+                                and overall leaderboards.
+                            </p>
+                            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                                <Button
+                                    asChild
+                                    variant="ink"
+                                    size="lg"
+                                    className="rounded-full"
+                                >
+                                    <Link
+                                        href={auth.user ? predict() : register()}
+                                    >
+                                        Make today’s picks
+                                        <ArrowRight className="size-4" />
+                                    </Link>
+                                </Button>
+                                <Link
+                                    href={bracket()}
+                                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-2.5 text-sm font-semibold text-wc-ink transition-colors hover:bg-wc-surface-2"
+                                >
+                                    View the bracket
                                 </Link>
-                            </Button>
-                            <Link
-                                href={bracket()}
-                                className="inline-flex items-center gap-2 rounded-md border border-white/45 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                            >
-                                View the bracket
-                            </Link>
+                            </div>
                         </div>
-                        <div className="mt-10 flex flex-wrap gap-x-8 gap-y-2 font-mono text-sm text-white/80">
-                            <span>
-                                <span className="text-wc-gold">FREE</span> to play
-                            </span>
-                            <span>
-                                <span className="text-wc-gold">SKILL</span>-ranked
-                            </span>
-                            <span>
-                                <span className="text-wc-gold">DAILY</span> airtime
-                            </span>
+
+                        <div className="w-screen px-0 pt-10">
+                            <TeamMarquee />
                         </div>
                     </div>
                 </section>
@@ -102,7 +92,7 @@ export default function Welcome() {
                                 >
                                     <feature.icon className="size-5" />
                                 </span>
-                                <h2 className="mt-5 font-display text-xl tracking-wide uppercase">
+                                <h2 className="mt-5 text-lg font-bold tracking-tight">
                                     {feature.title}
                                 </h2>
                                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -115,7 +105,7 @@ export default function Welcome() {
 
                 <footer className="bg-wc-ink text-wc-surface/60">
                     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm sm:flex-row">
-                        <span className="font-display text-lg tracking-wide text-wc-surface">
+                        <span className="text-lg font-extrabold tracking-tight text-wc-surface">
                             YOURWORLD<span className="text-wc-gold">CUP</span>
                         </span>
                         <span className="font-mono text-xs tracking-wider">

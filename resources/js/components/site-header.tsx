@@ -29,10 +29,10 @@ function NavLinks({ className }: { className?: string }) {
                     key={item.title}
                     href={item.href}
                     className={cn(
-                        'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                        'rounded-full px-3.5 py-2 text-sm font-semibold transition-colors',
                         isCurrentOrParentUrl(item.href)
-                            ? 'bg-wc-ink-3 text-wc-surface'
-                            : 'text-wc-surface/65 hover:bg-wc-ink-2 hover:text-wc-surface',
+                            ? 'bg-wc-ink text-wc-surface'
+                            : 'text-wc-ink/70 hover:bg-wc-surface-2 hover:text-wc-ink',
                     )}
                 >
                     {item.title}
@@ -47,34 +47,37 @@ export function SiteHeader() {
     const getInitials = useInitials();
 
     return (
-        <header className="sticky top-0 z-30 bg-wc-ink text-wc-surface">
-            <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-                <div className="flex items-center gap-6">
-                    <Link href={home()} className="flex items-center gap-2.5">
-                        <span className="flex size-7 items-center justify-center rounded-md bg-wc-gold text-wc-ink">
+        <header className="sticky top-0 z-30 bg-wc-ink px-4 py-4 text-wc-ink">
+            <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full border border-wc-surface-2/70 bg-wc-surface px-4 py-2 shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:px-5">
+                <div className="flex min-w-0 items-center gap-6">
+                    <Link
+                        href={home()}
+                        className="flex min-w-0 items-center gap-2.5"
+                    >
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-wc-ink text-wc-gold">
                             <Trophy className="size-4" />
                         </span>
-                        <span className="font-display text-xl tracking-wide">
+                        <span className="truncate font-display text-xl tracking-[0.22em]">
                             YOURWORLD<span className="text-wc-gold">CUP</span>
                         </span>
                     </Link>
-                    <NavLinks className="hidden items-center gap-1 md:flex" />
+                    <NavLinks className="hidden items-center gap-1 lg:flex" />
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                     {auth.user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    className="size-9 rounded-full p-1 hover:bg-wc-ink-2"
+                                    className="size-9 rounded-full p-1 hover:bg-wc-surface-2"
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
                                             src={auth.user.avatar}
                                             alt={auth.user.name}
                                         />
-                                        <AvatarFallback className="rounded-full bg-wc-ink-3 text-wc-surface">
+                                        <AvatarFallback className="rounded-full bg-wc-ink text-wc-surface">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
                                     </Avatar>
@@ -88,21 +91,26 @@ export function SiteHeader() {
                         <>
                             <Button
                                 asChild
-                                variant="ghost"
                                 size="sm"
-                                className="text-wc-surface hover:bg-wc-ink-2 hover:text-wc-surface"
+                                variant="ghost"
+                                className="hidden rounded-full px-4 text-wc-ink/65 underline-offset-4 hover:bg-transparent hover:text-wc-ink hover:underline sm:inline-flex"
                             >
-                                <Link href={login()}>Log in</Link>
+                                <Link href={login()}>Member Login</Link>
                             </Button>
-                            <Button asChild variant="gold" size="sm">
-                                <Link href={register()}>Play free</Link>
+                            <Button
+                                asChild
+                                variant="ink"
+                                size="sm"
+                                className="rounded-full px-4"
+                            >
+                                <Link href={register()}>Get Started</Link>
                             </Button>
                         </>
                     )}
                 </div>
             </nav>
 
-            <NavLinks className="flex items-center gap-1 overflow-x-auto border-t border-wc-ink-3 px-3 py-2 md:hidden" />
+            <NavLinks className="mx-auto mt-2 flex max-w-6xl items-center gap-1 overflow-x-auto rounded-full border border-wc-surface-2/70 bg-wc-surface p-1 lg:hidden" />
         </header>
     );
 }
