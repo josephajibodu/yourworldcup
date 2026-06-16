@@ -3,6 +3,7 @@ import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
+import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -79,6 +80,10 @@ export default function Login({ status, canResetPassword }: Props) {
                                 />
                                 <Label htmlFor="remember">remember me</Label>
                             </div>
+
+                            <TurnstileWidget
+                                error={errors['cf-turnstile-response']}
+                            />
 
                             <Button
                                 type="submit"

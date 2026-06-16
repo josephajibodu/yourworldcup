@@ -2,6 +2,7 @@ import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
+import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
                                 <InputError message={errors.email} />
                             </div>
+
+                            <TurnstileWidget
+                                error={errors['cf-turnstile-response']}
+                            />
 
                             <Button
                                 variant="ink"

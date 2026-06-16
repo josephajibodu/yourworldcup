@@ -14,7 +14,9 @@ Route::get('players/count', PlayerCountController::class)->name('players.count')
 
 Route::middleware('auth')->group(function () {
     Route::get('predict', [PredictController::class, 'index'])->name('predict');
-    Route::post('predict', [PredictController::class, 'store'])->name('predict.store');
+    Route::post('predict', [PredictController::class, 'store'])
+        ->middleware('turnstile')
+        ->name('predict.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

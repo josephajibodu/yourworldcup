@@ -6,6 +6,7 @@ import { store as storePredictions } from '@/actions/App/Http/Controllers/Predic
 import { FixtureCard } from '@/components/predict/fixture-card';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
 import { ProductShell } from '@/components/product-shell';
+import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { predict } from '@/routes';
 
@@ -55,6 +56,7 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
     const [banker, setBanker] = useState(() => initialBanker(fixtures));
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState('');
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
@@ -101,6 +103,7 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
                 date: selectedDate,
                 predictions,
                 banker_fixture_market_id: banker,
+                'cf-turnstile-response': turnstileToken,
             },
             {
                 preserveScroll: true,
@@ -184,9 +187,11 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
                 </Button>
             </div>
 
-            {(errors.predictions || errors.banker) && (
+            {(errors.predictions || errors.banker || errors['cf-turnstile-response']) && (
                 <p className="mt-4 rounded-md bg-wc-primary/10 px-3 py-2 text-sm font-medium text-wc-primary">
-                    {errors.predictions ?? errors.banker}
+                    {errors.predictions ??
+                        errors.banker ??
+                        errors['cf-turnstile-response']}
                 </p>
             )}
 
@@ -212,8 +217,13 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
             </div>
 
             {fixtures.length > 0 && (
-                <div className="sticky bottom-4 mt-6 flex justify-end">
-                    <Button
+                <div className="sticky bottom-4 mt-6 space-y-3">
+                    <TurnstileWidget
+                        error={errors['cf-turnstile-response']}
+                        onTokenChange={setTurnstileToken}
+                    />
+                    <div className="flex justify-end">
+                        <Button
                         type="button"
                         variant="gold"
                         size="lg"
@@ -223,6 +233,7 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
                     >
                         {openCount === 0 ? 'Day locked' : 'Save my picks'}
                     </Button>
+                    </div>
                 </div>
             )}
         </div>

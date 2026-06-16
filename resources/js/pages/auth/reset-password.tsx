@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import TurnstileWidget from '@/components/turnstile-widget';
 import { update } from '@/routes/password';
 
 type Props = {
@@ -73,6 +74,10 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                                 className="mt-2"
                             />
                         </div>
+
+                        <TurnstileWidget
+                            error={errors['cf-turnstile-response']}
+                        />
 
                         <Button
                             type="submit"
