@@ -6,6 +6,9 @@ import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
 import { leaderboard } from '@/routes';
 
+const TWITTER_HANDLE = 'josephajibodu';
+const TWITTER_URL = `https://x.com/${TWITTER_HANDLE}`;
+
 interface LeaderboardPageProps {
     overall: StandingsRow[];
     daily: StandingsRow[];
@@ -68,6 +71,19 @@ export default function Leaderboard() {
                                 keep climbing the overall table — the top spot
                                 when the tournament ends wins the grand prize,
                                 unlocked once we reach 1,000 players.
+                            </p>
+                            <p className="mt-3 text-sm leading-relaxed text-wc-ink/60">
+                                to qualify for any reward — daily airtime or
+                                the grand prize — you must be following{' '}
+                                <a
+                                    href={TWITTER_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-semibold text-wc-ink underline-offset-4 hover:underline"
+                                >
+                                    @{TWITTER_HANDLE}
+                                </a>{' '}
+                                on X.
                             </p>
                         </div>
                     </div>

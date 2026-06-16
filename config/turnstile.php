@@ -38,7 +38,6 @@ return [
         'register.store',
         'password.email',
         'password.update',
-        'predict.store',
     ],
 
 ];

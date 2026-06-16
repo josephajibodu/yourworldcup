@@ -1,9 +1,5 @@
 <?php
 
-use App\Models\Fixture;
-use App\Models\FixtureMarket;
-use App\Models\PredictionMarket;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Laravel\Fortify\Features;
@@ -92,39 +88,6 @@ test('registration rejects an invalid turnstile token when turnstile is enabled'
         ->assertSessionHasErrors('cf-turnstile-response');
 
     $this->assertGuest();
-});
-
-test('predict submission rejects missing turnstile token when turnstile is enabled', function () {
-    enableTurnstile();
-
-    $kickoff = now()->addDays(2)->setTime(18, 0);
-
-    $fixture = Fixture::factory()->create([
-        'home_team_id' => Team::factory()->create()->id,
-        'away_team_id' => Team::factory()->create()->id,
-        'kickoff_at' => $kickoff,
-        'lock_at' => $kickoff->copy()->subHour(),
-    ]);
-
-    $winner = FixtureMarket::factory()->create([
-        'fixture_id' => $fixture->id,
-        'prediction_market_id' => PredictionMarket::factory()->matchWinner()->create()->id,
-    ]);
-
-    $this->actingAs(User::factory()->create())
-        ->from(route('predict', ['date' => $fixture->watDate()]))
-        ->post(route('predict.store'), [
-            'date' => $fixture->watDate(),
-            'predictions' => [
-                [
-                    'fixture_market_id' => $winner->id,
-                    'value' => ['selected' => 'home'],
-                ],
-            ],
-            'banker_fixture_market_id' => null,
-        ])
-        ->assertRedirect(route('predict', ['date' => $fixture->watDate()]))
-        ->assertSessionHasErrors('cf-turnstile-response');
 });
 
 test('inertia shares turnstile config', function () {
