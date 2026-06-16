@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Predictions\Scoring\ScorerRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ScorerRegistry::class, function ($app): ScorerRegistry {
+            $registry = new ScorerRegistry;
+
+            foreach (config('predictions.scorers', []) as $key => $scorerClass) {
+                $registry->register($key, $app->make($scorerClass));
+            }
+
+            return $registry;
+        });
     }
 
     /**
