@@ -1,30 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Gift, Network, Target } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { FeatureExplorer } from '@/components/landing/feature-explorer';
 import { QualificationFlow } from '@/components/landing/qualification-flow';
 import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
 import { bracket, predict, register } from '@/routes';
-
-const features = [
-    {
-        icon: Target,
-        accent: 'bg-wc-primary/10 text-wc-primary',
-        title: 'Daily predictions',
-        body: 'Call the winner of every match — add the exact score for bonus points, and double down with one banker pick a day.',
-    },
-    {
-        icon: Network,
-        accent: 'bg-wc-blue/10 text-wc-blue',
-        title: 'Living bracket',
-        body: 'All 12 groups flow into the knockouts, updating in real time as results land. Follow any team’s road to the final.',
-    },
-    {
-        icon: Gift,
-        accent: 'bg-wc-green/10 text-wc-green',
-        title: 'Real rewards',
-        body: 'Top the daily board for airtime, paid straight to your verified phone. Climb the overall table for the grand prize.',
-    },
-];
 
 export default function Welcome() {
     const { auth } = usePage().props;
@@ -85,26 +65,16 @@ export default function Welcome() {
                     id="how"
                     className="mx-auto max-w-6xl px-6 py-16 md:py-24"
                 >
-                    <div className="grid gap-5 md:grid-cols-3">
-                        {features.map((feature) => (
-                            <div
-                                key={feature.title}
-                                className="rounded-xl border bg-card p-6 text-card-foreground"
-                            >
-                                <span
-                                    className={`flex size-11 items-center justify-center rounded-lg ${feature.accent}`}
-                                >
-                                    <feature.icon className="size-5" />
-                                </span>
-                                <h2 className="mt-5 text-lg font-bold tracking-tight">
-                                    {feature.title}
-                                </h2>
-                                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                                    {feature.body}
-                                </p>
-                            </div>
-                        ))}
+                    <div className="mx-auto mb-10 max-w-2xl text-center">
+                        <h2 className="text-xl tracking-tight text-wc-ink sm:text-5xl">
+                            everything you need to play
+                        </h2>
+                        <p className="mt-3 text-base leading-7 text-muted-foreground">
+                            predict daily, follow the bracket as it unfolds, and
+                            climb the board for real rewards.
+                        </p>
                     </div>
+                    <FeatureExplorer />
                 </section>
 
                 <footer className="bg-wc-ink text-wc-surface/60">
