@@ -1,8 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Gift, Network, Target, Trophy } from 'lucide-react';
+import { ArrowRight, Gift, Network, Target } from 'lucide-react';
+import { SiteHeader } from '@/components/site-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { bracket, dashboard, leaderboard, login, register } from '@/routes';
+import { bracket, dashboard, register } from '@/routes';
 
 const features = [
     {
@@ -32,49 +33,7 @@ export default function Welcome() {
         <>
             <Head title="Predict the World Cup, daily" />
             <div className="min-h-screen bg-background font-sans text-foreground">
-                <header className="bg-wc-ink text-wc-surface">
-                    <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-                        <Link href="/" className="flex items-center gap-2.5">
-                            <span className="flex size-8 items-center justify-center rounded-md bg-wc-gold text-wc-ink">
-                                <Trophy className="size-5" />
-                            </span>
-                            <span className="font-display text-2xl tracking-wide">
-                                YOURWORLD<span className="text-wc-gold">CUP</span>
-                            </span>
-                        </Link>
-                        <div className="hidden items-center gap-7 text-sm font-medium text-wc-surface/70 md:flex">
-                            <Link href={bracket()} className="transition-colors hover:text-wc-surface">
-                                Bracket
-                            </Link>
-                            <span className="cursor-default">Predict</span>
-                            <Link href={leaderboard()} className="transition-colors hover:text-wc-surface">
-                                Leaderboard
-                            </Link>
-                            <span className="cursor-default text-wc-surface/45">How it works</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {auth.user ? (
-                                <Button asChild variant="gold" size="sm">
-                                    <Link href={dashboard()}>Dashboard</Link>
-                                </Button>
-                            ) : (
-                                <>
-                                    <Button
-                                        asChild
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-wc-surface hover:bg-wc-ink-2 hover:text-wc-surface"
-                                    >
-                                        <Link href={login()}>Log in</Link>
-                                    </Button>
-                                    <Button asChild variant="gold" size="sm">
-                                        <Link href={register()}>Play free</Link>
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </nav>
-                </header>
+                <SiteHeader />
 
                 <section className="relative overflow-hidden bg-wc-primary text-white">
                     <div

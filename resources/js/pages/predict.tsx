@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { store as storePredictions } from '@/actions/App/Http/Controllers/PredictController';
 import { FixtureCard } from '@/components/predict/fixture-card';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
+import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
 import { predict } from '@/routes';
 
@@ -233,16 +234,10 @@ export default function Predict() {
     return (
         <>
             <Head title="Make your picks" />
-            <PredictDay key={props.selectedDate ?? 'none'} {...props} />
+            <div className="min-h-screen bg-background font-sans text-foreground">
+                <SiteHeader />
+                <PredictDay key={props.selectedDate ?? 'none'} {...props} />
+            </div>
         </>
     );
 }
-
-Predict.layout = {
-    breadcrumbs: [
-        {
-            title: 'Predict',
-            href: predict(),
-        },
-    ],
-};

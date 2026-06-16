@@ -1,18 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    ChevronLeft,
-    ChevronRight,
-    Crown,
-    Trophy,
-} from 'lucide-react';
-import {
-    StandingsTable
-    
-} from '@/components/leaderboard/standings-table';
-import type {StandingsRow} from '@/components/leaderboard/standings-table';
+import { ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { StandingsTable } from '@/components/leaderboard/standings-table';
+import type { StandingsRow } from '@/components/leaderboard/standings-table';
+import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
-import { home, leaderboard } from '@/routes';
+import { leaderboard } from '@/routes';
 
 interface LeaderboardPageProps {
     overall: StandingsRow[];
@@ -44,26 +36,7 @@ export default function Leaderboard() {
         <>
             <Head title="Leaderboard" />
             <div className="min-h-screen bg-background font-sans text-foreground">
-                <header className="bg-wc-ink text-wc-surface">
-                    <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-                        <Link href={home()} className="flex items-center gap-2.5">
-                            <span className="flex size-7 items-center justify-center rounded-md bg-wc-gold text-wc-ink">
-                                <Trophy className="size-4" />
-                            </span>
-                            <span className="font-display text-xl tracking-wide">
-                                YOURWORLD
-                                <span className="text-wc-gold">CUP</span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={home()}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-wc-ink-3 px-3 py-1.5 font-mono text-[11px] tracking-wider text-wc-surface/70 uppercase transition-colors hover:bg-wc-ink-2"
-                        >
-                            <ArrowLeft className="size-3.5" />
-                            Home
-                        </Link>
-                    </div>
-                </header>
+                <SiteHeader />
 
                 <section className="relative overflow-hidden bg-wc-primary text-white">
                     <div

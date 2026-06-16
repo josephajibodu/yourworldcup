@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import {
     Background,
     BackgroundVariant,
@@ -10,13 +10,12 @@ import {
 } from '@xyflow/react';
 import type {Edge, Node} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Trophy } from 'lucide-react';
 import { useMemo } from 'react';
 import { GroupTableNode } from '@/components/bracket/group-table-node';
 import { MatchNode } from '@/components/bracket/match-node';
 import { TrophyNode } from '@/components/bracket/trophy-node';
 import type { GroupTable, KnockoutMatch } from '@/components/bracket/types';
-import { home } from '@/routes';
+import { SiteHeader } from '@/components/site-header';
 
 interface BracketPageProps {
     groups: GroupTable[];
@@ -167,32 +166,7 @@ export default function Bracket() {
         <>
             <Head title="Living bracket" />
             <div className="flex h-screen flex-col bg-wc-ink">
-                <header className="z-10 flex items-center justify-between border-b border-wc-ink-3 bg-wc-ink px-5 py-3 text-wc-surface">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href={home()}
-                            className="flex items-center gap-2.5"
-                        >
-                            <span className="flex size-7 items-center justify-center rounded-md bg-wc-gold text-wc-ink">
-                                <Trophy className="size-4" />
-                            </span>
-                            <span className="font-display text-xl tracking-wide">
-                                YOURWORLD
-                                <span className="text-wc-gold">CUP</span>
-                            </span>
-                        </Link>
-                        <span className="hidden font-display text-sm tracking-wider text-wc-surface/55 uppercase sm:inline">
-                            Living bracket
-                        </span>
-                    </div>
-                    <Link
-                        href={home()}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-wc-ink-3 px-3 py-1.5 font-mono text-[11px] tracking-wider text-wc-surface/70 uppercase transition-colors hover:bg-wc-ink-2"
-                    >
-                        <ArrowLeft className="size-3.5" />
-                        Home
-                    </Link>
-                </header>
+                <SiteHeader />
 
                 <div className="relative flex-1">
                     <ReactFlow
