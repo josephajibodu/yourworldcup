@@ -3,7 +3,7 @@ import { ArrowRight, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { bracket, home, leaderboard, predict, register } from '@/routes';
 
-const TWITTER_HANDLE = 'josephajibodu';
+const TWITTER_HANDLE = 'joseph_ajibodu';
 const TWITTER_URL = `https://x.com/${TWITTER_HANDLE}`;
 
 const navLinks = [

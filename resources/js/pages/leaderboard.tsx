@@ -6,7 +6,7 @@ import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
 import { leaderboard } from '@/routes';
 
-const TWITTER_HANDLE = 'josephajibodu';
+const TWITTER_HANDLE = 'joseph_ajibodu';
 const TWITTER_URL = `https://x.com/${TWITTER_HANDLE}`;
 
 interface LeaderboardPageProps {
