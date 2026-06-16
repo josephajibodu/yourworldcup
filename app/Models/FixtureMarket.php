@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\MarketStatus;
+use Carbon\CarbonInterface;
 use Database\Factories\FixtureMarketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -77,9 +78,20 @@ class FixtureMarket extends Model
         return $this->base_points ?? $this->market->base_points;
     }
 
-    public function effectiveLockAt(): ?Carbon
+    public function effectiveLockAt(): CarbonInterface
     {
         return $this->lock_at ?? $this->fixture->lock_at;
+    }
+
+    /**
+     * Whether a user may still create or edit a prediction on this market:
+     * the market is enabled, open, and its lock time has not passed.
+     */
+    public function isOpenForPrediction(): bool
+    {
+        return $this->is_enabled
+            && $this->status === MarketStatus::Open
+            && now()->lessThan($this->effectiveLockAt());
     }
 
     /**

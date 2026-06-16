@@ -95,6 +95,18 @@ class Fixture extends Model
     }
 
     /**
+     * The calendar day this fixture belongs to, in the platform's day-boundary
+     * timezone (WAT) — the unit the daily prediction game and banker rule use.
+     */
+    public function watDate(): string
+    {
+        return $this->kickoff_at
+            ->copy()
+            ->setTimezone(config('predictions.timezone'))
+            ->toDateString();
+    }
+
+    /**
      * @param  Builder<Fixture>  $query
      * @return Builder<Fixture>
      */
