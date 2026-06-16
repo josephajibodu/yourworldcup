@@ -1,8 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, Gift, Network, Target, Trophy } from 'lucide-react';
-import { dashboard, login, register } from '@/routes';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { bracket, dashboard, login, register } from '@/routes';
 
 const features = [
     {
@@ -43,7 +43,9 @@ export default function Welcome() {
                             </span>
                         </Link>
                         <div className="hidden items-center gap-7 text-sm font-medium text-wc-surface/70 md:flex">
-                            <span className="cursor-default">Bracket</span>
+                            <Link href={bracket()} className="transition-colors hover:text-wc-surface">
+                                Bracket
+                            </Link>
                             <span className="cursor-default">Predict</span>
                             <span className="cursor-default">Leaderboard</span>
                             <span className="cursor-default text-wc-surface/45">How it works</span>
@@ -106,12 +108,12 @@ export default function Welcome() {
                                     <ArrowRight className="size-4" />
                                 </Link>
                             </Button>
-                            <a
-                                href="#how"
+                            <Link
+                                href={bracket()}
                                 className="inline-flex items-center gap-2 rounded-md border border-white/45 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
                             >
                                 View the bracket
-                            </a>
+                            </Link>
                         </div>
                         <div className="mt-10 flex flex-wrap gap-x-8 gap-y-2 font-mono text-sm text-white/80">
                             <span>
