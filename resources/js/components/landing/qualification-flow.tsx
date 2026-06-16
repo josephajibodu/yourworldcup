@@ -26,13 +26,7 @@ interface LabelNodeData {
     [key: string]: unknown;
     label: string;
     accent?: 'gold' | 'ink';
-    compact?: boolean;
     pulseDelay?: string;
-}
-
-interface TravelerNodeData {
-    [key: string]: unknown;
-    team: Team;
 }
 
 const teams: Team[] = [
@@ -56,6 +50,8 @@ const cycleMs = 14000;
 const championPool = championCodes
     .map((code) => teams.find((team) => team.code === code))
     .filter((team): team is Team => Boolean(team));
+
+const CORRIDOR_TOP = 176;
 
 const gates = [
     { id: 'r32', label: 'R32', x: 360, delay: '2.2s' },
@@ -130,11 +126,10 @@ function CheckpointNode({
     return (
         <div
             className={[
-                'broadcast-checkpoint relative rounded-full border bg-white px-5 py-3 shadow-[0_18px_55px_rgba(10,10,11,0.1)]',
+                'broadcast-checkpoint relative flex h-12 min-w-16 items-center justify-center rounded-full border bg-white px-5 shadow-[0_18px_55px_rgba(10,10,11,0.1)]',
                 data.accent === 'gold'
                     ? 'border-wc-gold text-wc-ink'
                     : 'border-wc-ink/15 text-wc-ink/75',
-                data.compact ? 'px-4 py-2' : '',
             ].join(' ')}
             style={
                 {
@@ -193,26 +188,10 @@ function ChampionNode({ data }: NodeProps<Node<FlagNodeData, 'champion'>>) {
     );
 }
 
-function TravelerNode({ data }: NodeProps<Node<TravelerNodeData, 'traveler'>>) {
-    return (
-        <div className="broadcast-winner-journey flex items-center gap-2 rounded-xl border border-wc-gold bg-white px-2.5 py-2 shadow-[0_14px_42px_rgba(233,167,33,0.25)]">
-            <img
-                src={data.team.flag}
-                alt=""
-                className="h-5 w-8 rounded object-cover"
-            />
-            <span className="font-mono text-[10px] font-black tracking-wider text-wc-ink">
-                {data.team.code}
-            </span>
-        </div>
-    );
-}
-
 const nodeTypes = {
     flag: FlagNode,
     checkpoint: CheckpointNode,
     champion: ChampionNode,
-    traveler: TravelerNode,
 };
 
 interface BroadcastEdgeData {
@@ -223,6 +202,7 @@ interface BroadcastEdgeData {
     team?: Team;
     traveler?: boolean;
     particle?: boolean;
+    rail?: boolean;
 }
 
 function BroadcastEdge({
@@ -236,7 +216,12 @@ function BroadcastEdge({
     data,
 }: EdgeProps<Edge<BroadcastEdgeData, 'broadcast'>>) {
     const [path] = data?.straight
-        ? getStraightPath({ sourceX, sourceY, targetX, targetY })
+        ? getStraightPath({
+              sourceX,
+              sourceY,
+              targetX,
+              targetY: sourceY,
+          })
         : getBezierPath({
               sourceX,
               sourceY,
@@ -246,6 +231,73 @@ function BroadcastEdge({
               targetPosition,
           });
     const isActive = data?.active;
+
+    if (data?.rail && data.team) {
+        return (
+            <g>
+                <g className="broadcast-journey-flag">
+                    <animateMotion
+                        dur={`${cycleMs / 1000}s`}
+                        keyPoints="0;0;1;1"
+                        keyTimes="0;0.22;0.72;1"
+                        calcMode="linear"
+                        repeatCount="indefinite"
+                        rotate="0"
+                        path={path}
+                    />
+                    <animate
+                        attributeName="opacity"
+                        dur={`${cycleMs / 1000}s`}
+                        values="0;0;1;1;0;0"
+                        keyTimes="0;0.2;0.25;0.72;0.8;1"
+                        repeatCount="indefinite"
+                    />
+                    <rect
+                        x="-22"
+                        y="-16"
+                        width="44"
+                        height="32"
+                        rx="10"
+                        fill="white"
+                        stroke="#E9A721"
+                        strokeWidth="1"
+                    />
+                    <image
+                        href={data.team.flag}
+                        x="-15"
+                        y="-10"
+                        width="30"
+                        height="20"
+                        preserveAspectRatio="xMidYMid slice"
+                    />
+                </g>
+                <g
+                    className="broadcast-reduced-journey-flag"
+                    transform={`translate(${targetX - 44}, ${sourceY})`}
+                >
+                    <rect
+                        x="-22"
+                        y="-16"
+                        width="44"
+                        height="32"
+                        rx="10"
+                        fill="white"
+                        stroke="#E9A721"
+                        strokeWidth="1"
+                    />
+                    <image
+                        href={data.team.flag}
+                        x="-15"
+                        y="-10"
+                        width="30"
+                        height="20"
+                        preserveAspectRatio="xMidYMid slice"
+                    />
+                </g>
+                <title>{id}</title>
+            </g>
+        );
+    }
 
     return (
         <g className={isActive ? 'broadcast-edge-active' : undefined}>
@@ -267,6 +319,17 @@ function BroadcastEdge({
                         strokeWidth={8}
                         opacity={0.13}
                     />
+                    {data?.straight && (
+                        <path
+                            className="broadcast-flow-dash"
+                            d={path}
+                            fill="none"
+                            stroke="#E9A721"
+                            strokeLinecap="round"
+                            strokeDasharray="8 14"
+                            strokeWidth={2.2}
+                        />
+                    )}
                     {data?.particle !== false && (
                         <>
                             <circle r="4.5" fill="#E9A721">
@@ -375,25 +438,17 @@ export function QualificationFlow() {
             ...gates.map((gate, index) => ({
                 id: gate.id,
                 type: 'checkpoint',
-                position: { x: gate.x, y: index === 0 ? 172 : 178 },
+                position: { x: gate.x, y: CORRIDOR_TOP },
                 data: {
                     label: gate.label,
                     accent:
                         index === 0 || index === gates.length - 1
                             ? 'gold'
                             : 'ink',
-                    compact: index !== 0 && index !== gates.length - 1,
                     pulseDelay: gate.delay,
                 },
                 draggable: false,
             })),
-            {
-                id: 'winner-journey',
-                type: 'traveler',
-                position: { x: 420, y: 184 },
-                data: { team: champion },
-                draggable: false,
-            },
             {
                 id: 'champion',
                 type: 'champion',
@@ -438,7 +493,23 @@ export function QualificationFlow() {
             },
         }));
 
-        return { nodes: allNodes, edges: [...inEdges, ...knockoutEdges] };
+        const railEdge: Edge<BroadcastEdgeData, 'broadcast'> = {
+            id: 'winner-rail',
+            source: 'r32',
+            target: 'champion',
+            type: 'broadcast',
+            data: {
+                active: true,
+                straight: true,
+                team: champion,
+                rail: true,
+            },
+        };
+
+        return {
+            nodes: allNodes,
+            edges: [...inEdges, ...knockoutEdges, railEdge],
+        };
     }, [champion, championIndex]);
 
     return (
@@ -522,9 +593,17 @@ export function QualificationFlow() {
                     animation: champion-reveal 14s cubic-bezier(0.16, 1, 0.3, 1) infinite both;
                 }
 
-                .broadcast-winner-journey {
-                    animation: winner-journey 14s cubic-bezier(0.62, 0, 0.18, 1) infinite both;
-                    filter: drop-shadow(0 10px 18px rgba(233, 167, 33, 0.28));
+                .broadcast-journey-flag {
+                    filter: drop-shadow(0 10px 18px rgba(233, 167, 33, 0.3));
+                }
+
+                .broadcast-reduced-journey-flag {
+                    display: none;
+                }
+
+                .broadcast-flow-dash {
+                    animation: flow-dash 1.35s linear infinite;
+                    opacity: 0.78;
                 }
 
                 @keyframes flag-entry {
@@ -569,40 +648,9 @@ export function QualificationFlow() {
                     100% { opacity: 0.7; transform: scale(1.06); }
                 }
 
-                @keyframes winner-journey {
-                    0%, 24% {
-                        opacity: 0;
-                        transform: translateX(0) scale(0.9);
-                    }
-
-                    30% {
-                        opacity: 1;
-                        transform: translateX(0) scale(1);
-                    }
-
-                    42% {
-                        opacity: 1;
-                        transform: translateX(180px) scale(1);
-                    }
-
-                    56% {
-                        opacity: 1;
-                        transform: translateX(330px) scale(1);
-                    }
-
-                    70% {
-                        opacity: 1;
-                        transform: translateX(480px) scale(1);
-                    }
-
-                    84% {
-                        opacity: 1;
-                        transform: translateX(640px) scale(1.04);
-                    }
-
-                    92%, 100% {
-                        opacity: 0;
-                        transform: translateX(700px) scale(1.08);
+                @keyframes flow-dash {
+                    to {
+                        stroke-dashoffset: -22;
                     }
                 }
 
@@ -619,9 +667,17 @@ export function QualificationFlow() {
                     .broadcast-checkpoint::before,
                     .broadcast-checkpoint::after,
                     .broadcast-traveler,
-                    .broadcast-winner-journey,
+                    .broadcast-flow-dash,
                     .broadcast-champion {
                         animation: none !important;
+                    }
+
+                    .broadcast-journey-flag {
+                        display: none;
+                    }
+
+                    .broadcast-reduced-journey-flag {
+                        display: block;
                     }
                 }
             `}</style>

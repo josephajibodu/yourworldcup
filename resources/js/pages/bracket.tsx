@@ -166,7 +166,7 @@ export default function Bracket() {
         <>
             <Head title="Living bracket" />
             <div className="flex h-screen flex-col bg-wc-ink">
-                <SiteHeader />
+                <SiteHeader variant="dark" />
 
                 <div className="relative flex-1">
                     <ReactFlow
@@ -190,12 +190,12 @@ export default function Bracket() {
                         />
                         <Controls
                             showInteractive={false}
-                            className="!border-wc-ink-3 !bg-wc-ink-2 [&_button]:!border-wc-ink-3 [&_button]:!bg-wc-ink-2 [&_button]:!fill-wc-surface [&_button:hover]:!bg-wc-ink-3"
+                            className="border-wc-ink-3! bg-wc-ink-2! [&_button]:border-wc-ink-3! [&_button]:bg-wc-ink-2! [&_button]:fill-wc-surface! [&_button:hover]:bg-wc-ink-3!"
                         />
                         <MiniMap
                             pannable
                             zoomable
-                            className="!bg-wc-ink-2"
+                            className="bg-wc-ink-2!"
                             maskColor="rgba(10,10,11,0.7)"
                             nodeColor="#3A3A44"
                         />

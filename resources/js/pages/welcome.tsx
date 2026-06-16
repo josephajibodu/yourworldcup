@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, Gift, Network, Target } from 'lucide-react';
-import { TeamMarquee } from '@/components/landing/team-marquee';
+import { QualificationFlow } from '@/components/landing/qualification-flow';
 import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
 import { bracket, predict, register } from '@/routes';
@@ -38,16 +38,15 @@ export default function Welcome() {
                 <section className="overflow-hidden bg-wc-surface text-wc-ink">
                     <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-20">
                         <div className="max-w-4xl">
-                            <p className="mx-auto mb-6 max-w-xs font-mono text-xs leading-relaxed tracking-wider text-muted-foreground uppercase">
-                                Living bracket · daily predictions · skill-ranked
-                                rewards
-                            </p>
-                            <h1 className="text-5xl leading-[0.96] font-extrabold tracking-tight text-balance sm:text-6xl md:text-7xl">
-                                Follow the World Cup like it is happening in
-                                your hands.
+                            <h1 className="text-5xl leading-[0.96] tracking-tight text-balance sm:text-6xl">
+                                follow the{' '}
+                                <span className="font-['Caveat'] font-light text-wc-gold">
+                                    World Cup
+                                </span>{' '}
+                                like it is happening in your hands.
                             </h1>
                             <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">
-                                Pick match winners, call exact scores, track the
+                                pick match winners, call exact scores, track the
                                 bracket as teams move forward, and climb daily
                                 and overall leaderboards.
                             </p>
@@ -59,7 +58,9 @@ export default function Welcome() {
                                     className="rounded-full"
                                 >
                                     <Link
-                                        href={auth.user ? predict() : register()}
+                                        href={
+                                            auth.user ? predict() : register()
+                                        }
                                     >
                                         Make today’s picks
                                         <ArrowRight className="size-4" />
@@ -75,12 +76,15 @@ export default function Welcome() {
                         </div>
 
                         <div className="w-screen px-0 pt-10">
-                            <TeamMarquee />
+                            <QualificationFlow />
                         </div>
                     </div>
                 </section>
 
-                <section id="how" className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+                <section
+                    id="how"
+                    className="mx-auto max-w-6xl px-6 py-16 md:py-24"
+                >
                     <div className="grid gap-5 md:grid-cols-3">
                         {features.map((feature) => (
                             <div
