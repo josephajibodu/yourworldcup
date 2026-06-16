@@ -1,8 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Crown } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { StandingsTable } from '@/components/leaderboard/standings-table';
 import type { StandingsRow } from '@/components/leaderboard/standings-table';
-import { SiteHeader } from '@/components/site-header';
+import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
 import { leaderboard } from '@/routes';
 
@@ -35,98 +35,138 @@ export default function Leaderboard() {
     return (
         <>
             <Head title="Leaderboard" />
-            <div className="min-h-screen bg-background font-sans text-foreground">
-                <SiteHeader />
-
-                <section className="bg-wc-primary text-white">
-                    <div className="mx-auto max-w-5xl px-5 py-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-                            Leaderboard
+            <ProductShell>
+                <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+                    <div className="max-w-2xl">
+                        <h1 className="text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
+                            leaderboard
                         </h1>
-                        <p className="mt-2 max-w-lg text-sm text-white/90">
-                            Points land as results come in. Top the daily board
-                            for airtime, and the overall table for the grand
-                            prize.
+                        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                            points land as results come in. climb the daily
+                            board for airtime, and the overall table for the
+                            grand prize.
                         </p>
                     </div>
-                </section>
 
-                <div className="mx-auto grid max-w-5xl gap-6 px-5 py-8 md:grid-cols-2">
-                    <div>
-                        <div className="mb-3 flex items-center gap-2">
-                            <Crown className="size-5 text-wc-gold" />
-                            <h2 className="font-display text-xl tracking-wide uppercase">
-                                Overall
-                            </h2>
+                    <div className="mt-8 flex gap-4 rounded-2xl border border-wc-gold/25 bg-wc-gold/8 p-5 md:items-center">
+                        <div className="grid size-14 shrink-0 place-items-center rounded-full bg-wc-gold/15 ring-1 ring-wc-gold/35">
+                            <img
+                                src="/images/world-cup-icon.png"
+                                alt=""
+                                className="size-9 object-contain"
+                            />
                         </div>
-                        <StandingsTable
-                            rows={overall}
-                            currentUserId={currentUserId}
-                            emptyMessage="No points yet — standings fill in as matches are scored."
-                        />
+                        <div className="min-w-0">
+                            <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-gold uppercase">
+                                overall monetary prize
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-wc-ink">
+                                the overall winner takes a cash grand prize at
+                                the final whistle.
+                            </p>
+                            <p className="mt-1 text-sm leading-relaxed text-wc-ink/60">
+                                keep climbing the overall table — the top spot
+                                when the tournament ends wins the grand prize,
+                                unlocked once we reach 1,000 players.
+                            </p>
+                        </div>
                     </div>
 
-                    <div>
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <h2 className="font-display text-xl tracking-wide uppercase">
-                                Daily
-                            </h2>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    asChild={prevDate !== null}
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={prevDate === null}
-                                >
-                                    {prevDate !== null ? (
-                                        <Link
-                                            href={leaderboard({
-                                                query: { date: prevDate },
-                                            })}
-                                        >
-                                            <ChevronLeft className="size-4" />
-                                        </Link>
-                                    ) : (
-                                        <span>
-                                            <ChevronLeft className="size-4" />
-                                        </span>
-                                    )}
-                                </Button>
-                                <span className="min-w-28 text-center font-mono text-xs font-semibold tracking-wider tabular-nums uppercase">
-                                    {selectedDate
-                                        ? formatDay(selectedDate)
-                                        : '—'}
-                                </span>
-                                <Button
-                                    asChild={nextDate !== null}
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={nextDate === null}
-                                >
-                                    {nextDate !== null ? (
-                                        <Link
-                                            href={leaderboard({
-                                                query: { date: nextDate },
-                                            })}
-                                        >
-                                            <ChevronRight className="size-4" />
-                                        </Link>
-                                    ) : (
-                                        <span>
-                                            <ChevronRight className="size-4" />
-                                        </span>
-                                    )}
-                                </Button>
+                    <div className="mt-10 grid gap-8 md:grid-cols-2">
+                        <div>
+                            <div className="mb-4 flex items-center gap-2">
+                                <div>
+                                    <h2 className="text-lg font-bold tracking-tight text-wc-ink">
+                                        overall
+                                    </h2>
+                                    <p className="text-xs text-muted-foreground">
+                                        Race for the monetary grand prize
+                                    </p>
+                                </div>
                             </div>
+                            <StandingsTable
+                                rows={overall}
+                                currentUserId={currentUserId}
+                                emptyMessage="No points yet — standings fill in as matches are scored."
+                            />
                         </div>
-                        <StandingsTable
-                            rows={daily}
-                            currentUserId={currentUserId}
-                            emptyMessage="No scored picks for this day yet."
-                        />
+
+                        <div>
+                            <div className="mb-4 flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div>
+                                        <h2 className="text-lg font-bold tracking-tight text-wc-ink">
+                                            daily
+                                        </h2>
+                                        <p className="text-xs text-muted-foreground">
+                                            top the day for airtime rewards
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        asChild={prevDate !== null}
+                                        variant="ghost"
+                                        size="icon"
+                                        className="rounded-full"
+                                        disabled={prevDate === null}
+                                    >
+                                        {prevDate !== null ? (
+                                            <Link
+                                                href={leaderboard({
+                                                    query: { date: prevDate },
+                                                })}
+                                            >
+                                                <ChevronLeft className="size-4" />
+                                            </Link>
+                                        ) : (
+                                            <span>
+                                                <ChevronLeft className="size-4" />
+                                            </span>
+                                        )}
+                                    </Button>
+                                    <span className="min-w-28 text-center font-mono text-xs font-semibold tracking-wider text-wc-ink/70 uppercase tabular-nums">
+                                        {selectedDate
+                                            ? formatDay(selectedDate)
+                                            : '—'}
+                                    </span>
+                                    <Button
+                                        asChild={nextDate !== null}
+                                        variant="ghost"
+                                        size="icon"
+                                        className="rounded-full"
+                                        disabled={nextDate === null}
+                                    >
+                                        {nextDate !== null ? (
+                                            <Link
+                                                href={leaderboard({
+                                                    query: { date: nextDate },
+                                                })}
+                                            >
+                                                <ChevronRight className="size-4" />
+                                            </Link>
+                                        ) : (
+                                            <span>
+                                                <ChevronRight className="size-4" />
+                                            </span>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                            <StandingsTable
+                                rows={daily}
+                                currentUserId={currentUserId}
+                                emptyMessage="No scored picks for this day yet."
+                            />
+                        </div>
                     </div>
+
+                    <p className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+                        surprise drops can land at any moment, be playing when
+                        they hit.
+                    </p>
                 </div>
-            </div>
+            </ProductShell>
         </>
     );
 }

@@ -14,7 +14,7 @@ import { GroupTableNode } from '@/components/bracket/group-table-node';
 import { MatchNode } from '@/components/bracket/match-node';
 import { TrophyNode } from '@/components/bracket/trophy-node';
 import type { GroupTable, KnockoutMatch } from '@/components/bracket/types';
-import { SiteHeader } from '@/components/site-header';
+import { ProductShell } from '@/components/product-shell';
 
 interface BracketPageProps {
     groups: GroupTable[];
@@ -203,10 +203,11 @@ export default function Bracket() {
     return (
         <>
             <Head title="Living bracket" />
-            <div className="flex h-screen flex-col bg-wc-surface text-wc-ink">
-                <SiteHeader />
-
-                <div className="relative flex-1">
+            <ProductShell
+                className="bg-wc-surface text-wc-ink"
+                mainClassName="relative min-h-[calc(100svh-11rem)] flex-1"
+            >
+                <div className="absolute inset-0 min-h-[480px]">
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
@@ -239,7 +240,7 @@ export default function Bracket() {
                         />
                     </ReactFlow>
                 </div>
-            </div>
+            </ProductShell>
         </>
     );
 }

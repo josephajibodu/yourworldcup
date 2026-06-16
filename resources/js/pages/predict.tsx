@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { store as storePredictions } from '@/actions/App/Http/Controllers/PredictController';
 import { FixtureCard } from '@/components/predict/fixture-card';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
-import { SiteHeader } from '@/components/site-header';
+import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
 import { predict } from '@/routes';
 
@@ -120,11 +120,12 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
         <div className="mx-auto w-full max-w-3xl px-4 py-6">
             <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="font-display text-3xl tracking-wide uppercase">
-                        Make your picks
+                    <h1 className="font-display text-4xl tracking-wide">
+                        make your picks
                     </h1>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Predict each market before kickoff. Star one pick as your{' '}
+                        predict each market before kickoff. Star one pick as
+                        your{' '}
                         <span className="font-semibold text-wc-gold-deep">
                             banker
                         </span>{' '}
@@ -234,10 +235,9 @@ export default function Predict() {
     return (
         <>
             <Head title="Make your picks" />
-            <div className="min-h-screen bg-background font-sans text-foreground">
-                <SiteHeader />
+            <ProductShell>
                 <PredictDay key={props.selectedDate ?? 'none'} {...props} />
-            </div>
+            </ProductShell>
         </>
     );
 }

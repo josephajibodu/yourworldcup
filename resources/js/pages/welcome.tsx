@@ -3,8 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { FeatureExplorer } from '@/components/landing/feature-explorer';
 import { PrizesReveal } from '@/components/landing/prizes-reveal';
 import { QualificationFlow } from '@/components/landing/qualification-flow';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
+import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
 import { bracket, predict, register } from '@/routes';
 
@@ -14,9 +13,7 @@ export default function Welcome() {
     return (
         <>
             <Head title="Predict the World Cup, daily" />
-            <div className="min-h-screen bg-background font-sans text-foreground">
-                <SiteHeader />
-
+            <ProductShell>
                 <section className="overflow-hidden bg-wc-surface text-wc-ink">
                     <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-20">
                         <div className="max-w-4xl">
@@ -80,9 +77,7 @@ export default function Welcome() {
                 </section>
 
                 <PrizesReveal />
-
-                <SiteFooter />
-            </div>
+            </ProductShell>
         </>
     );
 }

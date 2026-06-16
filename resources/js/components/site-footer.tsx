@@ -34,17 +34,21 @@ export function SiteFooter() {
                 <div className="grid gap-12 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-10 lg:gap-16">
                     {/* Brand + social */}
                     <div className="space-y-6">
-                        <Link href={home()} className="inline-flex items-center gap-2.5">
+                        <Link
+                            href={home()}
+                            className="inline-flex items-center gap-2.5"
+                        >
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-wc-surface/10 text-wc-gold">
                                 <Trophy className="size-4" />
                             </span>
                             <span className="font-display text-xl tracking-[0.22em] text-wc-surface">
-                                YOURWORLD<span className="text-wc-gold">CUP</span>
+                                YOURWORLD
+                                <span className="text-wc-gold">CUP</span>
                             </span>
                         </Link>
                         <p className="max-w-sm text-sm leading-relaxed text-wc-surface/55">
-                            Daily World Cup predictions, a living bracket, and
-                            real rewards — free to play, skill-ranked.
+                            daily world cup predictions, a living bracket, and
+                            real rewards, free to play, skill-ranked.
                         </p>
                         <a
                             href={TWITTER_URL}
@@ -53,7 +57,7 @@ export function SiteFooter() {
                             className="inline-flex items-center gap-2.5 rounded-full border border-wc-surface/15 bg-wc-surface/5 px-4 py-2.5 text-sm font-semibold text-wc-surface transition-colors hover:border-wc-gold/40 hover:bg-wc-gold/10 hover:text-wc-surface"
                         >
                             <XIcon className="size-4 shrink-0" />
-                            Follow @{TWITTER_HANDLE}
+                            follow @{TWITTER_HANDLE}
                         </a>
                     </div>
 
@@ -79,10 +83,10 @@ export function SiteFooter() {
                     {/* CTA */}
                     <div>
                         <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-gold uppercase">
-                            Get in
+                            get in
                         </p>
                         <p className="mt-4 text-sm leading-relaxed text-wc-surface/55">
-                            Make today&apos;s picks, track the bracket, and
+                            make today&apos;s picks, track the bracket, and
                             climb the board for airtime and the grand prize.
                         </p>
                         <Button
@@ -92,7 +96,9 @@ export function SiteFooter() {
                             className="mt-5 rounded-full bg-wc-gold px-5 font-bold text-wc-ink hover:bg-wc-gold/90"
                         >
                             <Link href={auth.user ? predict() : register()}>
-                                {auth.user ? 'Make today’s picks' : 'Get started free'}
+                                {auth.user
+                                    ? 'make today’s picks'
+                                    : 'get started free'}
                                 <ArrowRight className="size-4" />
                             </Link>
                         </Button>

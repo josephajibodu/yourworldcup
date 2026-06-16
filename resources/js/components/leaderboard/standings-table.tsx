@@ -33,14 +33,14 @@ export function StandingsTable({
 }: StandingsTableProps) {
     if (rows.length === 0) {
         return (
-            <div className="rounded-xl border border-dashed bg-card px-6 py-12 text-center text-sm text-muted-foreground">
+            <div className="rounded-xl border border-dashed border-wc-ink/15 bg-card px-6 py-12 text-center text-sm text-muted-foreground">
                 {emptyMessage}
             </div>
         );
     }
 
     return (
-        <ul className="overflow-hidden rounded-xl border bg-card">
+        <ul className="overflow-hidden rounded-xl border border-wc-ink/10 bg-card">
             {rows.map((row) => {
                 const isCurrent = row.userId === currentUserId;
 
@@ -48,8 +48,8 @@ export function StandingsTable({
                     <li
                         key={row.userId}
                         className={cn(
-                            'flex items-center gap-3 border-b px-3 py-2.5 last:border-b-0',
-                            isCurrent && 'bg-wc-primary/5',
+                            'flex items-center gap-3 border-b border-wc-ink/8 px-3 py-2.5 last:border-b-0',
+                            isCurrent && 'bg-wc-gold/8',
                         )}
                     >
                         <span
@@ -66,7 +66,7 @@ export function StandingsTable({
                         <span className="flex-1 truncate text-sm font-medium">
                             {row.name}
                             {isCurrent && (
-                                <span className="ml-2 rounded bg-wc-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-white uppercase">
+                                <span className="ml-2 rounded bg-wc-ink px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-wc-surface uppercase">
                                     You
                                 </span>
                             )}

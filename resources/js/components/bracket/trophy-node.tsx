@@ -12,16 +12,11 @@ export function TrophyNode({ data }: NodeProps<TrophyNode>) {
                 position={Position.Left}
                 className="!size-1.5 !border-0 !bg-wc-gold"
             />
-            <span
-                className="grid size-14 place-items-center rounded-full bg-wc-gold text-wc-ink"
-                style={{ boxShadow: '0 0 28px rgba(233,167,33,0.55)' }}
-            >
-                <img
-                    src="/images/world-cup-icon.png"
-                    alt=""
-                    className="size-9 object-contain"
-                />
-            </span>
+            <img
+                src="/images/world-cup-icon.png"
+                alt=""
+                className="size-14 object-contain"
+            />
             <span className="font-display text-base tracking-wider text-wc-gold uppercase">
                 {data.label}
             </span>
