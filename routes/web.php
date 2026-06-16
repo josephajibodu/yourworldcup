@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\PlayerCountController;
 use App\Http\Controllers\PredictController;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +10,7 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::get('bracket', [BracketController::class, 'index'])->name('bracket');
 Route::get('leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+Route::get('players/count', PlayerCountController::class)->name('players.count');
 
 Route::middleware('auth')->group(function () {
     Route::get('predict', [PredictController::class, 'index'])->name('predict');

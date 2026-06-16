@@ -1,7 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import { FeatureExplorer } from '@/components/landing/feature-explorer';
+import { PrizesReveal } from '@/components/landing/prizes-reveal';
 import { QualificationFlow } from '@/components/landing/qualification-flow';
+import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { Button } from '@/components/ui/button';
 import { bracket, predict, register } from '@/routes';
@@ -77,16 +79,9 @@ export default function Welcome() {
                     <FeatureExplorer />
                 </section>
 
-                <footer className="bg-wc-ink text-wc-surface/60">
-                    <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm sm:flex-row">
-                        <span className="text-lg font-extrabold tracking-tight text-wc-surface">
-                            YOURWORLD<span className="text-wc-gold">CUP</span>
-                        </span>
-                        <span className="font-mono text-xs tracking-wider">
-                            FREE TO PLAY · SKILL-RANKED · WORLD CUP 2026
-                        </span>
-                    </div>
-                </footer>
+                <PrizesReveal />
+
+                <SiteFooter />
             </div>
         </>
     );
