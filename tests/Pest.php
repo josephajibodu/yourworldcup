@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Fixture;
+use App\Models\FixtureMarket;
+use App\Models\PredictionMarket;
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +49,33 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function finalFixtureWithMarkets(int $home, int $away): array
 {
-    // ..
+    $kickoff = now()->subHours(3);
+
+    $fixture = Fixture::factory()->final($home, $away)->create([
+        'home_team_id' => Team::factory()->create()->id,
+        'away_team_id' => Team::factory()->create()->id,
+        'kickoff_at' => $kickoff,
+        'lock_at' => $kickoff->copy()->subHour(),
+    ]);
+
+    $winner = FixtureMarket::factory()->create([
+        'fixture_id' => $fixture->id,
+        'prediction_market_id' => PredictionMarket::factory()->matchWinner()->create()->id,
+    ]);
+
+    $score = FixtureMarket::factory()->create([
+        'fixture_id' => $fixture->id,
+        'prediction_market_id' => PredictionMarket::factory()->exactScore()->create()->id,
+    ]);
+
+    return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];
+}
+
+function siteAdmin(): User
+{
+    return User::factory()->create([
+        'email' => config('app.admin_email'),
+    ]);
 }

@@ -23,18 +23,18 @@ export default function TwoFactorChallenge() {
     }>(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'recovery code',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                    'enter one of your emergency recovery codes to continue',
+                toggleText: 'use an authentication code instead',
             };
         }
 
         return {
-            title: 'Authentication code',
+            title: 'authentication code',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+                'enter the six-digit code from your authenticator app',
+            toggleText: 'use a recovery code instead',
         };
     }, [showRecoveryInput]);
 
@@ -51,7 +51,7 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor authentication" />
+            <Head title="two-factor authentication" />
 
             <div className="space-y-6">
                 <Form
@@ -67,7 +67,7 @@ export default function TwoFactorChallenge() {
                                     <Input
                                         name="recovery_code"
                                         type="text"
-                                        placeholder="Enter recovery code"
+                                        placeholder="recovery code"
                                         autoFocus={showRecoveryInput}
                                         required
                                     />
@@ -106,17 +106,19 @@ export default function TwoFactorChallenge() {
 
                             <Button
                                 type="submit"
-                                className="w-full"
+                                variant="ink"
+                                size="lg"
+                                className="w-full rounded-full"
                                 disabled={processing}
                             >
-                                Continue
+                                continue
                             </Button>
 
                             <div className="text-center text-sm text-muted-foreground">
-                                <span>or you can </span>
+                                <span>or </span>
                                 <button
                                     type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    className="cursor-pointer font-semibold text-wc-ink underline decoration-wc-ink/20 underline-offset-4 transition-colors hover:text-wc-gold-deep hover:decoration-wc-gold/40"
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }

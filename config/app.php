@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Site Admin
+    |--------------------------------------------------------------------------
+    |
+    | The email address that can access account settings and other admin-only
+    | areas of the product UI.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL', 'josephajibodu@gmail.com'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

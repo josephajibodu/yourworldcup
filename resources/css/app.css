@@ -12,6 +12,13 @@
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-display:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+    --font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo,
+        Consolas, 'Liberation Mono', monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -59,77 +66,120 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* yourworldcup brand tokens (fixed palette) — bg-wc-ink, text-wc-gold, etc. */
+    --color-wc-ink: oklch(0.1452 0.0021 286.13); /* #0A0A0B */
+    --color-wc-ink-2: oklch(0.198 0.01 285.46); /* #15151A */
+    --color-wc-ink-3: oklch(0.2423 0.0133 285.37); /* #1F1F26 */
+    --color-wc-primary: oklch(0.5856 0.2307 24.81); /* #E5132B */
+    --color-wc-primary-700: oklch(0.5169 0.2039 24.98); /* #C20E22 */
+    --color-wc-gold: oklch(0.7719 0.1531 78.54); /* #E9A721 */
+    --color-wc-gold-deep: oklch(0.527 0.1029 79.69); /* #8A6312 */
+    --color-wc-surface: oklch(0.9703 0.007 88.64); /* #F7F5F0 */
+    --color-wc-surface-2: oklch(0.9372 0.0112 89.73); /* #EDEAE2 */
+    --color-wc-white: oklch(1 0 0); /* #FFFFFF */
+    --color-wc-green: oklch(0.6343 0.1378 158.93); /* #1FA36B */
+    --color-wc-blue: oklch(0.4652 0.2039 265.89); /* #2348C9 */
+    --color-wc-magenta: oklch(0.5899 0.231 350.86); /* #D81E8E */
 }
 
+/*
+ * Fixed branded look — no user-facing light/dark toggle. :root and .dark hold
+ * identical brand values so any `dark:` token utility resolves to the same color
+ * and the appearance switch is a visual no-op. Base is the warm surface with ink
+ * text; the dark "frame" (header / sidebar / hero) is applied via the sidebar
+ * tokens and bg-wc-ink utilities, not by darkening --background.
+ */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
+
+    --background: oklch(0.9703 0.007 88.64); /* warm surface */
+    --foreground: oklch(0.1452 0.0021 286.13); /* ink */
+
+    --card: oklch(1 0 0); /* white */
+    --card-foreground: oklch(0.1452 0.0021 286.13);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.1452 0.0021 286.13);
+
+    --primary: oklch(0.5856 0.2307 24.81); /* tournament red */
+    --primary-foreground: oklch(0.985 0 0);
+
+    --secondary: oklch(0.9372 0.0112 89.73); /* surface-2 */
+    --secondary-foreground: oklch(0.1452 0.0021 286.13);
+
+    --muted: oklch(0.9372 0.0112 89.73);
+    --muted-foreground: oklch(0.5363 0.0092 106.7); /* muted ink */
+
+    --accent: oklch(0.9372 0.0112 89.73);
+    --accent-foreground: oklch(0.1452 0.0021 286.13);
+
+    --destructive: oklch(0.5169 0.2039 24.98); /* deep red */
+    --destructive-foreground: oklch(0.985 0 0);
+
+    --border: oklch(0.9 0.006 89); /* warm hairline */
+    --input: oklch(0.9 0.006 89);
+    --ring: oklch(0.1452 0.0021 286.13); /* ink focus ring */
+
+    --chart-1: oklch(0.5856 0.2307 24.81); /* red */
+    --chart-2: oklch(0.7719 0.1531 78.54); /* gold */
+    --chart-3: oklch(0.6343 0.1378 158.93); /* green */
+    --chart-4: oklch(0.4652 0.2039 265.89); /* blue */
+    --chart-5: oklch(0.5899 0.231 350.86); /* magenta */
+
+    --sidebar: oklch(0.1452 0.0021 286.13); /* ink frame */
+    --sidebar-foreground: oklch(0.9845 0.0026 106.45); /* near-white */
+    --sidebar-primary: oklch(0.5856 0.2307 24.81); /* red */
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar-accent: oklch(0.2423 0.0133 285.37); /* ink-3 hover */
+    --sidebar-accent-foreground: oklch(0.9845 0.0026 106.45);
+    --sidebar-border: oklch(0.2423 0.0133 285.37);
+    --sidebar-ring: oklch(0.5856 0.2307 24.81);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
+    --background: oklch(0.9703 0.007 88.64);
+    --foreground: oklch(0.1452 0.0021 286.13);
+
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.1452 0.0021 286.13);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.1452 0.0021 286.13);
+
+    --primary: oklch(0.5856 0.2307 24.81);
+    --primary-foreground: oklch(0.985 0 0);
+
+    --secondary: oklch(0.9372 0.0112 89.73);
+    --secondary-foreground: oklch(0.1452 0.0021 286.13);
+
+    --muted: oklch(0.9372 0.0112 89.73);
+    --muted-foreground: oklch(0.5363 0.0092 106.7);
+
+    --accent: oklch(0.9372 0.0112 89.73);
+    --accent-foreground: oklch(0.1452 0.0021 286.13);
+
+    --destructive: oklch(0.5169 0.2039 24.98);
+    --destructive-foreground: oklch(0.985 0 0);
+
+    --border: oklch(0.9 0.006 89);
+    --input: oklch(0.9 0.006 89);
+    --ring: oklch(0.1452 0.0021 286.13);
+
+    --chart-1: oklch(0.5856 0.2307 24.81);
+    --chart-2: oklch(0.7719 0.1531 78.54);
+    --chart-3: oklch(0.6343 0.1378 158.93);
+    --chart-4: oklch(0.4652 0.2039 265.89);
+    --chart-5: oklch(0.5899 0.231 350.86);
+
+    --sidebar: oklch(0.1452 0.0021 286.13);
+    --sidebar-foreground: oklch(0.9845 0.0026 106.45);
+    --sidebar-primary: oklch(0.5856 0.2307 24.81);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar-accent: oklch(0.2423 0.0133 285.37);
+    --sidebar-accent-foreground: oklch(0.9845 0.0026 106.45);
+    --sidebar-border: oklch(0.2423 0.0133 285.37);
+    --sidebar-ring: oklch(0.5856 0.2307 24.81);
 }
 
 @layer base {
@@ -139,5 +189,10 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /* Tabular figures everywhere the mono face is used — scores, ranks, countdowns. */
+    .font-mono {
+        font-variant-numeric: tabular-nums;
     }
 }

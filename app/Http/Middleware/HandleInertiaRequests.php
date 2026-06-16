@@ -40,8 +40,13 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                'isAdmin' => $request->user()?->isSiteAdmin() ?? false,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'turnstile' => [
+                'enabled' => (bool) config('turnstile.enabled'),
+                'siteKey' => config('turnstile.site_key'),
+            ],
         ];
     }
 }
