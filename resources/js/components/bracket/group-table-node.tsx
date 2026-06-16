@@ -6,10 +6,17 @@ import type { GroupNodeData } from './types';
 type GroupNode = Node<GroupNodeData, 'group'>;
 
 export function GroupTableNode({ data }: NodeProps<GroupNode>) {
-    const { group } = data;
+    const { group, active } = data;
 
     return (
-        <div className="w-[260px] overflow-hidden rounded-lg border border-wc-ink-3 bg-card text-card-foreground shadow-sm">
+        <div
+            className={cn(
+                'w-[260px] overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm',
+                active
+                    ? 'border-wc-gold ring-2 ring-wc-gold/35 shadow-md'
+                    : 'border-wc-ink/10',
+            )}
+        >
             <div className="flex items-center justify-between bg-wc-ink px-3 py-2 text-wc-surface">
                 <span className="font-display text-sm tracking-wider uppercase">
                     Group {group.code}

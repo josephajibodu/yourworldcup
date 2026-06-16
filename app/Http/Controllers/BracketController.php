@@ -17,7 +17,47 @@ class BracketController extends Controller
         return Inertia::render('bracket', [
             'groups' => $this->groups(),
             'knockout' => $this->knockout(),
+            'focusNodeId' => $this->focusNodeId(),
         ]);
+    }
+
+    /**
+     * React Flow node id for the next open match day — a group table during
+     * the group stage, or a knockout match node once the tournament advances.
+     */
+    private function focusNodeId(): ?string
+    {
+        $fixture = Fixture::query()
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
+            ->where('lock_at', '>', now())
+            ->orderBy('kickoff_at')
+            ->with(['homeTeam', 'awayTeam'])
+            ->first();
+
+        if ($fixture === null) {
+            $fixture = Fixture::query()
+                ->whereNotNull('home_team_id')
+                ->whereNotNull('away_team_id')
+                ->orderByDesc('kickoff_at')
+                ->with(['homeTeam', 'awayTeam'])
+                ->first();
+        }
+
+        if ($fixture === null) {
+            return null;
+        }
+
+        if ($fixture->stage === FixtureStage::Group) {
+            $groupCode = $fixture->homeTeam?->group_code
+                ?? $fixture->awayTeam?->group_code;
+
+            return $groupCode !== null ? "g{$groupCode}" : null;
+        }
+
+        return $fixture->external_id !== null
+            ? 'm'.(int) $fixture->external_id
+            : null;
     }
 
     /**

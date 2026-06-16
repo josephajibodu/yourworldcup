@@ -1,6 +1,5 @@
-import { Handle,   Position } from '@xyflow/react';
-import type {Node, NodeProps} from '@xyflow/react';
-import { Trophy } from 'lucide-react';
+import { Handle, Position } from '@xyflow/react';
+import type { Node, NodeProps } from '@xyflow/react';
 import type { TrophyNodeData } from './types';
 
 type TrophyNode = Node<TrophyNodeData, 'trophy'>;
@@ -17,7 +16,11 @@ export function TrophyNode({ data }: NodeProps<TrophyNode>) {
                 className="grid size-14 place-items-center rounded-full bg-wc-gold text-wc-ink"
                 style={{ boxShadow: '0 0 28px rgba(233,167,33,0.55)' }}
             >
-                <Trophy className="size-7" />
+                <img
+                    src="/images/world-cup-icon.png"
+                    alt=""
+                    className="size-9 object-contain"
+                />
             </span>
             <span className="font-display text-base tracking-wider text-wc-gold uppercase">
                 {data.label}

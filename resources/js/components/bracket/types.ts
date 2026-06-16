@@ -45,11 +45,13 @@ export interface KnockoutMatch {
 export interface GroupNodeData {
     [key: string]: unknown;
     group: GroupTable;
+    active?: boolean;
 }
 
 export interface MatchNodeData {
     [key: string]: unknown;
     match: KnockoutMatch;
+    active?: boolean;
 }
 
 export interface TrophyNodeData {

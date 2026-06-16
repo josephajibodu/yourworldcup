@@ -43,7 +43,7 @@ function SlotRow({ slot, divider }: { slot: Slot; divider: boolean }) {
 }
 
 export function MatchNode({ data }: NodeProps<MatchNode>) {
-    const { match } = data;
+    const { match, active } = data;
     const kickoff = new Date(match.kickoffAt);
     const date = kickoff.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -51,7 +51,14 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
     });
 
     return (
-        <div className="w-[208px] overflow-hidden rounded-lg border border-wc-ink-3 bg-card text-card-foreground shadow-sm">
+        <div
+            className={cn(
+                'w-[208px] overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm',
+                active
+                    ? 'border-wc-gold ring-2 ring-wc-gold/35 shadow-md'
+                    : 'border-wc-ink/10',
+            )}
+        >
             <Handle
                 type="target"
                 position={Position.Left}

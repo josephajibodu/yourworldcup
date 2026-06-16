@@ -1,5 +1,8 @@
 <?php
 
+use App\Enums\FixtureStage;
+use App\Models\Fixture;
+use App\Models\Team;
 use App\Predictions\Importing\WorldCupImporter;
 use Database\Seeders\PredictionMarketSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -12,7 +15,10 @@ beforeEach(function () {
 it('renders the bracket page publicly', function () {
     $this->get(route('bracket'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('bracket'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('bracket')
+            ->has('focusNodeId')
+        );
 });
 
 it('passes the twelve group tables with four teams each', function () {
@@ -49,5 +55,32 @@ it('resolves feeder labels for later rounds and the final feeds the trophy', fun
         ->where('knockout.31.feeders', [101, 102])
         ->where('knockout.31.home.label', 'W101')
         ->where('knockout.31.away.label', 'W102')
+    );
+});
+
+it('focuses the bracket on the next open group or match', function () {
+    Fixture::query()->update(['lock_at' => now()->subHour()]);
+
+    $home = Team::query()->where('group_code', 'H')->orderBy('id')->first();
+    $away = Team::query()
+        ->where('group_code', 'H')
+        ->where('id', '!=', $home->id)
+        ->orderBy('id')
+        ->first();
+
+    $kickoff = now()->addDay();
+
+    Fixture::factory()->create([
+        'external_id' => '999',
+        'stage' => FixtureStage::Group,
+        'group_code' => 'H',
+        'home_team_id' => $home->id,
+        'away_team_id' => $away->id,
+        'kickoff_at' => $kickoff,
+        'lock_at' => $kickoff->copy()->subHour(),
+    ]);
+
+    $this->get(route('bracket'))->assertInertia(fn (Assert $page) => $page
+        ->where('focusNodeId', 'gH')
     );
 });
