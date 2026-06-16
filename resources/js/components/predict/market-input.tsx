@@ -174,7 +174,7 @@ function ScoreField({
             disabled={disabled}
             value={value}
             onChange={(event) => onChange(event.target.value)}
-            className="h-11 w-14 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-primary focus-visible:ring-2 focus-visible:ring-wc-primary/30 disabled:opacity-60"
+            className="h-11 w-14 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-ink focus-visible:ring-2 focus-visible:ring-wc-ink/25 disabled:opacity-60"
         />
     );
 }
@@ -201,7 +201,7 @@ function IntegerInput({
                             : Math.max(0, Number(event.target.value)),
                 })
             }
-            className="h-11 w-20 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-primary focus-visible:ring-2 focus-visible:ring-wc-primary/30 disabled:opacity-60"
+            className="h-11 w-20 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-ink focus-visible:ring-2 focus-visible:ring-wc-ink/25 disabled:opacity-60"
         />
     );
 }

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import AppLogoIcon from '@/components/app-logo-icon';
+import { SiteHeader } from '@/components/site-header';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -9,26 +9,27 @@ export default function AuthSimpleLayout({
     description,
 }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
+        <div className="flex min-h-screen flex-col bg-wc-surface font-sans text-wc-ink">
+            <SiteHeader />
+
+            <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 md:py-14">
+                <div className="w-full max-w-md rounded-2xl border border-wc-ink/10 bg-white/92 p-6 shadow-sm md:p-8">
+                    <div className="mb-8">
                         <Link
                             href={home()}
-                            className="flex flex-col items-center gap-2 font-medium"
+                            className="mb-6 inline-flex items-center gap-2 font-display text-sm tracking-[0.22em] text-wc-ink/55 transition-colors hover:text-wc-ink"
                         >
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
+                            YOURWORLD
+                            <span className="text-wc-gold">CUP</span>
                         </Link>
-
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-center text-sm text-muted-foreground">
+                        <h1 className="text-3xl font-bold tracking-tight text-balance">
+                            {title}
+                        </h1>
+                        {description ? (
+                            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                                 {description}
                             </p>
-                        </div>
+                        ) : null}
                     </div>
                     {children}
                 </div>

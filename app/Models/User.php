@@ -56,4 +56,9 @@ class User extends Authenticatable implements PasskeyUser
     {
         return $this->hasMany(Prediction::class);
     }
+
+    public function isSiteAdmin(): bool
+    {
+        return $this->email === config('app.admin_email');
+    }
 }

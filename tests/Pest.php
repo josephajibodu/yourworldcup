@@ -4,6 +4,7 @@ use App\Models\Fixture;
 use App\Models\FixtureMarket;
 use App\Models\PredictionMarket;
 use App\Models\Team;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -48,12 +49,6 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-/**
- * A finished fixture (kicked off three hours ago) carrying a winner and an
- * exact-score market, ready to settle.
- *
- * @return array{fixture: Fixture, winner: FixtureMarket, score: FixtureMarket}
- */
 function finalFixtureWithMarkets(int $home, int $away): array
 {
     $kickoff = now()->subHours(3);
@@ -76,4 +71,11 @@ function finalFixtureWithMarkets(int $home, int $away): array
     ]);
 
     return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];
+}
+
+function siteAdmin(): User
+{
+    return User::factory()->create([
+        'email' => config('app.admin_email'),
+    ]);
 }

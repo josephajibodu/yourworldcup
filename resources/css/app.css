@@ -119,7 +119,7 @@
 
     --border: oklch(0.9 0.006 89); /* warm hairline */
     --input: oklch(0.9 0.006 89);
-    --ring: oklch(0.5856 0.2307 24.81); /* red focus ring */
+    --ring: oklch(0.1452 0.0021 286.13); /* ink focus ring */
 
     --chart-1: oklch(0.5856 0.2307 24.81); /* red */
     --chart-2: oklch(0.7719 0.1531 78.54); /* gold */
@@ -164,7 +164,7 @@
 
     --border: oklch(0.9 0.006 89);
     --input: oklch(0.9 0.006 89);
-    --ring: oklch(0.5856 0.2307 24.81);
+    --ring: oklch(0.1452 0.0021 286.13);
 
     --chart-1: oklch(0.5856 0.2307 24.81);
     --chart-2: oklch(0.7719 0.1531 78.54);
