@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Predictions\Scoring\ScorerRegistry;
+use App\Predictions\Settlement\SettlerRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,16 @@ class AppServiceProvider extends ServiceProvider
 
             foreach (config('predictions.scorers', []) as $key => $scorerClass) {
                 $registry->register($key, $app->make($scorerClass));
+            }
+
+            return $registry;
+        });
+
+        $this->app->singleton(SettlerRegistry::class, function ($app): SettlerRegistry {
+            $registry = new SettlerRegistry;
+
+            foreach (config('predictions.settlers', []) as $key => $settlerClass) {
+                $registry->register($key, $app->make($settlerClass));
             }
 
             return $registry;

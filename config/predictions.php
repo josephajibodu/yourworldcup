@@ -2,6 +2,8 @@
 
 use App\Predictions\Scoring\ExactScoreScorer;
 use App\Predictions\Scoring\MatchWinnerScorer;
+use App\Predictions\Settlement\ExactScoreSettler;
+use App\Predictions\Settlement\MatchWinnerSettler;
 
 return [
     /*
@@ -18,6 +20,23 @@ return [
     'scorers' => [
         'match_winner' => MatchWinnerScorer::class,
         'exact_score' => ExactScoreScorer::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Market settlers
+    |--------------------------------------------------------------------------
+    |
+    | Maps a prediction_markets.scorer key to the class that derives that
+    | market's settlement_value from a finished fixture (the scorer/settler
+    | pair share a key). A market with no settler here is settled manually by
+    | an admin. Adding an auto-settleable market means one settler class and
+    | one entry — the scoring engine is untouched.
+    |
+    */
+    'settlers' => [
+        'match_winner' => MatchWinnerSettler::class,
+        'exact_score' => ExactScoreSettler::class,
     ],
 
     /*

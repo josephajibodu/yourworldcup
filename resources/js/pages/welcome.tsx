@@ -2,7 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, Gift, Network, Target, Trophy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { bracket, dashboard, login, register } from '@/routes';
+import { bracket, dashboard, leaderboard, login, register } from '@/routes';
 
 const features = [
     {
@@ -47,7 +47,9 @@ export default function Welcome() {
                                 Bracket
                             </Link>
                             <span className="cursor-default">Predict</span>
-                            <span className="cursor-default">Leaderboard</span>
+                            <Link href={leaderboard()} className="transition-colors hover:text-wc-surface">
+                                Leaderboard
+                            </Link>
                             <span className="cursor-default text-wc-surface/45">How it works</span>
                         </div>
                         <div className="flex items-center gap-2">
