@@ -5,13 +5,17 @@ namespace App\Predictions\Submission;
 use App\Models\FixtureMarket;
 use App\Models\Prediction;
 use App\Models\User;
+use App\Referrals\ReferralService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PredictionService
 {
-    public function __construct(private MarketValueValidator $validator) {}
+    public function __construct(
+        private MarketValueValidator $validator,
+        private ReferralService $referrals,
+    ) {}
 
     /**
      * Persist a user's picks for a single WAT day.
@@ -54,6 +58,8 @@ class PredictionService
 
             $this->reconcileBanker($user, $bankerFixtureMarketId, $start, $end);
         });
+
+        $this->referrals->attemptCreditPendingForReferrer($user);
     }
 
     /**

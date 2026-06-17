@@ -79,3 +79,32 @@ function siteAdmin(): User
         'email' => config('app.admin_email'),
     ]);
 }
+
+/**
+ * A group fixture two days out (open) with a winner + exact-score market.
+ *
+ * @return array{fixture: Fixture, winner: FixtureMarket, score: FixtureMarket}
+ */
+function predictableFixture(): array
+{
+    $kickoff = now()->addDays(2)->setTime(18, 0);
+
+    $fixture = Fixture::factory()->create([
+        'home_team_id' => Team::factory()->create(['name' => 'Mexico'])->id,
+        'away_team_id' => Team::factory()->create(['name' => 'Spain'])->id,
+        'kickoff_at' => $kickoff,
+        'lock_at' => $kickoff->copy()->subHour(),
+    ]);
+
+    $winner = FixtureMarket::factory()->create([
+        'fixture_id' => $fixture->id,
+        'prediction_market_id' => PredictionMarket::factory()->matchWinner()->create()->id,
+    ]);
+
+    $score = FixtureMarket::factory()->create([
+        'fixture_id' => $fixture->id,
+        'prediction_market_id' => PredictionMarket::factory()->exactScore()->create()->id,
+    ]);
+
+    return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];
+}

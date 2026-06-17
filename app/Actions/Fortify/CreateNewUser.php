@@ -24,10 +24,29 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        if ($referrerId = $this->resolveReferrerId()) {
+            $user->forceFill(['referred_by_id' => $referrerId])->save();
+        }
+
+        return $user;
+    }
+
+    private function resolveReferrerId(): ?int
+    {
+        $code = session()->pull('referral_code');
+
+        if (! is_string($code) || $code === '') {
+            return null;
+        }
+
+        $referrer = User::query()->where('referral_code', $code)->first();
+
+        return $referrer?->id;
     }
 }

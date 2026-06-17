@@ -11,12 +11,13 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { bracket, home, leaderboard, login, predict, register } from '@/routes';
+import { bracket, home, leaderboard, login, predict, referrals, register } from '@/routes';
 
 const navItems = [
     { title: 'Bracket', href: bracket() },
     { title: 'Predict', href: predict() },
     { title: 'Leaderboard', href: leaderboard() },
+    { title: 'Referrals', href: referrals() },
 ];
 
 function NavLinks({ className }: { className?: string }) {
