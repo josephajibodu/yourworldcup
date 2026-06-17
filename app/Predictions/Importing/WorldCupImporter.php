@@ -2,6 +2,7 @@
 
 namespace App\Predictions\Importing;
 
+use App\Bracket\BracketSlotImporter;
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
 use App\Models\Fixture;
@@ -71,6 +72,7 @@ class WorldCupImporter
         $this->importTeams();
         $this->importFixtures();
         $this->attachEnabledMarkets();
+        BracketSlotImporter::fromDefaultPath()->import();
     }
 
     public function importStadiums(): void

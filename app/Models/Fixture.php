@@ -82,6 +82,14 @@ class Fixture extends Model
     }
 
     /**
+     * @return HasMany<BracketSlot, $this>
+     */
+    public function bracketSlots(): HasMany
+    {
+        return $this->hasMany(BracketSlot::class, 'feeds_fixture_id');
+    }
+
+    /**
      * @return BelongsTo<Stadium, $this>
      */
     public function stadium(): BelongsTo

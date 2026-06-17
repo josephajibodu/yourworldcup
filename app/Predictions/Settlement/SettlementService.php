@@ -4,6 +4,7 @@ namespace App\Predictions\Settlement;
 
 use App\Enums\FixtureStatus;
 use App\Enums\MarketStatus;
+use App\Jobs\ResolveBracketSlots;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
 use App\Models\Prediction;
@@ -39,15 +40,19 @@ class SettlementService
             ->with(['market', 'predictions'])
             ->get();
 
-        return DB::transaction(function () use ($fixture, $markets): int {
-            $scored = 0;
+        $scored = DB::transaction(function () use ($fixture, $markets): int {
+            $count = 0;
 
             foreach ($markets as $market) {
-                $scored += $this->settleMarket($fixture, $market);
+                $count += $this->settleMarket($fixture, $market);
             }
 
-            return $scored;
+            return $count;
         });
+
+        ResolveBracketSlots::dispatch($fixture->id);
+
+        return $scored;
     }
 
     private function settleMarket(Fixture $fixture, FixtureMarket $market): int

@@ -10,9 +10,10 @@ return [
     | [home feeder id, away feeder id]. Winners advance to the Final (104); the two
     | semi-final losers meet in the third-place play-off (103).
     |
-    | Round-of-32 entry slots (73–88) come from group positions (1A, 2B, best thirds).
-    | The data export ships knockout teams as "0" with no seeding map, so those slots
-    | render as TBD until the official group->R32 assignment is provided. The R16 pairs
+    | Round-of-32 entry slots (73–88) are imported into `bracket_slots` from the
+    | match labels in `database/data/football.matches.json` (1A, 2B, 3rd D/E/I/J/L, …).
+    | `BracketResolverService` fills them after group or knockout results land.
+    | Swap `BestThirdQualifier` in the container for FIFA-accurate third-place ranking.
     | for matches 89–92 are a best-effort placeholder — verify against the official
     | bracket before launch.
     |

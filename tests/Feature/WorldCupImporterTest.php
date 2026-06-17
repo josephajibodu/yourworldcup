@@ -36,7 +36,8 @@ it('imports knockout fixtures with unresolved teams and no group', function () {
     expect($roundOf32->stage->value)->toBe('r32')
         ->and($roundOf32->home_team_id)->toBeNull()
         ->and($roundOf32->away_team_id)->toBeNull()
-        ->and($roundOf32->group_code)->toBeNull();
+        ->and($roundOf32->group_code)->toBeNull()
+        ->and($roundOf32->bracketSlots)->toHaveCount(2);
 });
 
 it('attaches every enabled market to every fixture', function () {

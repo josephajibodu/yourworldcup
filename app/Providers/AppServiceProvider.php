@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Bracket\Contracts\BestThirdQualifier;
+use App\Bracket\PointsBestThirdQualifier;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\PasskeyLoginResponse;
 use App\Http\Responses\RedirectAsIntended as AppRedirectAsIntended;
@@ -50,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(FortifyRedirectAsIntended::class, fn ($app, array $params) => new AppRedirectAsIntended($params['name'] ?? 'login'));
+        $this->app->bind(BestThirdQualifier::class, PointsBestThirdQualifier::class);
     }
 
     /**
