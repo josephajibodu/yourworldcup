@@ -39,6 +39,55 @@ php artisan worldcup:import
 
 Run this after refreshing tournament JSON, and on first deploy.
 
+## Recording match results
+
+### `php artisan fixture:result`
+
+Sets final scores on fixtures by tournament match id (`external_id`, e.g. `73` for M73). Marks the fixture `final`, stores `home_score` / `away_score`, and sets `winner_team_id` when both teams are known and the match is not a draw.
+
+**Single match (interactive):**
+
+```bash
+php artisan fixture:result 73
+```
+
+You will be prompted for home and away scores. The command prints the matchup before asking.
+
+**Bulk JSON:**
+
+```bash
+php artisan fixture:result --json='[
+  {"id": 1, "home": 2, "away": 1},
+  {"id": 2, "home_score": 0, "away_score": 0},
+  {"id": 73, "home": 1, "away": 1}
+]'
+```
+
+Each object needs:
+
+| Field | Required | Notes |
+|-------|----------|--------|
+| `id` | yes | Match external id (string or number) |
+| `home` / `home_score` | yes | Home goals (0–30) |
+| `away` / `away_score` | yes | Away goals (0–30) |
+
+**Bulk file:**
+
+```bash
+php artisan fixture:result --file=storage/app/results.json
+```
+
+The file uses the same JSON array format as `--json`.
+
+**Settle after recording:**
+
+```bash
+php artisan fixture:result 73 --settle
+php artisan fixture:result --json='[...]' --settle
+```
+
+`--settle` runs `predictions:settle` when finished, which scores predictions and queues bracket resolution.
+
 ## Predictions & scoring
 
 ### `php artisan predictions:settle`
@@ -53,9 +102,8 @@ php artisan predictions:settle
 
 Typical flow during the tournament:
 
-1. Update `database/data/football.matches.json` with final scores (`finished: TRUE`, scores set).
-2. `php artisan worldcup:import` (or rely on your own result-ingestion path if you add one later).
-3. `php artisan predictions:settle`.
+1. Record results with `fixture:result` (interactive or bulk JSON), **or** update `database/data/football.matches.json` and run `worldcup:import`.
+2. `php artisan predictions:settle` (or pass `--settle` on `fixture:result`).
 
 ## Bracket resolution
 

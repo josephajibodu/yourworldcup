@@ -120,3 +120,45 @@ it('rejects a banker on a pick the user did not make', function () {
         'banker_fixture_market_id' => $score->id,
     ])->assertSessionHasErrors('banker');
 });
+
+it('does not list match days beyond tomorrow in wat', function () {
+    ['fixture' => $nearFixture] = predictableFixture(daysFromToday: 1);
+    ['fixture' => $farFixture] = predictableFixture(daysFromToday: 3);
+
+    actingAs(User::factory()->create())
+        ->get(route('predict'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('predict')
+            ->where('dates', fn ($dates) => in_array($nearFixture->watDate(), collect($dates)->all(), true)
+                && ! in_array($farFixture->watDate(), collect($dates)->all(), true))
+        );
+});
+
+it('falls back when requesting a match day that is not visible yet', function () {
+    ['fixture' => $farFixture] = predictableFixture(daysFromToday: 5);
+    ['fixture' => $nearFixture] = predictableFixture(daysFromToday: 1);
+
+    actingAs(User::factory()->create())
+        ->get(route('predict', ['date' => $farFixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('predict')
+            ->where('selectedDate', $nearFixture->watDate())
+            ->has('fixtures', 1)
+        );
+});
+
+it('rejects predictions for a match day that is not visible yet', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture(daysFromToday: 4);
+
+    actingAs(User::factory()->create())->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+        ],
+        'banker_fixture_market_id' => null,
+    ])->assertSessionHasErrors('date');
+
+    expect(Prediction::count())->toBe(0);
+});

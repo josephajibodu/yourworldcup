@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Predictions\Submission\PredictionVisibility;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitPredictionsRequest extends FormRequest
@@ -17,7 +18,7 @@ class SubmitPredictionsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['required', 'date_format:Y-m-d'],
+            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.app(PredictionVisibility::class)->latestVisibleDate()],
             'predictions' => ['present', 'array'],
             'predictions.*.fixture_market_id' => ['required', 'integer', 'exists:fixture_markets,id'],
             'predictions.*.value' => ['required', 'array'],

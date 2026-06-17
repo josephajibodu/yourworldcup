@@ -8,6 +8,7 @@ use App\Models\FixtureMarket;
 use App\Models\Prediction;
 use App\Models\Team;
 use App\Predictions\Submission\PredictionService;
+use App\Predictions\Submission\PredictionVisibility;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,9 +18,9 @@ use Inertia\Response;
 
 class PredictController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, PredictionVisibility $visibility): Response
     {
-        $dates = $this->predictableDates();
+        $dates = $this->predictableDates($visibility);
         $selected = $this->selectedDate($request->query('date'), $dates);
 
         return Inertia::render('predict', [
@@ -47,9 +48,9 @@ class PredictController extends Controller
      *
      * @return array<int, string>
      */
-    private function predictableDates(): array
+    private function predictableDates(PredictionVisibility $visibility): array
     {
-        return Fixture::query()
+        $dates = Fixture::query()
             ->whereNotNull('home_team_id')
             ->whereNotNull('away_team_id')
             ->orderBy('kickoff_at')
@@ -58,6 +59,8 @@ class PredictController extends Controller
             ->unique()
             ->values()
             ->all();
+
+        return $visibility->filterVisibleDates($dates);
     }
 
     /**
@@ -74,7 +77,8 @@ class PredictController extends Controller
             ->whereNotNull('away_team_id')
             ->where('lock_at', '>', now())
             ->orderBy('kickoff_at')
-            ->first();
+            ->get()
+            ->first(fn (Fixture $fixture): bool => in_array($fixture->watDate(), $dates, true));
 
         if ($next !== null) {
             return $next->watDate();

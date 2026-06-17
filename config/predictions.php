@@ -44,4 +44,10 @@ return [
     | in this timezone (West Africa Time) regardless of where kickoffs fall.
     */
     'timezone' => 'Africa/Lagos',
+
+    /*
+    | How many calendar days ahead of today (in the timezone above) users may
+    | browse and submit predictions. 1 means today and tomorrow only.
+    */
+    'visible_days_ahead' => 1,
 ];

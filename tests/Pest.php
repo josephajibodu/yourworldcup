@@ -6,6 +6,7 @@ use App\Models\PredictionMarket;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /*
@@ -49,6 +50,17 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+function predictionMarkets(): array
+{
+    $matchWinner = PredictionMarket::query()->firstWhere('key', 'match_winner')
+        ?? PredictionMarket::factory()->matchWinner()->create();
+
+    $exactScore = PredictionMarket::query()->firstWhere('key', 'exact_score')
+        ?? PredictionMarket::factory()->exactScore()->create();
+
+    return ['matchWinner' => $matchWinner, 'exactScore' => $exactScore];
+}
+
 function finalFixtureWithMarkets(int $home, int $away): array
 {
     $kickoff = now()->subHours(3);
@@ -60,14 +72,16 @@ function finalFixtureWithMarkets(int $home, int $away): array
         'lock_at' => $kickoff->copy()->subHour(),
     ]);
 
+    ['matchWinner' => $matchWinner, 'exactScore' => $exactScore] = predictionMarkets();
+
     $winner = FixtureMarket::factory()->create([
         'fixture_id' => $fixture->id,
-        'prediction_market_id' => PredictionMarket::factory()->matchWinner()->create()->id,
+        'prediction_market_id' => $matchWinner->id,
     ]);
 
     $score = FixtureMarket::factory()->create([
         'fixture_id' => $fixture->id,
-        'prediction_market_id' => PredictionMarket::factory()->exactScore()->create()->id,
+        'prediction_market_id' => $exactScore->id,
     ]);
 
     return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];
@@ -81,13 +95,17 @@ function siteAdmin(): User
 }
 
 /**
- * A group fixture two days out (open) with a winner + exact-score market.
+ * An open fixture with winner + exact-score markets on a WAT day relative to today.
  *
  * @return array{fixture: Fixture, winner: FixtureMarket, score: FixtureMarket}
  */
-function predictableFixture(): array
+function predictableFixture(int $daysFromToday = 1): array
 {
-    $kickoff = now()->addDays(2)->setTime(18, 0);
+    $kickoff = Carbon::now(config('predictions.timezone'))
+        ->startOfDay()
+        ->addDays($daysFromToday)
+        ->setTime(18, 0)
+        ->utc();
 
     $fixture = Fixture::factory()->create([
         'home_team_id' => Team::factory()->create(['name' => 'Mexico'])->id,
@@ -96,14 +114,16 @@ function predictableFixture(): array
         'lock_at' => $kickoff->copy()->subHour(),
     ]);
 
+    ['matchWinner' => $matchWinner, 'exactScore' => $exactScore] = predictionMarkets();
+
     $winner = FixtureMarket::factory()->create([
         'fixture_id' => $fixture->id,
-        'prediction_market_id' => PredictionMarket::factory()->matchWinner()->create()->id,
+        'prediction_market_id' => $matchWinner->id,
     ]);
 
     $score = FixtureMarket::factory()->create([
         'fixture_id' => $fixture->id,
-        'prediction_market_id' => PredictionMarket::factory()->exactScore()->create()->id,
+        'prediction_market_id' => $exactScore->id,
     ]);
 
     return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];

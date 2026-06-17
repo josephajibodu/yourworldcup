@@ -15,6 +15,7 @@ class PredictionService
     public function __construct(
         private MarketValueValidator $validator,
         private ReferralService $referrals,
+        private PredictionVisibility $visibility,
     ) {}
 
     /**
@@ -27,6 +28,10 @@ class PredictionService
      */
     public function submitDay(User $user, string $watDate, array $entries, ?int $bankerFixtureMarketId): void
     {
+        if (! $this->visibility->isDateVisible($watDate)) {
+            $this->fail('Predictions for that day are not open yet.');
+        }
+
         [$start, $end] = $this->watDayWindow($watDate);
 
         $marketIds = array_map(static fn (array $entry): int => $entry['fixture_market_id'], $entries);
