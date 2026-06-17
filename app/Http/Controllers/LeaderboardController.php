@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Fixture;
 use App\Predictions\Leaderboard\LeaderboardService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +11,7 @@ class LeaderboardController extends Controller
 {
     public function index(Request $request, LeaderboardService $leaderboard): Response
     {
-        $dates = $this->scoredDates();
+        $dates = $leaderboard->dailyDates();
         $selected = $this->selectedDate($request->query('date'), $dates);
 
         return Inertia::render('leaderboard', [
@@ -21,23 +20,6 @@ class LeaderboardController extends Controller
             'selectedDate' => $selected,
             'daily' => $selected === null ? [] : $leaderboard->daily($selected),
         ]);
-    }
-
-    /**
-     * WAT match days that already have scored predictions, chronologically.
-     *
-     * @return array<int, string>
-     */
-    private function scoredDates(): array
-    {
-        return Fixture::query()
-            ->whereHas('markets.predictions', fn ($query) => $query->whereNotNull('points_awarded'))
-            ->orderBy('kickoff_at')
-            ->get(['kickoff_at'])
-            ->map(fn (Fixture $fixture): string => $fixture->watDate())
-            ->unique()
-            ->values()
-            ->all();
     }
 
     /**

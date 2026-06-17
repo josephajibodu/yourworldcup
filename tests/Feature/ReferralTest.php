@@ -163,6 +163,11 @@ it('adds referral points to the overall leaderboard', function () {
     $referrer = User::factory()->create(['name' => 'Referrer']);
     $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
 
+    Prediction::factory()->for($referrer)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'away'],
+    ]);
+
     Referral::factory()->create([
         'referrer_id' => $referrer->id,
         'referred_id' => $referred->id,
@@ -181,8 +186,8 @@ it('adds referral points to the overall leaderboard', function () {
     $overall = app(LeaderboardService::class)->overall();
 
     expect($overall)->toHaveCount(2)
-        ->and($overall->first())->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 1])
-        ->and($overall->last())->toMatchArray(['name' => 'Referrer', 'points' => 1, 'rank' => 2]);
+        ->and($overall->first())->toMatchArray(['name' => 'Referrer', 'points' => 1, 'rank' => 1])
+        ->and($overall->last())->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 2]);
 });
 
 it('adds referral points to the daily leaderboard for the credit day', function () {

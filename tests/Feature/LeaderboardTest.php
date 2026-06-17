@@ -10,6 +10,7 @@ it('ranks users by total points overall', function () {
     ['fixture' => $fixture, 'winner' => $winner, 'score' => $score] = finalFixtureWithMarkets(2, 1);
     $ada = User::factory()->create(['name' => 'Ada']);
     $bee = User::factory()->create(['name' => 'Bee']);
+    User::factory()->create(['name' => 'Cara']);
 
     Prediction::factory()->for($ada)->create([
         'fixture_market_id' => $winner->id,
@@ -25,8 +26,29 @@ it('ranks users by total points overall', function () {
     $overall = app(LeaderboardService::class)->overall();
 
     expect($overall)->toHaveCount(2)
-        ->and($overall->first())->toMatchArray(['name' => 'Bee', 'points' => 3, 'rank' => 1])
-        ->and($overall->last())->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 2]);
+        ->and($overall[0])->toMatchArray(['name' => 'Bee', 'points' => 3, 'rank' => 1])
+        ->and($overall[1])->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 2]);
+});
+
+it('does not list registered users without predictions on the overall board', function () {
+    User::factory()->create(['name' => 'New Player']);
+
+    expect(app(LeaderboardService::class)->overall())->toHaveCount(0);
+});
+
+it('lists predictors on the overall board before their picks are scored', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
+    $user = User::factory()->create(['name' => 'Early Bird']);
+
+    Prediction::factory()->for($user)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'home'],
+    ]);
+
+    $overall = app(LeaderboardService::class)->overall();
+
+    expect($overall)->toHaveCount(1)
+        ->and($overall->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
 });
 
 it('scopes the daily board to the match day', function () {
@@ -44,6 +66,21 @@ it('scopes the daily board to the match day', function () {
 
     expect($service->daily($watDate))->toHaveCount(1)
         ->and($service->daily('2026-01-01'))->toHaveCount(0);
+});
+
+it('lists daily participants who predicted before results are scored', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
+    $user = User::factory()->create(['name' => 'Early Bird']);
+
+    Prediction::factory()->for($user)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'home'],
+    ]);
+
+    $daily = app(LeaderboardService::class)->daily($fixture->watDate());
+
+    expect($daily)->toHaveCount(1)
+        ->and($daily->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
 });
 
 it('renders the leaderboard page publicly with both boards', function () {

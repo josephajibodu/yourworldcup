@@ -103,7 +103,7 @@ export default function Leaderboard() {
                             <StandingsTable
                                 rows={overall}
                                 currentUserId={currentUserId}
-                                emptyMessage="No points yet — standings fill in as matches are scored."
+                                emptyMessage="No predictors yet — make your first pick to join the table."
                             />
                         </div>
 
@@ -172,7 +172,7 @@ export default function Leaderboard() {
                             <StandingsTable
                                 rows={daily}
                                 currentUserId={currentUserId}
-                                emptyMessage="No scored picks for this day yet."
+                                emptyMessage="No picks or referrals on this day yet."
                             />
                         </div>
                     </div>
