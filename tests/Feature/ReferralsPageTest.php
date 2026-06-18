@@ -37,7 +37,6 @@ it('shows the users share link and stats when signed in', function () {
             ->where('share.url', route('register', ['ref' => $user->referral_code], absolute: true))
             ->where('stats.totalReferrals', 1)
             ->where('stats.totalPoints', 1)
-            ->where('stats.isVerified', true)
             ->where('stats.hasMadePrediction', false)
         );
 });

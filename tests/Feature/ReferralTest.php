@@ -6,8 +6,6 @@ use App\Models\User;
 use App\Predictions\Leaderboard\LeaderboardService;
 use App\Predictions\Settlement\SettlementService;
 use App\Referrals\ReferralService;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -55,18 +53,21 @@ it('does not allow retroactive referral assignment after registration', function
     expect($referred->fresh()->referred_by_id)->toBeNull();
 });
 
-it('credits the referrer when the referred user verifies and the referrer is eligible', function () {
-    ['winner' => $winner] = predictableFixture();
+it('credits the referrer when the referred user makes their first prediction', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     Prediction::factory()->for($referrer)->create(['fixture_market_id' => $winner->id]);
 
-    $referred = User::factory()->unverified()->create(['referred_by_id' => $referrer->id]);
+    $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
 
-    app(ReferralService::class)->attemptCredit($referred);
     expect(Referral::query()->count())->toBe(0);
 
-    $referred->markEmailAsVerified();
-    Event::dispatch(new Verified($referred));
+    actingAs($referred)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+        ],
+    ])->assertRedirect();
 
     expect(Referral::query()->count())->toBe(1)
         ->and(Referral::query()->first())->toMatchArray([
@@ -76,10 +77,17 @@ it('credits the referrer when the referred user verifies and the referrer is eli
         ]);
 });
 
-it('credits the referrer when they make their first prediction after the referred user verified', function () {
+it('credits the referrer when they make their first prediction after the referred user has already predicted', function () {
     ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
+
+    actingAs($referred)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'away']],
+        ],
+    ])->assertRedirect();
 
     expect(Referral::query()->count())->toBe(0);
 
@@ -94,33 +102,26 @@ it('credits the referrer when they make their first prediction after the referre
         ->and(Referral::query()->first()->referrer_id)->toBe($referrer->id);
 });
 
-it('does not credit when the referrer is unverified', function () {
-    ['winner' => $winner] = predictableFixture();
-    $referrer = User::factory()->unverified()->create();
-    Prediction::factory()->for($referrer)->create(['fixture_market_id' => $winner->id]);
-
-    $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
-
-    app(ReferralService::class)->attemptCredit($referred);
-
-    expect(Referral::query()->count())->toBe(0);
-});
-
 it('does not credit when the referrer has not made a prediction', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
 
-    app(ReferralService::class)->attemptCredit($referred);
+    actingAs($referred)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+        ],
+    ])->assertRedirect();
 
     expect(Referral::query()->count())->toBe(0);
 });
 
-it('does not credit when the referred user is unverified', function () {
+it('does not credit when the referred user has not made a prediction', function () {
     ['winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     Prediction::factory()->for($referrer)->create(['fixture_market_id' => $winner->id]);
-
-    $referred = User::factory()->unverified()->create(['referred_by_id' => $referrer->id]);
+    $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
 
     app(ReferralService::class)->attemptCredit($referred);
 
@@ -128,32 +129,39 @@ it('does not credit when the referred user is unverified', function () {
 });
 
 it('enforces the daily referral cap', function () {
-    ['winner' => $winner] = predictableFixture();
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     Prediction::factory()->for($referrer)->create(['fixture_market_id' => $winner->id]);
 
-    $service = app(ReferralService::class);
-
-    for ($i = 0; $i < 5; $i++) {
+    for ($i = 0; $i < 6; $i++) {
         $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
-        $service->attemptCredit($referred);
-    }
 
-    $sixth = User::factory()->create(['referred_by_id' => $referrer->id]);
-    $service->attemptCredit($sixth);
+        actingAs($referred)->post(route('predict.store'), [
+            'date' => $fixture->watDate(),
+            'predictions' => [
+                ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+            ],
+        ])->assertRedirect();
+    }
 
     expect(Referral::query()->where('referrer_id', $referrer->id)->count())->toBe(5);
 });
 
 it('only credits a referred user once', function () {
-    ['winner' => $winner] = predictableFixture();
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $referrer = User::factory()->create();
     Prediction::factory()->for($referrer)->create(['fixture_market_id' => $winner->id]);
     $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
 
-    $service = app(ReferralService::class);
-    $service->attemptCredit($referred);
-    $service->attemptCredit($referred);
+    $submit = fn () => actingAs($referred)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+        ],
+    ])->assertRedirect();
+
+    $submit();
+    $submit();
 
     expect(Referral::query()->where('referred_id', $referred->id)->count())->toBe(1);
 });

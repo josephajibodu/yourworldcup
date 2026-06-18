@@ -38,8 +38,8 @@ export function ReferralShareCard({ code, url }: ReferralShareCardProps) {
                 </h2>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                share this link — when someone signs up and verifies, you earn
-                bonus leaderboard points.
+                share this link — when a friend signs up and makes their first
+                prediction, you earn bonus leaderboard points.
             </p>
 
             <div className="mt-5 space-y-4">
@@ -106,7 +106,6 @@ interface ReferralStatsCardProps {
     totalPoints: number;
     todayCount: number;
     dailyCap: number;
-    isVerified: boolean;
     hasMadePrediction: boolean;
 }
 
@@ -135,11 +134,8 @@ export function ReferralStatsCard({
     totalPoints,
     todayCount,
     dailyCap,
-    isVerified,
     hasMadePrediction,
 }: ReferralStatsCardProps) {
-    const isEligible = isVerified && hasMadePrediction;
-
     return (
         <div className="rounded-xl border border-wc-ink/10 bg-card p-5 md:p-6">
             <div className="flex items-center gap-2">
@@ -177,19 +173,15 @@ export function ReferralStatsCard({
                 </p>
             </div>
 
-            {!isEligible && (
+            {!hasMadePrediction && (
                 <div className="mt-5 border-t border-wc-ink/8 pt-5">
                     <p className="text-sm font-semibold text-wc-ink">
                         earn referral points when you:
                     </p>
                     <ul className="mt-3 space-y-2">
                         <EligibilityItem
-                            met={isVerified}
-                            label="verify your account"
-                        />
-                        <EligibilityItem
                             met={hasMadePrediction}
-                            label="make your first prediction"
+                            label="make your first prediction before your friend does"
                         />
                     </ul>
                 </div>

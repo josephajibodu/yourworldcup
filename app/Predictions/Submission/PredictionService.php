@@ -64,6 +64,7 @@ class PredictionService
             $this->reconcileBanker($user, $bankerFixtureMarketId, $start, $end);
         });
 
+        $this->referrals->attemptCredit($user);
         $this->referrals->attemptCreditPendingForReferrer($user);
     }
 

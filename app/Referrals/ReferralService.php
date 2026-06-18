@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 class ReferralService
 {
     /**
-     * Try to credit the referrer when a referred user becomes eligible.
-     * Idempotent — safe to call from verification and first-prediction hooks.
+     * Credit the referrer once a referred user has made their own prediction
+     * and the referrer has already made at least one prediction.
      */
     public function attemptCredit(User $referred): void
     {
@@ -19,7 +19,7 @@ class ReferralService
             return;
         }
 
-        if (! $referred->isVerifiedForReferrals()) {
+        if (! $referred->hasMadePrediction()) {
             return;
         }
 
@@ -30,10 +30,6 @@ class ReferralService
         $referrer = $referred->referrer;
 
         if ($referrer === null || $referrer->id === $referred->id) {
-            return;
-        }
-
-        if (! $referrer->isVerifiedForReferrals()) {
             return;
         }
 
@@ -65,8 +61,8 @@ class ReferralService
     }
 
     /**
-     * Retry pending credits for users this referrer invited — called after the
-     * referrer submits their first prediction.
+     * Retry pending credits for referred users who have already predicted —
+     * called after the referrer submits their first prediction.
      */
     public function attemptCreditPendingForReferrer(User $referrer): void
     {
@@ -76,6 +72,7 @@ class ReferralService
 
         User::query()
             ->where('referred_by_id', $referrer->id)
+            ->whereHas('predictions')
             ->each(fn (User $referred) => $this->attemptCredit($referred));
     }
 

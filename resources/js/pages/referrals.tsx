@@ -22,7 +22,6 @@ interface ReferralStats {
     totalReferrals: number;
     totalPoints: number;
     todayCount: number;
-    isVerified: boolean;
     hasMadePrediction: boolean;
 }
 
@@ -47,9 +46,10 @@ export default function Referrals() {
                             referrals
                         </h1>
                         <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                            invite friends to play — when they sign up and
-                            verify, you pick up bonus points on the daily and
-                            overall leaderboards.
+                            invite friends to play — when they sign up through
+                            your link and make their first prediction, you pick
+                            up bonus points on the daily and overall
+                            leaderboards.
                         </p>
                     </div>
 
@@ -62,14 +62,13 @@ export default function Referrals() {
                                 how it works
                             </p>
                             <p className="mt-1 text-sm font-semibold text-wc-ink">
-                                {rules.pointsPerReferral} bonus point per
-                                verified friend, up to {rules.dailyCap} per day.
+                                {rules.pointsPerReferral} bonus point when a
+                                friend you referred makes their first
+                                prediction, up to {rules.dailyCap} per day.
                             </p>
                             <p className="mt-1 text-sm leading-relaxed text-wc-ink/60">
-                                your friend must sign up through your link and
-                                verify their account. you need to be verified
-                                and have made at least one prediction before
-                                points credit. referral codes cannot be added
+                                you must have made at least one prediction
+                                before they do. referral codes cannot be added
                                 after registration.
                             </p>
                         </div>
@@ -86,7 +85,6 @@ export default function Referrals() {
                                 totalPoints={stats.totalPoints}
                                 todayCount={stats.todayCount}
                                 dailyCap={rules.dailyCap}
-                                isVerified={stats.isVerified}
                                 hasMadePrediction={stats.hasMadePrediction}
                             />
                         </div>

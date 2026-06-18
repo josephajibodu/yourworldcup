@@ -46,7 +46,6 @@ class ReferralController extends Controller
                     ->where('referrer_id', $user->id)
                     ->where('wat_date', $watDate)
                     ->count(),
-                'isVerified' => $user->isVerifiedForReferrals(),
                 'hasMadePrediction' => $user->hasMadePrediction(),
             ],
         ]);
