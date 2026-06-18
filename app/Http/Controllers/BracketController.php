@@ -27,34 +27,47 @@ class BracketController extends Controller
     }
 
     /**
-     * React Flow node id for the next open match day — a group table during
-     * the group stage, or a knockout match node once the tournament advances.
+     * React Flow node id for the live or next group / knockout match.
      */
     private function focusNodeId(): ?string
     {
-        $fixture = Fixture::query()
+        $fixtures = Fixture::query()
             ->whereNotNull('home_team_id')
             ->whereNotNull('away_team_id')
-            ->where('lock_at', '>', now())
+            ->whereNotIn('status', [FixtureStatus::Final, FixtureStatus::Void])
+            ->with(['homeTeam', 'awayTeam'])
             ->orderBy('kickoff_at')
+            ->get();
+
+        $live = $fixtures->first(fn (Fixture $fixture): bool => $fixture->isLive());
+
+        if ($live !== null) {
+            return $this->nodeIdForFixture($live);
+        }
+
+        $next = $fixtures->first(
+            fn (Fixture $fixture): bool => $fixture->kickoff_at->isFuture(),
+        );
+
+        if ($next !== null) {
+            return $this->nodeIdForFixture($next);
+        }
+
+        $recent = Fixture::query()
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
+            ->orderByDesc('kickoff_at')
             ->with(['homeTeam', 'awayTeam'])
             ->first();
 
-        if ($fixture === null) {
-            $fixture = Fixture::query()
-                ->whereNotNull('home_team_id')
-                ->whereNotNull('away_team_id')
-                ->orderByDesc('kickoff_at')
-                ->with(['homeTeam', 'awayTeam'])
-                ->first();
-        }
+        return $recent !== null ? $this->nodeIdForFixture($recent) : null;
+    }
 
-        if ($fixture === null) {
-            return null;
-        }
-
+    private function nodeIdForFixture(Fixture $fixture): ?string
+    {
         if ($fixture->stage === FixtureStage::Group) {
-            $groupCode = $fixture->homeTeam?->group_code
+            $groupCode = $fixture->group_code
+                ?? $fixture->homeTeam?->group_code
                 ?? $fixture->awayTeam?->group_code;
 
             return $groupCode !== null ? "g{$groupCode}" : null;

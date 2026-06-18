@@ -87,8 +87,41 @@ it('passes final scores for finished knockout matches', function () {
     );
 });
 
-it('focuses the bracket on the next open group or match', function () {
-    Fixture::query()->update(['lock_at' => now()->subHour()]);
+it('focuses the bracket on the group with a live match', function () {
+    Fixture::query()->update([
+        'kickoff_at' => now()->addDays(2),
+        'lock_at' => now()->addDays(2)->subHour(),
+    ]);
+
+    $home = Team::query()->where('group_code', 'B')->orderBy('id')->first();
+    $away = Team::query()
+        ->where('group_code', 'B')
+        ->where('id', '!=', $home->id)
+        ->orderBy('id')
+        ->first();
+
+    Fixture::factory()->create([
+        'external_id' => '998',
+        'stage' => FixtureStage::Group,
+        'group_code' => 'B',
+        'home_team_id' => $home->id,
+        'away_team_id' => $away->id,
+        'kickoff_at' => now()->subMinutes(20),
+        'lock_at' => now()->subMinutes(80),
+        'status' => FixtureStatus::Live,
+    ]);
+
+    $this->get(route('bracket'))->assertInertia(fn (Assert $page) => $page
+        ->where('focusNodeId', 'gB')
+    );
+});
+
+it('focuses the bracket on the group with the next match when nothing is live', function () {
+    Fixture::query()->update([
+        'status' => FixtureStatus::Final,
+        'kickoff_at' => now()->subDay(),
+        'lock_at' => now()->subDay()->subHour(),
+    ]);
 
     $home = Team::query()->where('group_code', 'H')->orderBy('id')->first();
     $away = Team::query()
@@ -97,7 +130,7 @@ it('focuses the bracket on the next open group or match', function () {
         ->orderBy('id')
         ->first();
 
-    $kickoff = now()->addDay();
+    $kickoff = now()->addHours(3);
 
     Fixture::factory()->create([
         'external_id' => '999',
@@ -107,6 +140,7 @@ it('focuses the bracket on the next open group or match', function () {
         'away_team_id' => $away->id,
         'kickoff_at' => $kickoff,
         'lock_at' => $kickoff->copy()->subHour(),
+        'status' => FixtureStatus::Scheduled,
     ]);
 
     $this->get(route('bracket'))->assertInertia(fn (Assert $page) => $page
