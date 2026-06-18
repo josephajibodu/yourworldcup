@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Bracket\Contracts\BestThirdQualifier;
 use App\Bracket\PointsBestThirdQualifier;
 use App\FootballData\FootballDataLinker;
+use App\Http\Client\LogOutgoingApiRequest;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\PasskeyLoginResponse;
 use App\Http\Responses\RedirectAsIntended as AppRedirectAsIntended;
@@ -16,8 +17,11 @@ use App\Predictions\Settlement\SettlerRegistry;
 use App\Support\ExternalIdOrder;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Client\Events\ConnectionFailed;
+use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
@@ -66,6 +70,15 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureAuthResponses();
+        $this->configureOutgoingApiLogging();
+    }
+
+    protected function configureOutgoingApiLogging(): void
+    {
+        $logger = $this->app->make(LogOutgoingApiRequest::class);
+
+        Event::listen(ResponseReceived::class, [$logger, 'handleResponseReceived']);
+        Event::listen(ConnectionFailed::class, [$logger, 'handleConnectionFailed']);
     }
 
     protected function configureAuthResponses(): void
