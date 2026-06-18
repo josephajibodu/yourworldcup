@@ -22,7 +22,7 @@ class PredictController extends Controller
     public function index(Request $request, PredictionVisibility $visibility): Response
     {
         $dates = $this->predictableDates($visibility);
-        $selected = $this->selectedDate($request->query('date'), $dates);
+        $selected = $visibility->selectedDate($request->query('date'), $dates);
 
         return Inertia::render('predict', [
             'dates' => $dates,
@@ -62,30 +62,6 @@ class PredictController extends Controller
             ->all();
 
         return $visibility->filterVisibleDates($dates);
-    }
-
-    /**
-     * @param  array<int, string>  $dates
-     */
-    private function selectedDate(?string $requested, array $dates): ?string
-    {
-        if ($requested !== null && in_array($requested, $dates, true)) {
-            return $requested;
-        }
-
-        $next = Fixture::query()
-            ->whereNotNull('home_team_id')
-            ->whereNotNull('away_team_id')
-            ->where('lock_at', '>', now())
-            ->orderBy('kickoff_at')
-            ->get()
-            ->first(fn (Fixture $fixture): bool => in_array($fixture->watDate(), $dates, true));
-
-        if ($next !== null) {
-            return $next->watDate();
-        }
-
-        return $dates === [] ? null : end($dates);
     }
 
     /**

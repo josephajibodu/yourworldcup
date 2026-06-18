@@ -44,4 +44,22 @@ class PredictionVisibility
             static fn (string $date): bool => $date <= $latest,
         ));
     }
+
+    /**
+     * @param  array<int, string>  $dates
+     */
+    public function selectedDate(?string $requested, array $dates): ?string
+    {
+        if ($requested !== null && in_array($requested, $dates, true)) {
+            return $requested;
+        }
+
+        $today = $this->today()->toDateString();
+
+        if (in_array($today, $dates, true)) {
+            return $today;
+        }
+
+        return $dates === [] ? null : end($dates);
+    }
 }

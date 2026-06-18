@@ -154,7 +154,33 @@ it('does not list match days beyond tomorrow in wat', function () {
         );
 });
 
-it('falls back when requesting a match day that is not visible yet', function () {
+it('defaults to today in wat when no date is requested', function () {
+    ['fixture' => $todayFixture] = predictableFixture(daysFromToday: 0);
+    predictableFixture(daysFromToday: 1);
+
+    actingAs(User::factory()->create())
+        ->get(route('predict'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('selectedDate', $todayFixture->watDate())
+        );
+});
+
+it('falls back to today when requesting a match day that is not visible yet', function () {
+    ['fixture' => $todayFixture] = predictableFixture(daysFromToday: 0);
+    ['fixture' => $farFixture] = predictableFixture(daysFromToday: 5);
+
+    actingAs(User::factory()->create())
+        ->get(route('predict', ['date' => $farFixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('predict')
+            ->where('selectedDate', $todayFixture->watDate())
+            ->has('fixtures', 1)
+        );
+});
+
+it('falls back to the nearest visible day when today has no fixtures', function () {
     ['fixture' => $farFixture] = predictableFixture(daysFromToday: 5);
     ['fixture' => $nearFixture] = predictableFixture(daysFromToday: 1);
 
