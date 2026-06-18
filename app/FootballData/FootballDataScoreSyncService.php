@@ -10,6 +10,17 @@ use Illuminate\Support\Carbon;
 
 class FootballDataScoreSyncService
 {
+    /**
+     * @var list<string>
+     */
+    private const LIVE_PROVIDER_STATUSES = [
+        'IN_PLAY',
+        'PAUSED',
+        'LIVE',
+        'EXTRATIME',
+        'PENALTY_SHOOTOUT'
+    ];
+
     public function __construct(
         private FootballDataApiClient $api,
         private FixtureResultRecorder $recorder,
@@ -39,10 +50,9 @@ class FootballDataScoreSyncService
         $matches = $this->api->competitionMatches([
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
-            'status' => 'FINISHED',
         ]);
 
-        return $this->applyFinishedMatches($matches, $settle);
+        return $this->applyMatches($matches, $settle);
     }
 
     public function syncAllPlayed(bool $settle = false): FootballDataSyncResult
@@ -51,59 +61,112 @@ class FootballDataScoreSyncService
             'status' => 'FINISHED',
         ]);
 
-        return $this->applyFinishedMatches($matches, $settle);
+        return $this->applyMatches($matches, $settle);
     }
 
     /**
      * @param  list<array<string, mixed>>  $matches
      */
-    public function applyFinishedMatches(array $matches, bool $settle): FootballDataSyncResult
+    public function applyMatches(array $matches, bool $settle): FootballDataSyncResult
     {
         $result = new FootballDataSyncResult(fetched: count($matches));
 
         foreach ($matches as $match) {
-            if (($match['status'] ?? '') !== 'FINISHED') {
-                continue;
-            }
-
-            $homeScore = $match['score']['fullTime']['home'] ?? null;
-            $awayScore = $match['score']['fullTime']['away'] ?? null;
-
-            if (! is_numeric($homeScore) || ! is_numeric($awayScore)) {
-                $result->skipped++;
-
-                continue;
-            }
-
-            $homeScore = (int) $homeScore;
-            $awayScore = (int) $awayScore;
-
-            $fixture = Fixture::findByProviderMatch(
-                $this->provider,
-                (string) $match['id'],
-            );
-
-            if ($fixture === null) {
-                $result->unlinked++;
-
-                continue;
-            }
-
-            if ($this->alreadyRecorded($fixture, $homeScore, $awayScore)) {
-                $result->skipped++;
-
-                continue;
-            }
-
-            $updated = $this->recorder->record($fixture, $homeScore, $awayScore);
-            $result->updated++;
-
-            if ($settle) {
-                $result->settledPredictions += $this->settlement->settleFixture($updated);
-            }
+            $this->applyMatch($match, $settle, $result);
         }
 
         return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     */
+    private function applyMatch(array $match, bool $settle, FootballDataSyncResult $result): void
+    {
+        $providerStatus = strtoupper((string) ($match['status'] ?? ''));
+
+        $fixture = Fixture::findByProviderMatch(
+            $this->provider,
+            (string) $match['id'],
+        );
+
+        if ($fixture === null) {
+            $result->unlinked++;
+
+            return;
+        }
+
+        if ($providerStatus === 'FINISHED' || $providerStatus === 'AWARDED') {
+            $this->applyFinishedMatch($fixture, $match, $settle, $result);
+
+            return;
+        }
+
+        if ($this->isLiveProviderStatus($providerStatus)) {
+            $this->applyLiveMatch($fixture, $result);
+
+            return;
+        }
+
+        $result->skipped++;
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     */
+    private function applyFinishedMatch(
+        Fixture $fixture,
+        array $match,
+        bool $settle,
+        FootballDataSyncResult $result,
+    ): void {
+        $homeScore = $match['score']['fullTime']['home'] ?? null;
+        $awayScore = $match['score']['fullTime']['away'] ?? null;
+
+        if (! is_numeric($homeScore) || ! is_numeric($awayScore)) {
+            $result->skipped++;
+
+            return;
+        }
+
+        $homeScore = (int) $homeScore;
+        $awayScore = (int) $awayScore;
+
+        if ($this->alreadyRecorded($fixture, $homeScore, $awayScore)) {
+            $result->skipped++;
+
+            return;
+        }
+
+        $updated = $this->recorder->record($fixture, $homeScore, $awayScore);
+        $result->updated++;
+
+        if ($settle) {
+            $result->settledPredictions += $this->settlement->settleFixture($updated);
+        }
+    }
+
+    private function applyLiveMatch(Fixture $fixture, FootballDataSyncResult $result): void
+    {
+        if (in_array($fixture->status, [FixtureStatus::Final, FixtureStatus::Void], true)) {
+            $result->skipped++;
+
+            return;
+        }
+
+        if ($fixture->status === FixtureStatus::Live) {
+            $result->skipped++;
+
+            return;
+        }
+
+        $fixture->update(['status' => FixtureStatus::Live]);
+        $result->updated++;
+    }
+
+    private function isLiveProviderStatus(string $providerStatus): bool
+    {
+        return in_array($providerStatus, self::LIVE_PROVIDER_STATUSES, true);
     }
 
     /**
@@ -112,9 +175,9 @@ class FootballDataScoreSyncService
     private function recentWatDateRange(): array
     {
         $today = Carbon::now($this->timezone)->toDateString();
-        $yesterday = Carbon::now($this->timezone)->subDay()->toDateString();
+        // $yesterday = Carbon::now($this->timezone)->subDay()->toDateString();
 
-        return [$yesterday, $today];
+        return [$today, $today];
     }
 
     private function alreadyRecorded(Fixture $fixture, int $homeScore, int $awayScore): bool

@@ -66,9 +66,12 @@ Look up a fixture for API calls with `Fixture::findByProviderMatch('football-dat
 
 ### `php artisan football-data:sync-scores`
 
-Polls [football-data.org](https://www.football-data.org/) for **recently finished** World Cup matches and records scores locally. Runs automatically **every 15 minutes** via the scheduler.
+Polls [football-data.org](https://www.football-data.org/) for **recent World Cup matches** and updates local fixtures. Runs automatically **every 5 minutes** via the scheduler.
 
-One API call per run: `status=FINISHED` with `dateFrom` / `dateTo` set to **yesterday and today** in WAT (`Africa/Lagos`). Matches are mapped by `provider_match_id`, then predictions are settled.
+One API call per run with `dateFrom` / `dateTo` set to **yesterday and today** in WAT (`Africa/Lagos`). Matches are mapped by `provider_match_id`:
+
+- **Live** (`IN_PLAY`, `PAUSED`, `LIVE`, `EXTRATIME`, `PENALTY_SHOOTOUT`) → sets fixture status to `live` only (no scores)
+- **Finished** → records final scores and settles predictions
 
 Requires `FOOTBALL_DATA_API_TOKEN` in `.env`.
 

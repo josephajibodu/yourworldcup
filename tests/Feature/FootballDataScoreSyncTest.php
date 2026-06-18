@@ -26,10 +26,10 @@ beforeEach(function () {
     FootballDataLinker::fromConfig()->linkFixtures();
 });
 
-function footballDataMatchesResponse(array $matches): array
+function footballDataMatchesResponse(array $matches, array $filters = ['season' => '2026']): array
 {
     return [
-        'filters' => ['season' => '2026', 'status' => 'FINISHED'],
+        'filters' => $filters,
         'resultSet' => ['count' => count($matches)],
         'competition' => ['id' => 2000, 'name' => 'FIFA World Cup', 'code' => 'WC'],
         'matches' => $matches,
@@ -46,6 +46,21 @@ function finishedFootballDataMatch(int $id, int $home, int $away, string $utcDat
             'fullTime' => [
                 'home' => $home,
                 'away' => $away,
+            ],
+        ],
+    ];
+}
+
+function liveFootballDataMatch(int $id, string $utcDate = '2026-06-11T19:00:00Z'): array
+{
+    return [
+        'id' => $id,
+        'utcDate' => $utcDate,
+        'status' => 'IN_PLAY',
+        'score' => [
+            'fullTime' => [
+                'home' => null,
+                'away' => null,
             ],
         ],
     ];
@@ -79,7 +94,7 @@ it('syncs recently finished matches and settles predictions', function () {
         parse_str(parse_url($request->url(), PHP_URL_QUERY) ?? '', $query);
 
         return $query['season'] === '2026'
-            && $query['status'] === 'FINISHED'
+            && ! array_key_exists('status', $query)
             && $query['dateFrom'] === $yesterday
             && $query['dateTo'] === $today;
     });
@@ -130,6 +145,30 @@ it('syncs all played matches without settling by default', function () {
         ->and($fixture->away_score)->toBe(0)
         ->and($winner->fresh()->status)->toBe(MarketStatus::Open)
         ->and(Prediction::query()->sole()->points_awarded)->toBeNull();
+});
+
+it('marks in-play matches as live without recording scores', function () {
+    $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
+
+    expect($fixture->status)->toBe(FixtureStatus::Scheduled);
+
+    Http::fake([
+        'api.football-data.org/v4/competitions/2000/matches*' => Http::response(
+            footballDataMatchesResponse([
+                liveFootballDataMatch(537327),
+            ]),
+        ),
+    ]);
+
+    $this->artisan('football-data:sync-scores')
+        ->expectsOutputToContain('updated 1')
+        ->assertSuccessful();
+
+    $fixture->refresh();
+
+    expect($fixture->status)->toBe(FixtureStatus::Live)
+        ->and($fixture->home_score)->toBeNull()
+        ->and($fixture->away_score)->toBeNull();
 });
 
 it('skips fixtures that already have the same final score', function () {

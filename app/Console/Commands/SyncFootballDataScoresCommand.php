@@ -11,7 +11,7 @@ class SyncFootballDataScoresCommand extends Command
     protected $signature = 'football-data:sync-scores
                             {--no-settle : Record scores without settling predictions}';
 
-    protected $description = 'Fetch recently finished football-data.org matches and settle predictions';
+    protected $description = 'Fetch recent football-data.org matches, mark live fixtures, and settle finished ones';
 
     public function handle(): int
     {
