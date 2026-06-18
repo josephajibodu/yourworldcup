@@ -39,6 +39,7 @@ export interface PredictFixture {
     stage: string;
     stageLabel: string;
     group: string | null;
+    status: string;
     kickoffAt: string;
     lockAt: string;
     locked: boolean;

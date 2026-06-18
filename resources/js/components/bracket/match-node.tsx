@@ -1,5 +1,9 @@
 import { Handle,   Position } from '@xyflow/react';
 import type {Node, NodeProps} from '@xyflow/react';
+import { LiveIndicator } from '@/components/live-indicator';
+import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
+import { useNow } from '@/hooks/use-now';
+import { isFixtureLive } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import type { MatchNodeData, Slot } from './types';
 
@@ -44,6 +48,14 @@ function SlotRow({ slot, divider }: { slot: Slot; divider: boolean }) {
 
 export function MatchNode({ data }: NodeProps<MatchNode>) {
     const { match, active } = data;
+    const now = useNow();
+    const matchDurationMinutes = useMatchDurationMinutes();
+    const live = isFixtureLive(
+        match.status,
+        match.kickoffAt,
+        matchDurationMinutes,
+        now,
+    );
     const kickoff = new Date(match.kickoffAt);
     const date = kickoff.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -65,8 +77,9 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
                 className="!size-1.5 !border-0 !bg-wc-ink-3"
             />
             <div className="flex items-center justify-between bg-wc-surface-2 px-2.5 py-1">
-                <span className="font-mono text-[10px] font-semibold tracking-wider text-wc-ink/70">
+                <span className="flex items-center gap-1.5 font-mono text-[10px] font-semibold tracking-wider text-wc-ink/70">
                     {match.code}
+                    {live && <LiveIndicator label="" />}
                 </span>
                 <span className="font-mono text-[10px] tracking-wider text-muted-foreground">
                     {date}

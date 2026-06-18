@@ -50,4 +50,10 @@ return [
     | browse and submit predictions. 1 means today and tomorrow only.
     */
     'visible_days_ahead' => 1,
+
+    /*
+    | Expected maximum match length (regular time + stoppage + half-time) used
+    | to infer live status when status is still "scheduled".
+    */
+    'match_duration_minutes' => 120,
 ];

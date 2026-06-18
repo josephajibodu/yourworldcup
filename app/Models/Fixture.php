@@ -104,6 +104,25 @@ class Fixture extends Model
         return now()->greaterThanOrEqualTo($this->lock_at);
     }
 
+    public function isLive(): bool
+    {
+        if (in_array($this->status, [FixtureStatus::Final, FixtureStatus::Void], true)) {
+            return false;
+        }
+
+        $windowEnd = $this->kickoff_at->copy()->addMinutes(
+            (int) config('predictions.match_duration_minutes', 105),
+        );
+
+        $now = now();
+
+        if ($now->greaterThanOrEqualTo($this->kickoff_at) && $now->lessThan($windowEnd)) {
+            return true;
+        }
+
+        return $this->status === FixtureStatus::Live;
+    }
+
     public static function findByProviderMatch(string $provider, string $providerMatchId): ?self
     {
         return self::query()

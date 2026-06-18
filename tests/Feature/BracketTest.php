@@ -5,11 +5,18 @@ use App\Models\Fixture;
 use App\Models\Team;
 use App\Predictions\Importing\WorldCupImporter;
 use Database\Seeders\PredictionMarketSeeder;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
+    Carbon::setTestNow(Carbon::parse('2026-06-01 12:00:00', 'UTC'));
+
     $this->seed(PredictionMarketSeeder::class);
     WorldCupImporter::fromDefaultPath()->import();
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 it('renders the bracket page publicly', function () {
@@ -18,6 +25,7 @@ it('renders the bracket page publicly', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('bracket')
             ->has('focusNodeId')
+            ->where('predictions.matchDurationMinutes', config('predictions.match_duration_minutes'))
         );
 });
 
@@ -27,6 +35,7 @@ it('passes the twelve group tables with four teams each', function () {
         ->has('groups.0', fn (Assert $group) => $group
             ->where('code', 'A')
             ->has('teams', 4)
+            ->has('fixtures')
             ->has('teams.0', fn (Assert $team) => $team
                 ->hasAll(['id', 'name', 'code', 'flag', 'played', 'gd', 'points'])
                 ->etc()

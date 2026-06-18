@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { PredictionsConfig } from '@/types/predictions';
 import type { TurnstileConfig } from '@/types/turnstile';
 
 declare module 'react' {
@@ -15,6 +16,7 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             turnstile: TurnstileConfig;
+            predictions: PredictionsConfig;
             [key: string]: unknown;
         };
     }

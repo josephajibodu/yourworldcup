@@ -150,6 +150,7 @@ class PredictController extends Controller
             'stage' => $fixture->stage->value,
             'stageLabel' => $fixture->stage->label(),
             'group' => $fixture->group_code,
+            'status' => $fixture->status->value,
             'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
             'lockAt' => $fixture->lock_at->toIso8601String(),
             'locked' => $fixture->isLocked(),

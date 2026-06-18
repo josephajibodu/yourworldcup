@@ -47,6 +47,9 @@ class HandleInertiaRequests extends Middleware
                 'enabled' => (bool) config('turnstile.enabled'),
                 'siteKey' => config('turnstile.site_key'),
             ],
+            'predictions' => [
+                'matchDurationMinutes' => (int) config('predictions.match_duration_minutes'),
+            ],
         ];
     }
 }

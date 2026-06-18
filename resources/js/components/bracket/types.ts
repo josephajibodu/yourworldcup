@@ -13,9 +13,17 @@ export interface StandingRow {
     points: number;
 }
 
+export interface GroupFixtureRef {
+    kickoffAt: string;
+    status: string;
+    homeTeamId: number;
+    awayTeamId: number;
+}
+
 export interface GroupTable {
     code: string;
     teams: StandingRow[];
+    fixtures: GroupFixtureRef[];
 }
 
 export interface SlotTeam {
@@ -34,6 +42,7 @@ export interface KnockoutMatch {
     code: string;
     stage: string;
     stageLabel: string;
+    status: string;
     kickoffAt: string;
     stadium: string | null;
     city: string | null;

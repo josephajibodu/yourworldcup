@@ -1,12 +1,13 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { store as storePredictions } from '@/actions/App/Http/Controllers/PredictController';
 import { FixtureCard } from '@/components/predict/fixture-card';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
 import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
+import { useNow } from '@/hooks/use-now';
 import { predict } from '@/routes';
 
 interface PredictPageProps {
@@ -55,13 +56,7 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
     const [banker, setBanker] = useState(() => initialBanker(fixtures));
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
-    const [now, setNow] = useState(() => Date.now());
-
-    useEffect(() => {
-        const id = window.setInterval(() => setNow(Date.now()), 30000);
-
-        return () => window.clearInterval(id);
-    }, []);
+    const now = useNow();
 
     const index = selectedDate ? dates.indexOf(selectedDate) : -1;
     const prevDate = index > 0 ? dates[index - 1] : null;

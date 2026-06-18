@@ -1,5 +1,10 @@
 import { Handle,  Position  } from '@xyflow/react';
 import type {NodeProps, Node} from '@xyflow/react';
+import { useMemo } from 'react';
+import { LiveIndicator } from '@/components/live-indicator';
+import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
+import { useNow } from '@/hooks/use-now';
+import { liveTeamIds } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import type { GroupNodeData } from './types';
 
@@ -7,6 +12,12 @@ type GroupNode = Node<GroupNodeData, 'group'>;
 
 export function GroupTableNode({ data }: NodeProps<GroupNode>) {
     const { group, active } = data;
+    const now = useNow();
+    const matchDurationMinutes = useMatchDurationMinutes();
+    const playingTeamIds = useMemo(
+        () => liveTeamIds(group.fixtures, matchDurationMinutes, now),
+        [group.fixtures, matchDurationMinutes, now],
+    );
 
     return (
         <div
@@ -28,6 +39,7 @@ export function GroupTableNode({ data }: NodeProps<GroupNode>) {
             <ul>
                 {group.teams.map((team, index) => {
                     const qualifies = index < 2;
+                    const isLive = playingTeamIds.has(team.id);
 
                     return (
                         <li
@@ -57,16 +69,19 @@ export function GroupTableNode({ data }: NodeProps<GroupNode>) {
                             ) : (
                                 <span className="h-3.5 w-5 shrink-0 rounded-[2px] bg-muted" />
                             )}
-                            <span className="flex-1 truncate font-medium">
-                                {team.name}
+                            <span className="flex min-w-0 flex-1 items-center justify-start gap-1.5 text-left">
+                                <span className="truncate font-medium">
+                                    {team.name}
+                                </span>
+                                {isLive && <LiveIndicator label="" />}
                             </span>
-                            <span className="w-4 text-right font-mono text-[11px] text-muted-foreground">
+                            <span className="w-4 shrink-0 text-right font-mono text-[11px] text-muted-foreground">
                                 {team.played}
                             </span>
-                            <span className="w-6 text-right font-mono text-[11px] text-muted-foreground">
+                            <span className="w-6 shrink-0 text-right font-mono text-[11px] text-muted-foreground">
                                 {team.gd > 0 ? `+${team.gd}` : team.gd}
                             </span>
-                            <span className="w-5 text-right font-mono text-[11px] font-semibold">
+                            <span className="w-5 shrink-0 text-right font-mono text-[11px] font-semibold">
                                 {team.points}
                             </span>
                         </li>

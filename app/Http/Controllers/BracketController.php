@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Bracket\GroupStandingsService;
 use App\Enums\BracketSlotSide;
 use App\Enums\FixtureStage;
+use App\Enums\FixtureStatus;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
 use App\Models\Team;
@@ -71,6 +72,15 @@ class BracketController extends Controller
      */
     private function groups(): array
     {
+        $openFixturesByGroup = Fixture::query()
+            ->where('stage', FixtureStage::Group)
+            ->whereNotNull('group_code')
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
+            ->whereNotIn('status', [FixtureStatus::Final, FixtureStatus::Void])
+            ->get()
+            ->groupBy('group_code');
+
         $teams = Team::query()
             ->whereNotNull('group_code')
             ->orderBy('group_code')
@@ -82,6 +92,15 @@ class BracketController extends Controller
             ->map(fn (Collection $groupTeams, string $code): array => [
                 'code' => $code,
                 'teams' => $this->standings->standingsForGroup($code),
+                'fixtures' => ($openFixturesByGroup[$code] ?? collect())
+                    ->map(fn (Fixture $fixture): array => [
+                        'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
+                        'status' => $fixture->status->value,
+                        'homeTeamId' => $fixture->home_team_id,
+                        'awayTeamId' => $fixture->away_team_id,
+                    ])
+                    ->values()
+                    ->all(),
             ])
             ->values()
             ->all();
@@ -127,6 +146,7 @@ class BracketController extends Controller
                     'code' => 'M'.$id,
                     'stage' => $fixture->stage->value,
                     'stageLabel' => $fixture->stage->label(),
+                    'status' => $fixture->status->value,
                     'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
                     'stadium' => $fixture->stadium?->name,
                     'city' => $fixture->stadium?->city,

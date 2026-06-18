@@ -1,4 +1,7 @@
 import { Lock, Star } from 'lucide-react';
+import { LiveIndicator } from '@/components/live-indicator';
+import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
+import { isFixtureLive } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import { MarketInput } from './market-input';
 import type { MarketValue, PredictFixture } from './types';
@@ -80,15 +83,23 @@ export function FixtureCard({
         hour: '2-digit',
         minute: '2-digit',
     });
+    const matchDurationMinutes = useMatchDurationMinutes();
     const locked = new Date(fixture.lockAt).getTime() <= now;
+    const live = isFixtureLive(
+        fixture.status,
+        fixture.kickoffAt,
+        matchDurationMinutes,
+        now,
+    );
 
     return (
         <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
             <div className="flex items-center justify-between gap-2 border-b bg-secondary/60 px-4 py-2">
-                <span className="font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
+                <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
                     {fixture.group
                         ? `Group ${fixture.group}`
                         : fixture.stageLabel}
+                    {live && <LiveIndicator label="" />}
                 </span>
                 <span
                     className={cn(
