@@ -14,6 +14,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | football-data.org API
+    |--------------------------------------------------------------------------
+    */
+    'api_base_url' => env('FOOTBALL_DATA_API_BASE_URL', 'https://api.football-data.org'),
+
+    'api_token' => env('FOOTBALL_DATA_API_TOKEN'),
+
+    'api_timeout' => (int) env('FOOTBALL_DATA_API_TIMEOUT', 15),
+
+    'competition_id' => (int) env('FOOTBALL_DATA_COMPETITION_ID', 2000),
+
+    'season' => (int) env('FOOTBALL_DATA_SEASON', 2026),
+
+    /*
+    |--------------------------------------------------------------------------
     | Local JSON exports
     |--------------------------------------------------------------------------
     |

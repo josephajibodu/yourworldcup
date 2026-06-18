@@ -64,6 +64,37 @@ Each linked row stores:
 
 Look up a fixture for API calls with `Fixture::findByProviderMatch('football-data', '537327')`. Tournament match numbers (`external_id` / M73) stay unchanged for commands like `fixture:result`.
 
+### `php artisan football-data:sync-scores`
+
+Polls [football-data.org](https://www.football-data.org/) for **recently finished** World Cup matches and records scores locally. Runs automatically **every 15 minutes** via the scheduler.
+
+One API call per run: `status=FINISHED` with `dateFrom` / `dateTo` set to **yesterday and today** in WAT (`Africa/Lagos`). Matches are mapped by `provider_match_id`, then predictions are settled.
+
+Requires `FOOTBALL_DATA_API_TOKEN` in `.env`.
+
+```bash
+php artisan football-data:sync-scores
+php artisan football-data:sync-scores --no-settle
+```
+
+Production: ensure the Laravel scheduler runs (cron → `php artisan schedule:run` every minute, or `php artisan schedule:work`).
+
+### `php artisan football-data:sync-played`
+
+One-shot backfill for deploy or recovery: fetches **all finished matches** for the configured season (`FOOTBALL_DATA_SEASON`, default `2026`) with a single `status=FINISHED` request. Updates local scores only; does **not** settle predictions unless you pass `--settle`.
+
+```bash
+php artisan football-data:sync-played
+php artisan football-data:sync-played --settle
+```
+
+Typical deploy after import:
+
+```bash
+php artisan worldcup:import
+php artisan football-data:sync-played
+```
+
 ## Recording match results
 
 ### `php artisan fixture:result`
