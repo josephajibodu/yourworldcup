@@ -5,6 +5,7 @@ use App\Models\Fixture;
 use App\Models\Team;
 use App\Predictions\Importing\WorldCupImporter;
 use Database\Seeders\PredictionMarketSeeder;
+use Database\Seeders\WorldCupSeeder;
 use Illuminate\Support\Facades\Artisan;
 
 beforeEach(function () {
@@ -59,6 +60,13 @@ it('links ids through the artisan command', function () {
 
 it('links ids when worldcup import runs', function () {
     Artisan::call('worldcup:import');
+
+    expect(Fixture::query()->where('provider', 'football-data')->count())->toBe(104)
+        ->and(Team::query()->where('provider', 'football-data')->count())->toBe(48);
+});
+
+it('links ids when the world cup seeder runs', function () {
+    $this->seed(WorldCupSeeder::class);
 
     expect(Fixture::query()->where('provider', 'football-data')->count())->toBe(104)
         ->and(Team::query()->where('provider', 'football-data')->count())->toBe(48);
