@@ -1,3 +1,7 @@
+export function isFixtureFinal(status: string): boolean {
+    return status === 'final';
+}
+
 export function isFixtureLive(
     status: string,
     kickoffAt: string,

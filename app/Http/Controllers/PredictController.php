@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FixtureStatus;
 use App\Http\Requests\SubmitPredictionsRequest;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
@@ -158,6 +159,8 @@ class PredictController extends Controller
             'city' => $fixture->stadium?->city,
             'home' => $this->team($fixture->homeTeam),
             'away' => $this->team($fixture->awayTeam),
+            'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,
+            'awayScore' => $fixture->status === FixtureStatus::Final ? $fixture->away_score : null,
             'markets' => $fixture->markets
                 ->sortBy(fn (FixtureMarket $market): int => $market->market->sort_order)
                 ->values()

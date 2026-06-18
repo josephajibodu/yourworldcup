@@ -47,5 +47,7 @@ export interface PredictFixture {
     city: string | null;
     home: PredictTeam | null;
     away: PredictTeam | null;
+    homeScore: number | null;
+    awayScore: number | null;
     markets: PredictMarket[];
 }

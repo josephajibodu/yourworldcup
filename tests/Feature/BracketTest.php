@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\FixtureStage;
+use App\Enums\FixtureStatus;
 use App\Models\Fixture;
 use App\Models\Team;
 use App\Predictions\Importing\WorldCupImporter;
@@ -64,6 +65,25 @@ it('resolves feeder labels for later rounds and the final feeds the trophy', fun
         ->where('knockout.31.feeders', [101, 102])
         ->where('knockout.31.home.label', 'W101')
         ->where('knockout.31.away.label', 'W102')
+    );
+});
+
+it('passes final scores for finished knockout matches', function () {
+    $fixture = Fixture::query()
+        ->where('external_id', '73')
+        ->firstOrFail();
+
+    $fixture->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => 3,
+        'away_score' => 2,
+    ]);
+
+    $this->get(route('bracket'))->assertInertia(fn (Assert $page) => $page
+        ->where('knockout.0.code', 'M73')
+        ->where('knockout.0.status', 'final')
+        ->where('knockout.0.homeScore', 3)
+        ->where('knockout.0.awayScore', 2)
     );
 });
 

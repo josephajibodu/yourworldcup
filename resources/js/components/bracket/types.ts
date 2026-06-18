@@ -48,6 +48,8 @@ export interface KnockoutMatch {
     city: string | null;
     home: Slot;
     away: Slot;
+    homeScore: number | null;
+    awayScore: number | null;
     feeders: [number, number] | null;
 }
 

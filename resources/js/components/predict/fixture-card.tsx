@@ -1,7 +1,7 @@
 import { Lock, Star } from 'lucide-react';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
-import { isFixtureLive } from '@/lib/fixture-live';
+import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import { MarketInput } from './market-input';
 import type { MarketValue, PredictFixture } from './types';
@@ -91,6 +91,13 @@ export function FixtureCard({
         matchDurationMinutes,
         now,
     );
+    const final = isFixtureFinal(fixture.status);
+    const centerLabel =
+        final &&
+        fixture.homeScore !== null &&
+        fixture.awayScore !== null
+            ? `${fixture.homeScore} – ${fixture.awayScore}`
+            : time;
 
     return (
         <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
@@ -100,6 +107,11 @@ export function FixtureCard({
                         ? `Group ${fixture.group}`
                         : fixture.stageLabel}
                     {live && <LiveIndicator label="" />}
+                    {final && (
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                            FT
+                        </span>
+                    )}
                 </span>
                 <span
                     className={cn(
@@ -114,8 +126,13 @@ export function FixtureCard({
 
             <div className="flex items-center gap-3 px-4 py-3">
                 <TeamSide team={fixture.home} align="left" />
-                <span className="shrink-0 font-mono text-sm font-semibold tabular-nums text-muted-foreground">
-                    {time}
+                <span
+                    className={cn(
+                        'shrink-0 font-mono text-sm font-semibold tabular-nums',
+                        final ? 'text-foreground' : 'text-muted-foreground',
+                    )}
+                >
+                    {centerLabel}
                 </span>
                 <TeamSide team={fixture.away} align="right" />
             </div>

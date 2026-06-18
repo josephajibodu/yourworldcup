@@ -152,6 +152,8 @@ class BracketController extends Controller
                     'city' => $fixture->stadium?->city,
                     'home' => $this->slot($fixture->homeTeam, $homeSlot, $pair[0] ?? null, $isThird),
                     'away' => $this->slot($fixture->awayTeam, $awaySlot, $pair[1] ?? null, $isThird),
+                    'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,
+                    'awayScore' => $fixture->status === FixtureStatus::Final ? $fixture->away_score : null,
                     'feeders' => $pair,
                 ];
             })

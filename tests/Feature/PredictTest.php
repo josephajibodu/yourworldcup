@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\FixtureStatus;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
 use App\Models\Prediction;
@@ -25,6 +26,24 @@ it('shows the selected day fixtures to a signed-in user', function () {
             ->where('selectedDate', $fixture->watDate())
             ->has('fixtures', 1)
             ->has('fixtures.0.markets', 2)
+        );
+});
+
+it('shows final scores on finished fixtures', function () {
+    ['fixture' => $fixture] = predictableFixture();
+    $fixture->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => 2,
+        'away_score' => 1,
+    ]);
+
+    actingAs(User::factory()->create())
+        ->get(route('predict', ['date' => $fixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('fixtures.0.status', 'final')
+            ->where('fixtures.0.homeScore', 2)
+            ->where('fixtures.0.awayScore', 1)
         );
 });
 
