@@ -12,6 +12,8 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string|null $external_id
+ * @property string|null $provider
+ * @property string|null $provider_team_id
  * @property string $name
  * @property string $code
  * @property string|null $iso2
@@ -66,5 +68,13 @@ class Team extends Model
     public function isEliminated(): bool
     {
         return $this->eliminated_at !== null;
+    }
+
+    public static function findByProviderTeam(string $provider, string $providerTeamId): ?self
+    {
+        return self::query()
+            ->where('provider', $provider)
+            ->where('provider_team_id', $providerTeamId)
+            ->first();
     }
 }

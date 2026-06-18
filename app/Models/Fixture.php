@@ -15,6 +15,8 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string|null $external_id
+ * @property string|null $provider
+ * @property string|null $provider_match_id
  * @property FixtureStage $stage
  * @property string|null $group_code
  * @property string|null $round_label
@@ -100,6 +102,14 @@ class Fixture extends Model
     public function isLocked(): bool
     {
         return now()->greaterThanOrEqualTo($this->lock_at);
+    }
+
+    public static function findByProviderMatch(string $provider, string $providerMatchId): ?self
+    {
+        return self::query()
+            ->where('provider', $provider)
+            ->where('provider_match_id', $providerMatchId)
+            ->first();
     }
 
     /**

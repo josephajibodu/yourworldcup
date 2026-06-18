@@ -30,6 +30,7 @@ What it does:
 2. Imports stadiums, teams, and all 104 fixtures via `WorldCupImporter`.
 3. Attaches every enabled market to every fixture.
 4. Imports knockout **bracket slots** (`bracket_slots`) from each fixture's `home_team_label` / `away_team_label` (e.g. `2A`, `3rd D/E/I/J/L`, `W74`).
+5. Links football-data.org ids from `database/data/football_data_org/` (`football-data:link`).
 
 Safe to re-run after JSON updates (played scores, finished flags). Existing rows are updated by external id, not duplicated.
 
@@ -38,6 +39,30 @@ php artisan worldcup:import
 ```
 
 Run this after refreshing tournament JSON, and on first deploy.
+
+### `php artisan football-data:link`
+
+Links local teams and fixtures to [football-data.org](https://www.football-data.org/) ids using the cached API exports in `database/data/football_data_org/`:
+
+- `teams.json`
+- `matches.json`
+
+This runs automatically at the end of `worldcup:import`. Re-run it alone after refreshing those JSON files:
+
+```bash
+php artisan football-data:link
+php artisan football-data:link --teams
+php artisan football-data:link --fixtures
+```
+
+Each linked row stores:
+
+| Table | Columns | Example |
+|-------|---------|---------|
+| `teams` | `provider`, `provider_team_id` | `football-data`, `769` (Mexico) |
+| `fixtures` | `provider`, `provider_match_id` | `football-data`, `537327` (M1) |
+
+Look up a fixture for API calls with `Fixture::findByProviderMatch('football-data', '537327')`. Tournament match numbers (`external_id` / M73) stay unchanged for commands like `fixture:result`.
 
 ## Recording match results
 
