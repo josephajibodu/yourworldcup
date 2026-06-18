@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { store as storePredictions } from '@/actions/App/Http/Controllers/PredictController';
 import { FixtureCard } from '@/components/predict/fixture-card';
+import { ScoreStepperProvider } from '@/components/predict/score-stepper-context';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
 import { ProductShell } from '@/components/product-shell';
 import { Button } from '@/components/ui/button';
@@ -112,7 +113,8 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
     };
 
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 py-6">
+        <ScoreStepperProvider>
+            <div className="mx-auto w-full max-w-3xl px-4 py-6">
             <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 className="font-display text-4xl tracking-wide">
@@ -220,7 +222,8 @@ function PredictDay({ fixtures, selectedDate, dates }: PredictPageProps) {
                     </Button>
                 </div>
             )}
-        </div>
+            </div>
+        </ScoreStepperProvider>
     );
 }
 

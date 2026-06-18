@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+import { useScoreStepper } from './score-stepper-context';
+import { ScoreStepper } from './score-stepper';
 import type { MarketValue, PredictMarket } from './types';
 
 interface MarketInputProps {
@@ -35,6 +37,7 @@ export function MarketInput({
         case 'scoreline':
             return (
                 <ScorelineInput
+                    marketId={market.id}
                     value={value}
                     disabled={disabled}
                     onChange={onChange}
@@ -43,6 +46,7 @@ export function MarketInput({
         case 'integer':
             return (
                 <IntegerInput
+                    marketId={market.id}
                     value={value}
                     disabled={disabled}
                     onChange={onChange}
@@ -122,86 +126,72 @@ function BooleanInput({
     );
 }
 
+interface SteppedInputProps {
+    marketId: number;
+    value: MarketValue | null;
+    disabled: boolean;
+    onChange: (value: MarketValue) => void;
+}
+
 function ScorelineInput({
+    marketId,
     value,
     disabled,
     onChange,
-}: Omit<MarketInputProps, 'market'>) {
-    const home = value && 'home' in value ? value.home : '';
-    const away = value && 'away' in value ? value.away : '';
+}: SteppedInputProps) {
+    const { isExpanded, activate } = useScoreStepper();
+    const home = value && 'home' in value ? value.home : 0;
+    const away = value && 'away' in value ? value.away : 0;
 
-    const update = (side: 'home' | 'away', raw: string) => {
-        const next = raw === '' ? 0 : Math.max(0, Math.min(30, Number(raw)));
-        const current = {
-            home: typeof home === 'number' ? home : 0,
-            away: typeof away === 'number' ? away : 0,
-        };
-        onChange({ ...current, [side]: next });
+    const update = (side: 'home' | 'away', next: number) => {
+        onChange({
+            home: side === 'home' ? next : home,
+            away: side === 'away' ? next : away,
+        });
     };
 
     return (
         <div className="flex items-center gap-2">
-            <ScoreField
+            <ScoreStepper
+                label="home score"
                 value={home}
                 disabled={disabled}
-                onChange={(raw) => update('home', raw)}
+                expanded={!disabled && isExpanded(marketId, 'home')}
+                onActivate={() => activate(marketId, 'home')}
+                onChange={(next) => update('home', next)}
             />
-            <span className="font-mono text-sm text-muted-foreground">–</span>
-            <ScoreField
+            <span className="font-mono text-sm font-semibold text-muted-foreground">
+                –
+            </span>
+            <ScoreStepper
+                label="away score"
                 value={away}
                 disabled={disabled}
-                onChange={(raw) => update('away', raw)}
+                expanded={!disabled && isExpanded(marketId, 'away')}
+                onActivate={() => activate(marketId, 'away')}
+                onChange={(next) => update('away', next)}
             />
         </div>
     );
 }
 
-function ScoreField({
-    value,
-    disabled,
-    onChange,
-}: {
-    value: number | '';
-    disabled: boolean;
-    onChange: (raw: string) => void;
-}) {
-    return (
-        <input
-            type="number"
-            min={0}
-            max={30}
-            inputMode="numeric"
-            disabled={disabled}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            className="h-11 w-14 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-ink focus-visible:ring-2 focus-visible:ring-wc-ink/25 disabled:opacity-60"
-        />
-    );
-}
-
 function IntegerInput({
+    marketId,
     value,
     disabled,
     onChange,
-}: Omit<MarketInputProps, 'market'>) {
-    const current = value && 'value' in value ? value.value : '';
+}: SteppedInputProps) {
+    const { isExpanded, activate } = useScoreStepper();
+    const current = value && 'value' in value ? value.value : 0;
 
     return (
-        <input
-            type="number"
-            min={0}
-            inputMode="numeric"
-            disabled={disabled}
+        <ScoreStepper
+            label="value"
             value={current}
-            onChange={(event) =>
-                onChange({
-                    value:
-                        event.target.value === ''
-                            ? 0
-                            : Math.max(0, Number(event.target.value)),
-                })
-            }
-            className="h-11 w-20 rounded-md border border-border bg-background text-center font-mono text-lg font-semibold tabular-nums outline-none focus-visible:border-wc-ink focus-visible:ring-2 focus-visible:ring-wc-ink/25 disabled:opacity-60"
+            disabled={disabled}
+            expanded={!disabled && isExpanded(marketId, 'value')}
+            onActivate={() => activate(marketId, 'value')}
+            onChange={(next) => onChange({ value: next })}
         />
     );
 }

@@ -1,9 +1,11 @@
 import { Lock, Star } from 'lucide-react';
+import { type FocusEvent } from 'react';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import { MarketInput } from './market-input';
+import { useScoreStepper } from './score-stepper-context';
 import type { MarketValue, PredictFixture } from './types';
 
 interface FixtureCardProps {
@@ -98,9 +100,23 @@ export function FixtureCard({
         fixture.awayScore !== null
             ? `${fixture.homeScore} – ${fixture.awayScore}`
             : time;
+    const { dismiss } = useScoreStepper();
+
+    const handleFocusOut = (event: FocusEvent<HTMLDivElement>) => {
+        const related = event.relatedTarget;
+
+        if (related instanceof Node && event.currentTarget.contains(related)) {
+            return;
+        }
+
+        dismiss();
+    };
 
     return (
-        <div className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm">
+        <div
+            className="overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm"
+            onFocusOut={handleFocusOut}
+        >
             <div className="flex items-center justify-between gap-2 border-b bg-secondary/60 px-4 py-2">
                 <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
                     {fixture.group
