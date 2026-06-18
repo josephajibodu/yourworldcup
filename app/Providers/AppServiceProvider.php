@@ -13,7 +13,9 @@ use App\Http\Responses\TwoFactorLoginResponse;
 use App\Http\Responses\VerifyEmailResponse;
 use App\Predictions\Scoring\ScorerRegistry;
 use App\Predictions\Settlement\SettlerRegistry;
+use App\Support\ExternalIdOrder;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -81,6 +83,10 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        Builder::macro('orderByExternalId', function (): Builder {
+            return ExternalIdOrder::apply($this);
+        });
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

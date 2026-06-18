@@ -95,7 +95,7 @@ function finishGroup(string $groupCode): void
 {
     $teams = Team::query()
         ->where('group_code', $groupCode)
-        ->orderByRaw('CAST(external_id AS INTEGER)')
+        ->orderByExternalId()
         ->get()
         ->values();
 

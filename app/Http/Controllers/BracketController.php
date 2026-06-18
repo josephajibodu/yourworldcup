@@ -74,7 +74,7 @@ class BracketController extends Controller
         $teams = Team::query()
             ->whereNotNull('group_code')
             ->orderBy('group_code')
-            ->orderByRaw('CAST(external_id AS INTEGER)')
+            ->orderByExternalId()
             ->get();
 
         return $teams
@@ -108,7 +108,7 @@ class BracketController extends Controller
                 FixtureStage::Final,
             ])
             ->with(['homeTeam', 'awayTeam', 'stadium', 'bracketSlots'])
-            ->orderByRaw('CAST(external_id AS INTEGER)')
+            ->orderByExternalId()
             ->get()
             ->map(function (Fixture $fixture) use ($feeders): array {
                 $id = (int) $fixture->external_id;

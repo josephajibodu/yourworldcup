@@ -17,7 +17,7 @@ class GroupStandingsService
     {
         $teams = Team::query()
             ->where('group_code', $groupCode)
-            ->orderByRaw('CAST(external_id AS INTEGER)')
+            ->orderByExternalId()
             ->get();
 
         $finished = Fixture::query()
@@ -37,7 +37,7 @@ class GroupStandingsService
         $teams = Team::query()
             ->whereNotNull('group_code')
             ->orderBy('group_code')
-            ->orderByRaw('CAST(external_id AS INTEGER)')
+            ->orderByExternalId()
             ->get();
 
         $finished = Fixture::query()
