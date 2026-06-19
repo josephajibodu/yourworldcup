@@ -2,6 +2,7 @@
 
 namespace App\Fixtures;
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
 use App\Models\Fixture;
 use Illuminate\Support\Facades\Validator;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class FixtureResultRecorder
 {
+    public function __construct(private TournamentCache $cache) {}
+
     /**
      * @return array<int, array{id: string, home: int, away: int}>
      */
@@ -117,6 +120,9 @@ class FixtureResultRecorder
             'away_score' => $awayScore,
             'winner_team_id' => $winnerId,
         ]);
+
+        $this->cache->bump('bracket');
+        $this->cache->bump('predict');
 
         return $fixture->fresh(['homeTeam', 'awayTeam']);
     }

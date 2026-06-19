@@ -2,6 +2,7 @@
 
 namespace App\Predictions\Leaderboard;
 
+use App\Cache\TournamentCache;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class LeaderboardService
 {
+    public function __construct(private TournamentCache $cache) {}
+
     /**
      * Cumulative tournament standings: users who have submitted at least one
      * prediction, ranked by prediction + referral points.
@@ -16,6 +19,48 @@ class LeaderboardService
      * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
      */
     public function overall(int $limit = 50): Collection
+    {
+        return $this->cache->remember(
+            'leaderboard',
+            "overall:{$limit}",
+            fn (): Collection => $this->computeOverall($limit),
+        );
+    }
+
+    /**
+     * Standings for a single WAT match day: users who predicted that day's
+     * fixtures or earned a referral credit that day, ranked by points scored.
+     *
+     * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
+     */
+    public function daily(string $watDate, int $limit = 50): Collection
+    {
+        return $this->cache->remember(
+            'leaderboard',
+            "daily:{$watDate}:{$limit}",
+            fn (): Collection => $this->computeDaily($watDate, $limit),
+        );
+    }
+
+    /**
+     * WAT calendar days with daily-board activity: predictions on that match
+     * day or referral credits earned that day.
+     *
+     * @return array<int, string>
+     */
+    public function dailyDates(): array
+    {
+        return $this->cache->remember(
+            'leaderboard',
+            'dates',
+            fn (): array => $this->computeDailyDates(),
+        );
+    }
+
+    /**
+     * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
+     */
+    private function computeOverall(int $limit): Collection
     {
         $rows = DB::query()
             ->fromSub($this->overallParticipantsSubquery(), 'participants')
@@ -36,12 +81,9 @@ class LeaderboardService
     }
 
     /**
-     * Standings for a single WAT match day: users who predicted that day's
-     * fixtures or earned a referral credit that day, ranked by points scored.
-     *
      * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
      */
-    public function daily(string $watDate, int $limit = 50): Collection
+    private function computeDaily(string $watDate, int $limit): Collection
     {
         [$start, $end] = $this->watDayWindow($watDate);
 
@@ -73,12 +115,9 @@ class LeaderboardService
     }
 
     /**
-     * WAT calendar days with daily-board activity: predictions on that match
-     * day or referral credits earned that day.
-     *
      * @return array<int, string>
      */
-    public function dailyDates(): array
+    private function computeDailyDates(): array
     {
         $fromPredictions = DB::table('predictions')
             ->join('fixture_markets', 'fixture_markets.id', '=', 'predictions.fixture_market_id')

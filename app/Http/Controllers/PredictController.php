@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
 use App\Http\Requests\SubmitPredictionsRequest;
 use App\Models\Fixture;
@@ -22,6 +23,8 @@ use Laravel\Fortify\Features;
 
 class PredictController extends Controller
 {
+    public function __construct(private TournamentCache $cache) {}
+
     public function index(Request $request, PredictionVisibility $visibility): Response
     {
         $dates = $this->predictableDates($visibility);
@@ -68,15 +71,19 @@ class PredictController extends Controller
      */
     private function predictableDates(PredictionVisibility $visibility): array
     {
-        $dates = Fixture::query()
-            ->whereNotNull('home_team_id')
-            ->whereNotNull('away_team_id')
-            ->orderBy('kickoff_at')
-            ->get(['kickoff_at'])
-            ->map(fn (Fixture $fixture): string => $fixture->watDate())
-            ->unique()
-            ->values()
-            ->all();
+        $dates = $this->cache->remember(
+            'predict',
+            'dates',
+            fn (): array => Fixture::query()
+                ->whereNotNull('home_team_id')
+                ->whereNotNull('away_team_id')
+                ->orderBy('kickoff_at')
+                ->get(['kickoff_at'])
+                ->map(fn (Fixture $fixture): string => $fixture->watDate())
+                ->unique()
+                ->values()
+                ->all(),
+        );
 
         return $visibility->filterVisibleDates($dates);
     }
@@ -86,10 +93,32 @@ class PredictController extends Controller
      */
     private function fixturesForDay(Request $request, string $watDate): array
     {
+        $shared = $this->cache->remember(
+            'predict',
+            "day:{$watDate}",
+            fn (): array => $this->sharedFixturesForDay($watDate),
+        );
+
+        $marketIds = collect($shared)
+            ->flatMap(fn (array $fixture): array => array_column($fixture['markets'], 'id'))
+            ->all();
+
+        $predictions = $this->userPredictions($request, $marketIds);
+
+        return collect($shared)
+            ->map(fn (array $fixture): array => $this->mergeFixturePredictions($fixture, $predictions))
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function sharedFixturesForDay(string $watDate): array
+    {
         $start = Carbon::parse($watDate, config('predictions.timezone'))->startOfDay();
         $window = [$start->copy()->utc(), $start->copy()->addDay()->utc()];
 
-        $fixtures = Fixture::query()
+        return Fixture::query()
             ->whereNotNull('home_team_id')
             ->whereNotNull('away_team_id')
             ->whereBetween('kickoff_at', $window)
@@ -100,28 +129,17 @@ class PredictController extends Controller
                 'markets' => fn ($query) => $query->where('is_enabled', true)->with('market'),
             ])
             ->orderBy('kickoff_at')
-            ->get();
-
-        $predictions = $this->userPredictions($request, $fixtures);
-
-        return $fixtures
-            ->map(fn (Fixture $fixture): array => $this->presentFixture($fixture, $predictions))
+            ->get()
+            ->map(fn (Fixture $fixture): array => $this->presentFixture($fixture))
             ->all();
     }
 
     /**
-     * The current user's predictions on the day's markets, keyed by market id.
-     *
-     * @param  Collection<int, Fixture>  $fixtures
+     * @param  array<int, int>  $marketIds
      * @return Collection<int, Prediction>
      */
-    private function userPredictions(Request $request, Collection $fixtures): Collection
+    private function userPredictions(Request $request, array $marketIds): Collection
     {
-        $marketIds = $fixtures
-            ->flatMap(fn (Fixture $fixture): Collection => $fixture->markets)
-            ->pluck('id')
-            ->all();
-
         if ($request->user() === null || $marketIds === []) {
             return new Collection;
         }
@@ -134,10 +152,30 @@ class PredictController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $fixture
      * @param  Collection<int, Prediction>  $predictions
      * @return array<string, mixed>
      */
-    private function presentFixture(Fixture $fixture, Collection $predictions): array
+    private function mergeFixturePredictions(array $fixture, Collection $predictions): array
+    {
+        $fixture['markets'] = collect($fixture['markets'])
+            ->map(function (array $market) use ($predictions): array {
+                $prediction = $predictions->get($market['id']);
+
+                $market['value'] = $prediction?->value;
+                $market['isBanker'] = (bool) $prediction?->is_banker;
+
+                return $market;
+            })
+            ->all();
+
+        return $fixture;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function presentFixture(Fixture $fixture): array
     {
         return [
             'id' => $fixture->id,
@@ -157,7 +195,7 @@ class PredictController extends Controller
             'markets' => $fixture->markets
                 ->sortBy(fn (FixtureMarket $market): int => $market->market->sort_order)
                 ->values()
-                ->map(fn (FixtureMarket $market): array => $this->presentMarket($market, $fixture, $predictions->get($market->id)))
+                ->map(fn (FixtureMarket $market): array => $this->presentMarket($market, $fixture))
                 ->all(),
         ];
     }
@@ -165,7 +203,7 @@ class PredictController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function presentMarket(FixtureMarket $market, Fixture $fixture, ?Prediction $prediction): array
+    private function presentMarket(FixtureMarket $market, Fixture $fixture): array
     {
         return [
             'id' => $market->id,
@@ -176,8 +214,6 @@ class PredictController extends Controller
             'options' => $this->options($market, $fixture),
             'points' => $market->effectiveBasePoints(),
             'locked' => ! $market->isOpenForPrediction(),
-            'value' => $prediction?->value,
-            'isBanker' => (bool) $prediction?->is_banker,
         ];
     }
 

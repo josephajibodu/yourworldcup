@@ -2,6 +2,7 @@
 
 namespace App\Predictions\Settlement;
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
 use App\Enums\MarketStatus;
 use App\Jobs\ResolveBracketSlots;
@@ -16,6 +17,7 @@ class SettlementService
     public function __construct(
         private SettlerRegistry $settlers,
         private ScoringService $scoring,
+        private TournamentCache $cache,
     ) {}
 
     /**
@@ -28,7 +30,13 @@ class SettlementService
     public function settleFixture(Fixture $fixture): int
     {
         if ($fixture->status === FixtureStatus::Void) {
-            return $this->voidFixture($fixture);
+            $scored = $this->voidFixture($fixture);
+
+            if ($scored > 0) {
+                $this->cache->bump('leaderboard');
+            }
+
+            return $scored;
         }
 
         if ($fixture->status !== FixtureStatus::Final) {
@@ -51,6 +59,10 @@ class SettlementService
         });
 
         ResolveBracketSlots::dispatch($fixture->id);
+
+        if ($scored > 0) {
+            $this->cache->bump('leaderboard');
+        }
 
         return $scored;
     }

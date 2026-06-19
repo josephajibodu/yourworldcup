@@ -2,6 +2,7 @@
 
 namespace App\Referrals;
 
+use App\Cache\TournamentCache;
 use App\Models\Referral;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class ReferralService
 {
+    public function __construct(private TournamentCache $cache) {}
+
     /**
      * Credit the referrer once a referred user has made their own prediction
      * and the referrer has already made at least one prediction.
@@ -41,7 +44,9 @@ class ReferralService
             return;
         }
 
-        DB::transaction(function () use ($referrer, $referred): void {
+        $credited = false;
+
+        DB::transaction(function () use ($referrer, $referred, &$credited): void {
             if (Referral::query()->where('referred_id', $referred->id)->lockForUpdate()->exists()) {
                 return;
             }
@@ -57,7 +62,13 @@ class ReferralService
                 'wat_date' => $this->currentWatDate(),
                 'credited_at' => now(),
             ]);
+
+            $credited = true;
         });
+
+        if ($credited) {
+            $this->cache->bump('leaderboard');
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Predictions\Submission;
 
+use App\Cache\TournamentCache;
 use App\Models\FixtureMarket;
 use App\Models\Prediction;
 use App\Models\User;
@@ -16,6 +17,7 @@ class PredictionService
         private MarketValueValidator $validator,
         private ReferralService $referrals,
         private PredictionVisibility $visibility,
+        private TournamentCache $cache,
     ) {}
 
     /**
@@ -31,6 +33,8 @@ class PredictionService
         if (! $this->visibility->isDateVisible($watDate)) {
             $this->fail('Predictions for that day are not open yet.');
         }
+
+        $hadPredictions = $user->hasMadePrediction();
 
         [$start, $end] = $this->watDayWindow($watDate);
 
@@ -73,6 +77,10 @@ class PredictionService
 
         $this->referrals->attemptCredit($user);
         $this->referrals->attemptCreditPendingForReferrer($user);
+
+        if (! $hadPredictions) {
+            $this->cache->bump('leaderboard');
+        }
     }
 
     /**

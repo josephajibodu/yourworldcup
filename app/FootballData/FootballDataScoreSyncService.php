@@ -2,6 +2,7 @@
 
 namespace App\FootballData;
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
 use App\Fixtures\FixtureResultRecorder;
 use App\Models\Fixture;
@@ -18,13 +19,14 @@ class FootballDataScoreSyncService
         'PAUSED',
         'LIVE',
         'EXTRATIME',
-        'PENALTY_SHOOTOUT'
+        'PENALTY_SHOOTOUT',
     ];
 
     public function __construct(
         private FootballDataApiClient $api,
         private FixtureResultRecorder $recorder,
         private SettlementService $settlement,
+        private TournamentCache $cache,
         private string $provider,
         private string $timezone,
     ) {}
@@ -38,6 +40,7 @@ class FootballDataScoreSyncService
             api: $api ?? FootballDataApiClient::fromConfig(),
             recorder: $recorder ?? app(FixtureResultRecorder::class),
             settlement: $settlement ?? app(SettlementService::class),
+            cache: app(TournamentCache::class),
             provider: (string) config('football_data.provider'),
             timezone: (string) config('predictions.timezone'),
         );
@@ -161,6 +164,8 @@ class FootballDataScoreSyncService
         }
 
         $fixture->update(['status' => FixtureStatus::Live]);
+        $this->cache->bump('bracket');
+        $this->cache->bump('predict');
         $result->updated++;
     }
 

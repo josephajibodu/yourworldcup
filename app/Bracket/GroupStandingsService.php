@@ -2,6 +2,7 @@
 
 namespace App\Bracket;
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
 use App\Models\Fixture;
@@ -10,23 +11,18 @@ use Illuminate\Support\Collection;
 
 class GroupStandingsService
 {
+    public function __construct(private TournamentCache $cache) {}
+
     /**
      * @return array<int, array{id: int, name: string, code: string, flag: string|null, played: int, won: int, drawn: int, lost: int, gf: int, ga: int, gd: int, points: int}>
      */
     public function standingsForGroup(string $groupCode): array
     {
-        $teams = Team::query()
-            ->where('group_code', $groupCode)
-            ->orderByExternalId()
-            ->get();
-
-        $finished = Fixture::query()
-            ->where('stage', FixtureStage::Group)
-            ->where('group_code', $groupCode)
-            ->where('status', FixtureStatus::Final)
-            ->get();
-
-        return $this->buildStandings($teams, $finished);
+        return $this->cache->remember(
+            'bracket',
+            "standings:{$groupCode}",
+            fn (): array => $this->computeStandingsForGroup($groupCode),
+        );
     }
 
     /**
@@ -34,18 +30,11 @@ class GroupStandingsService
      */
     public function standingsForAllGroups(): array
     {
-        $teams = Team::query()
-            ->whereNotNull('group_code')
-            ->orderBy('group_code')
-            ->orderByExternalId()
-            ->get();
-
-        $finished = Fixture::query()
-            ->where('stage', FixtureStage::Group)
-            ->where('status', FixtureStatus::Final)
-            ->get();
-
-        return $this->buildStandings($teams, $finished);
+        return $this->cache->remember(
+            'bracket',
+            'standings:all',
+            fn (): array => $this->computeStandingsForAllGroups(),
+        );
     }
 
     public function isGroupComplete(string $groupCode): bool
@@ -130,6 +119,44 @@ class GroupStandingsService
             })
             ->filter()
             ->values();
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, code: string, flag: string|null, played: int, won: int, drawn: int, lost: int, gf: int, ga: int, gd: int, points: int}>
+     */
+    private function computeStandingsForGroup(string $groupCode): array
+    {
+        $teams = Team::query()
+            ->where('group_code', $groupCode)
+            ->orderByExternalId()
+            ->get();
+
+        $finished = Fixture::query()
+            ->where('stage', FixtureStage::Group)
+            ->where('group_code', $groupCode)
+            ->where('status', FixtureStatus::Final)
+            ->get();
+
+        return $this->buildStandings($teams, $finished);
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, code: string, flag: string|null, played: int, won: int, drawn: int, lost: int, gf: int, ga: int, gd: int, points: int}>
+     */
+    private function computeStandingsForAllGroups(): array
+    {
+        $teams = Team::query()
+            ->whereNotNull('group_code')
+            ->orderBy('group_code')
+            ->orderByExternalId()
+            ->get();
+
+        $finished = Fixture::query()
+            ->where('stage', FixtureStage::Group)
+            ->where('status', FixtureStatus::Final)
+            ->get();
+
+        return $this->buildStandings($teams, $finished);
     }
 
     /**

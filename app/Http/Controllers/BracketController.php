@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Bracket\GroupStandingsService;
+use App\Cache\TournamentCache;
 use App\Enums\BracketSlotSide;
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
@@ -15,7 +16,10 @@ use Inertia\Response;
 
 class BracketController extends Controller
 {
-    public function __construct(private GroupStandingsService $standings) {}
+    public function __construct(
+        private GroupStandingsService $standings,
+        private TournamentCache $cache,
+    ) {}
 
     public function index(): Response
     {
@@ -126,6 +130,18 @@ class BracketController extends Controller
      * @return array<int, array<string, mixed>>
      */
     private function knockout(): array
+    {
+        return $this->cache->remember(
+            'bracket',
+            'knockout',
+            fn (): array => $this->buildKnockout(),
+        );
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildKnockout(): array
     {
         /** @var array<int, array{0: int, 1: int}> $feeders */
         $feeders = config('bracket.feeders', []);
