@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { useScoreStepper } from './score-stepper-context';
 import { ScoreStepper } from './score-stepper';
+import { useScoreStepper } from './score-stepper-context';
 import type { MarketValue, PredictMarket } from './types';
 
 interface MarketInputProps {

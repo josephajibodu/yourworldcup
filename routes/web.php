@@ -14,8 +14,10 @@ Route::get('leaderboard', [LeaderboardController::class, 'index'])->name('leader
 Route::get('referrals', [ReferralController::class, 'index'])->name('referrals');
 Route::get('players/count', PlayerCountController::class)->name('players.count');
 
+Route::get('predict', [PredictController::class, 'index'])->name('predict');
+Route::post('predict/return-url', [PredictController::class, 'rememberReturnUrl'])->name('predict.return-url');
+
 Route::middleware('auth')->group(function () {
-    Route::get('predict', [PredictController::class, 'index'])->name('predict');
     Route::post('predict', [PredictController::class, 'store'])->name('predict.store');
 });
 

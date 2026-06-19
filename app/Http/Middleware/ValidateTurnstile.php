@@ -25,6 +25,10 @@ class ValidateTurnstile
             return $next($request);
         }
 
+        if ($request->session()->pull('predict_auth_flow')) {
+            return $next($request);
+        }
+
         $token = $request->input('cf-turnstile-response');
         $verifier = app(TurnstileVerifier::class);
 

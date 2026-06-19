@@ -11,8 +11,58 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
 
-it('requires authentication to predict', function () {
-    $this->get(route('predict'))->assertRedirect(route('login'));
+it('allows guests to browse the predict page', function () {
+    $fixture = predictableFixture()['fixture'];
+
+    $this->get(route('predict', ['date' => $fixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('predict')
+            ->where('selectedDate', $fixture->watDate())
+            ->has('fixtures', 1)
+        );
+});
+
+it('requires authentication to submit predictions', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
+
+    $this->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+        ],
+        'banker_fixture_market_id' => null,
+    ])->assertRedirect(route('login'));
+});
+
+it('remembers the predict return url for post-login redirect', function () {
+    $this->post(route('predict.return-url'), [
+        'return_url' => '/predict?date=2026-06-18',
+    ])->assertNoContent();
+
+    expect(session('url.intended'))->toBe('/predict?date=2026-06-18')
+        ->and(session('predict_auth_flow'))->toBeTrue();
+});
+
+it('allows login from the predict flow without turnstile when enabled', function () {
+    config([
+        'turnstile.enabled' => true,
+        'turnstile.site_key' => 'test-site-key',
+        'turnstile.secret_key' => 'test-secret-key',
+    ]);
+
+    $user = User::factory()->create();
+
+    $this->post(route('predict.return-url'), [
+        'return_url' => '/predict',
+    ])->assertNoContent();
+
+    $this->post(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertRedirect(route('predict', absolute: false));
+
+    $this->assertAuthenticated();
 });
 
 it('shows the selected day fixtures to a signed-in user', function () {

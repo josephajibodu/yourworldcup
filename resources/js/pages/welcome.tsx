@@ -36,11 +36,7 @@ export default function Welcome() {
                                     size="lg"
                                     className="rounded-full"
                                 >
-                                    <Link
-                                        href={
-                                            auth.user ? predict() : register()
-                                        }
-                                    >
+                                    <Link href={predict()}>
                                         Make today’s picks
                                         <ArrowRight className="size-4" />
                                     </Link>

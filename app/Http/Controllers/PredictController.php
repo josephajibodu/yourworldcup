@@ -13,9 +13,12 @@ use App\Predictions\Submission\PredictionVisibility;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Features;
 
 class PredictController extends Controller
 {
@@ -28,7 +31,21 @@ class PredictController extends Controller
             'dates' => $dates,
             'selectedDate' => $selected,
             'fixtures' => $selected === null ? [] : $this->fixturesForDay($request, $selected),
+            'canResetPassword' => Features::enabled(Features::resetPasswords()),
+            'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
+    }
+
+    public function rememberReturnUrl(Request $request): HttpResponse
+    {
+        $request->validate([
+            'return_url' => ['required', 'string', 'starts_with:/predict'],
+        ]);
+
+        $request->session()->put('url.intended', $request->input('return_url'));
+        $request->session()->put('predict_auth_flow', true);
+
+        return response()->noContent();
     }
 
     public function store(SubmitPredictionsRequest $request, PredictionService $service): RedirectResponse
