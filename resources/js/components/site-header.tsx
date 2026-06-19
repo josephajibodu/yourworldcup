@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Trophy } from 'lucide-react';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,9 +65,7 @@ export function SiteHeader({ variant = 'surface' }: SiteHeaderProps) {
                         href={home()}
                         className="flex min-w-0 items-center gap-2.5"
                     >
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-wc-ink text-wc-gold">
-                            <Trophy className="size-4" />
-                        </span>
+                        <AppLogoIcon className="size-8 shrink-0" />
                         <span className="truncate font-display text-xl tracking-[0.22em]">
                             YOURWORLD<span className="text-wc-gold">CUP</span>
                         </span>

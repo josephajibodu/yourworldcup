@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Trophy } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/ui/button';
 import { bracket, home, leaderboard, predict, referrals, register } from '@/routes';
 
@@ -39,9 +40,7 @@ export function SiteFooter() {
                             href={home()}
                             className="inline-flex items-center gap-2.5"
                         >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-wc-surface/10 text-wc-gold">
-                                <Trophy className="size-4" />
-                            </span>
+                            <AppLogoIcon className="size-9 shrink-0" />
                             <span className="font-display text-xl tracking-[0.22em] text-wc-surface">
                                 YOURWORLD
                                 <span className="text-wc-gold">CUP</span>
