@@ -78,6 +78,7 @@ class SettlementService
         $scored = 0;
 
         foreach ($market->predictions as $prediction) {
+            // set the updated relation on it instead of loading it from the database
             $prediction->setRelation('fixtureMarket', $market);
 
             $prediction->update([

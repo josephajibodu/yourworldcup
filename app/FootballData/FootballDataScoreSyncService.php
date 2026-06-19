@@ -175,9 +175,9 @@ class FootballDataScoreSyncService
     private function recentWatDateRange(): array
     {
         $today = Carbon::now($this->timezone)->toDateString();
-        // $yesterday = Carbon::now($this->timezone)->subDay()->toDateString();
+        $yesterday = Carbon::now($this->timezone)->subDay()->toDateString();
 
-        return [$today, $today];
+        return [$yesterday, $today];
     }
 
     private function alreadyRecorded(Fixture $fixture, int $homeScore, int $awayScore): bool
