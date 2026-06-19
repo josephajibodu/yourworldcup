@@ -234,7 +234,7 @@ export default function Bracket() {
                         <MiniMap
                             pannable
                             zoomable
-                            className="border border-wc-ink/10! bg-white/90!"
+                            className="hidden border border-wc-ink/10! bg-white/90! md:block"
                             maskColor="rgba(247,245,240,0.75)"
                             nodeColor="rgba(10,10,11,0.18)"
                         />

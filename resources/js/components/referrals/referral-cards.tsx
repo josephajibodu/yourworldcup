@@ -31,7 +31,7 @@ export function ReferralShareCard({ code, url }: ReferralShareCardProps) {
     };
 
     return (
-        <div className="rounded-xl border border-wc-ink/10 bg-card p-5 md:p-6">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-wc-ink/10 bg-card p-5 md:p-6">
             <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold tracking-tight text-wc-ink">
                     your invite link
@@ -47,8 +47,8 @@ export function ReferralShareCard({ code, url }: ReferralShareCardProps) {
                     <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-ink/50 uppercase">
                         referral code
                     </p>
-                    <div className="mt-2 flex items-center gap-2">
-                        <code className="flex-1 truncate rounded-lg border border-wc-ink/10 bg-wc-surface px-4 py-3 font-mono text-lg font-bold tracking-widest text-wc-ink tabular-nums">
+                    <div className="mt-2 flex min-w-0 items-center gap-2">
+                        <code className="block min-w-0 flex-1 truncate rounded-lg border border-wc-ink/10 bg-wc-surface px-4 py-3 font-mono text-lg font-bold tracking-widest text-wc-ink tabular-nums">
                             {code}
                         </code>
                         <Button
@@ -72,14 +72,14 @@ export function ReferralShareCard({ code, url }: ReferralShareCardProps) {
                     <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-ink/50 uppercase">
                         share link
                     </p>
-                    <div className="mt-2 flex items-center gap-2">
-                        <div className="min-w-0 flex-1 truncate rounded-lg border border-wc-ink/10 bg-wc-surface px-4 py-3 text-sm text-wc-ink/80">
+                    <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                        <div className="min-w-0 truncate rounded-lg border border-wc-ink/10 bg-wc-surface px-4 py-3 text-sm text-wc-ink/80 sm:flex-1">
                             {url}
                         </div>
                         <Button
                             type="button"
                             variant="ink"
-                            className="shrink-0 rounded-full px-4"
+                            className="w-full shrink-0 rounded-full px-4 sm:w-auto"
                             onClick={() => handleCopy(url, 'url')}
                         >
                             {copied === 'url' ? (
@@ -137,14 +137,14 @@ export function ReferralStatsCard({
     hasMadePrediction,
 }: ReferralStatsCardProps) {
     return (
-        <div className="rounded-xl border border-wc-ink/10 bg-card p-5 md:p-6">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-wc-ink/10 bg-card p-5 md:p-6">
             <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold tracking-tight text-wc-ink">
                     your stats
                 </h2>
             </div>
 
-            <dl className="mt-5 grid grid-cols-2 gap-4">
+            <dl className="mt-5 grid min-w-0 grid-cols-2 gap-4">
                 <div className="rounded-lg bg-wc-surface px-4 py-3">
                     <dt className="font-mono text-[10px] font-bold tracking-[0.16em] text-wc-ink/50 uppercase">
                         referrals

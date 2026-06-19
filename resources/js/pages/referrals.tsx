@@ -40,7 +40,7 @@ export default function Referrals() {
         <>
             <Head title="Referrals" />
             <ProductShell>
-                <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+                <div className="mx-auto min-w-0 max-w-6xl px-4 py-10 sm:px-6 md:py-14">
                     <div className="max-w-2xl">
                         <h1 className="text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
                             referrals
@@ -53,7 +53,7 @@ export default function Referrals() {
                         </p>
                     </div>
 
-                    <div className="mt-8 flex gap-4 rounded-2xl border border-wc-primary/20 bg-wc-primary/6 p-5 md:items-center">
+                    <div className="mt-8 flex min-w-0 gap-4 rounded-2xl border border-wc-primary/20 bg-wc-primary/6 p-5 md:items-center">
                         <div className="grid size-14 shrink-0 place-items-center rounded-full bg-wc-primary/12 ring-1 ring-wc-primary/25">
                             <UserPlus className="size-7 text-wc-primary" />
                         </div>
@@ -75,7 +75,7 @@ export default function Referrals() {
                     </div>
 
                     {isAuthenticated && share !== null && stats !== null ? (
-                        <div className="mt-10 grid gap-8 md:grid-cols-2">
+                        <div className="mt-10 grid min-w-0 gap-8 md:grid-cols-2">
                             <ReferralShareCard
                                 code={share.code}
                                 url={share.url}
