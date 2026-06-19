@@ -30,6 +30,31 @@ it('ranks users by total points overall', function () {
         ->and($overall[1])->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 2]);
 });
 
+it('breaks ties on total points using the earliest submitted_at', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = finalFixtureWithMarkets(1, 0);
+    $ada = User::factory()->create(['name' => 'Ada']);
+    $bee = User::factory()->create(['name' => 'Bee']);
+
+    Prediction::factory()->for($ada)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'home'],
+        'submitted_at' => now()->subHours(3),
+    ]);
+    Prediction::factory()->for($bee)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'home'],
+        'submitted_at' => now()->subHour(),
+    ]);
+
+    app(SettlementService::class)->settleFixture($fixture);
+
+    $overall = app(LeaderboardService::class)->overall();
+
+    expect($overall)->toHaveCount(2)
+        ->and($overall[0])->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 1])
+        ->and($overall[1])->toMatchArray(['name' => 'Bee', 'points' => 1, 'rank' => 2]);
+});
+
 it('does not list registered users without predictions on the overall board', function () {
     User::factory()->create(['name' => 'New Player']);
 

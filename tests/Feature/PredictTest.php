@@ -7,6 +7,7 @@ use App\Models\Prediction;
 use App\Models\PredictionMarket;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
@@ -114,7 +115,98 @@ it('saves a users picks for the day', function () {
 
     expect(Prediction::query()->where('user_id', $user->id)->count())->toBe(2)
         ->and($winnerPick->value)->toBe(['selected' => 'home'])
-        ->and($winnerPick->is_banker)->toBeTrue();
+        ->and($winnerPick->is_banker)->toBeTrue()
+        ->and($winnerPick->submitted_at)->not->toBeNull();
+});
+
+it('updates submitted_at when a pick is edited before lock', function () {
+    ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
+    $user = User::factory()->create();
+
+    $payload = fn (string $selection) => [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => $selection]],
+        ],
+        'banker_fixture_market_id' => null,
+    ];
+
+    actingAs($user)->post(route('predict.store'), $payload('home'))->assertRedirect();
+
+    $originalSubmittedAt = Prediction::query()->where('fixture_market_id', $winner->id)->sole()->submitted_at;
+
+    $this->travel(2)->hours();
+
+    actingAs($user)->post(route('predict.store'), $payload('away'))->assertRedirect();
+
+    $pick = Prediction::query()->where('fixture_market_id', $winner->id)->sole();
+
+    expect($pick->submitted_at->greaterThan($originalSubmittedAt))->toBeTrue()
+        ->and($pick->value)->toBe(['selected' => 'away']);
+});
+
+it('refreshes submitted_at on all day picks when any pick changes', function () {
+    ['fixture' => $fixture, 'winner' => $winner, 'score' => $score] = predictableFixture();
+    $user = User::factory()->create();
+
+    actingAs($user)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+            ['fixture_market_id' => $score->id, 'value' => ['home' => 2, 'away' => 1]],
+        ],
+        'banker_fixture_market_id' => null,
+    ])->assertRedirect();
+
+    $winnerSubmittedAt = Prediction::query()->where('fixture_market_id', $winner->id)->sole()->submitted_at;
+    $scoreSubmittedAt = Prediction::query()->where('fixture_market_id', $score->id)->sole()->submitted_at;
+
+    $this->travel(2)->hours();
+
+    actingAs($user)->post(route('predict.store'), [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+            ['fixture_market_id' => $score->id, 'value' => ['home' => 3, 'away' => 1]],
+        ],
+        'banker_fixture_market_id' => null,
+    ])->assertRedirect();
+
+    $winnerPick = Prediction::query()->where('fixture_market_id', $winner->id)->sole();
+    $scorePick = Prediction::query()->where('fixture_market_id', $score->id)->sole();
+
+    expect($winnerPick->submitted_at->equalTo($scorePick->submitted_at))->toBeTrue()
+        ->and($winnerPick->submitted_at->greaterThan($winnerSubmittedAt))->toBeTrue()
+        ->and($scorePick->submitted_at->greaterThan($scoreSubmittedAt))->toBeTrue();
+});
+
+it('does not refresh submitted_at when picks are unchanged', function () {
+    ['fixture' => $fixture, 'winner' => $winner, 'score' => $score] = predictableFixture();
+    $user = User::factory()->create();
+
+    $payload = [
+        'date' => $fixture->watDate(),
+        'predictions' => [
+            ['fixture_market_id' => $winner->id, 'value' => ['selected' => 'home']],
+            ['fixture_market_id' => $score->id, 'value' => ['home' => 2, 'away' => 1]],
+        ],
+        'banker_fixture_market_id' => null,
+    ];
+
+    actingAs($user)->post(route('predict.store'), $payload)->assertRedirect();
+
+    $originalSubmittedAt = Carbon::parse(Prediction::query()
+        ->where('user_id', $user->id)
+        ->min('submitted_at'));
+
+    $this->travel(2)->hours();
+
+    actingAs($user)->post(route('predict.store'), $payload)->assertRedirect();
+
+    expect(Carbon::parse(Prediction::query()
+        ->where('user_id', $user->id)
+        ->min('submitted_at'))
+        ->equalTo($originalSubmittedAt))->toBeTrue();
 });
 
 it('keeps at most one banker per day', function () {

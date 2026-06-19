@@ -43,6 +43,9 @@ class PredictionService
             ->keyBy('id');
 
         DB::transaction(function () use ($user, $entries, $bankerFixtureMarketId, $markets, $start, $end): void {
+            $submittedAt = now();
+            $anyChanged = false;
+
             foreach ($entries as $entry) {
                 $fixtureMarket = $markets->get($entry['fixture_market_id']);
 
@@ -55,10 +58,14 @@ class PredictionService
 
                 $value = $this->validator->validate($fixtureMarket, $entry['value']);
 
-                Prediction::updateOrCreate(
-                    ['user_id' => $user->id, 'fixture_market_id' => $fixtureMarket->id],
-                    ['value' => $value],
-                );
+                $anyChanged = $this->persistPrediction($user, $fixtureMarket, $value) || $anyChanged;
+            }
+
+            if ($anyChanged) {
+                Prediction::query()
+                    ->where('user_id', $user->id)
+                    ->whereHas('fixtureMarket.fixture', fn ($query) => $query->whereBetween('kickoff_at', [$start, $end]))
+                    ->update(['submitted_at' => $submittedAt]);
             }
 
             $this->reconcileBanker($user, $bankerFixtureMarketId, $start, $end);
@@ -97,6 +104,29 @@ class PredictionService
         $this->assertOpen($fixtureMarket, 'banker');
 
         $prediction->update(['is_banker' => true]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     */
+    private function persistPrediction(User $user, FixtureMarket $fixtureMarket, array $value): bool
+    {
+        $prediction = Prediction::query()->firstOrNew([
+            'user_id' => $user->id,
+            'fixture_market_id' => $fixtureMarket->id,
+        ]);
+
+        $changed = ! $prediction->exists || $prediction->value != $value;
+
+        $prediction->value = $value;
+
+        if (! $prediction->exists) {
+            $prediction->submitted_at = now();
+        }
+
+        $prediction->save();
+
+        return $changed;
     }
 
     private function assertOpen(FixtureMarket $fixtureMarket, ?string $key = null): void

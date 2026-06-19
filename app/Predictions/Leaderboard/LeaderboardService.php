@@ -118,7 +118,7 @@ class LeaderboardService
             ->select(
                 'predictions.user_id',
                 DB::raw('SUM(predictions.points_awarded) as points'),
-                DB::raw('MIN(predictions.created_at) as first_at'),
+                DB::raw('MIN(predictions.submitted_at) as first_at'),
             )
             ->groupBy('predictions.user_id');
 
@@ -153,7 +153,7 @@ class LeaderboardService
         return DB::table('predictions')
             ->select(
                 'predictions.user_id',
-                DB::raw('MIN(predictions.created_at) as first_at'),
+                DB::raw('MIN(predictions.submitted_at) as first_at'),
             )
             ->groupBy('predictions.user_id');
     }
@@ -166,7 +166,7 @@ class LeaderboardService
             ->whereBetween('fixtures.kickoff_at', [$start, $end])
             ->select(
                 'predictions.user_id',
-                DB::raw('MIN(predictions.created_at) as first_at'),
+                DB::raw('MIN(predictions.submitted_at) as first_at'),
             )
             ->groupBy('predictions.user_id');
 

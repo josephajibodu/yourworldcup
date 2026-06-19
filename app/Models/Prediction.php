@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $fixture_market_id
  * @property array<string, mixed> $value
  * @property bool $is_banker
+ * @property Carbon $submitted_at
  * @property int|null $points_awarded
  * @property Carbon|null $scored_at
  * @property Carbon|null $created_at
@@ -31,6 +32,7 @@ class Prediction extends Model
         return [
             'value' => 'array',
             'is_banker' => 'boolean',
+            'submitted_at' => 'datetime',
             'points_awarded' => 'integer',
             'scored_at' => 'datetime',
         ];

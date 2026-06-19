@@ -21,6 +21,7 @@ class PredictionFactory extends Factory
             'fixture_market_id' => FixtureMarket::factory(),
             'value' => ['selected' => 'home'],
             'is_banker' => false,
+            'submitted_at' => now(),
         ];
     }
 
