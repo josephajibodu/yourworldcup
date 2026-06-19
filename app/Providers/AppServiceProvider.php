@@ -30,6 +30,7 @@ use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseCo
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
 use Laravel\Fortify\Http\Responses\RedirectAsIntended as FortifyRedirectAsIntended;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
+use Opcodes\LogViewer\Facades\LogViewer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -71,6 +72,11 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAuthResponses();
         $this->configureOutgoingApiLogging();
+    }
+
+    protected function configureLogViewer(): void
+    {
+        LogViewer::auth(fn () => auth()->check() && auth()->user()->isAdmin());
     }
 
     protected function configureOutgoingApiLogging(): void
