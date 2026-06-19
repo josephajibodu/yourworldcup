@@ -30,7 +30,6 @@ interface LabelNodeData {
 }
 
 const teams: Team[] = [
-    { name: 'Ghana', code: 'GHA', flag: 'https://flagcdn.com/w80/gh.png' },
     { name: 'Argentina', code: 'ARG', flag: 'https://flagcdn.com/w80/ar.png' },
     { name: 'Brazil', code: 'BRA', flag: 'https://flagcdn.com/w80/br.png' },
     { name: 'France', code: 'FRA', flag: 'https://flagcdn.com/w80/fr.png' },
@@ -42,9 +41,10 @@ const teams: Team[] = [
         flag: 'https://flagcdn.com/w80/za.png',
     },
     { name: 'Morocco', code: 'MAR', flag: 'https://flagcdn.com/w80/ma.png' },
+    { name: 'Portugal', code: 'POR', flag: 'https://flagcdn.com/w80/pt.png' },
 ];
 
-const championCodes = ['BRA', 'MAR', 'MEX', 'FRA', 'ARG'];
+const championCodes = ['BRA', 'MAR', 'MEX', 'FRA', 'ARG', 'POR'];
 const cycleMs = 14000;
 
 const championPool = championCodes

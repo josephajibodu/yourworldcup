@@ -85,7 +85,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                 fontSize="11"
                 letterSpacing="0.08em"
             >
-                MATCHDAY 7 · LOCKS 17:00
+                MATCHDAY 1 · LOCKS 16:00
             </text>
 
             {/* Team A */}
@@ -100,7 +100,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     stroke="rgba(10,10,11,0.1)"
                 />
                 <image
-                    href="https://flagcdn.com/br.svg"
+                    href="https://flagcdn.com/de.svg"
                     x="44"
                     y="88"
                     width="52"
@@ -114,7 +114,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="13"
                 >
-                    BRA
+                    GER
                 </text>
             </g>
 
@@ -130,7 +130,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     stroke="rgba(10,10,11,0.1)"
                 />
                 <image
-                    href="https://flagcdn.com/fr.svg"
+                    href="https://flagcdn.com/cw.svg"
                     x="264"
                     y="88"
                     width="52"
@@ -144,7 +144,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="13"
                 >
-                    FRA
+                    CUW
                 </text>
             </g>
 
@@ -185,7 +185,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="22"
                 >
-                    2–1
+                    7–1
                 </text>
             </g>
             <rect
@@ -229,7 +229,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fxp-points fill-wc-gold font-bold"
                     fontSize="15"
                 >
-                    +45 pts
+                    +6 pts
                 </text>
             )}
         </svg>
@@ -666,7 +666,7 @@ const FEATURES: FeatureConfig[] = [
         label: 'Daily predictions',
         title: 'Master daily predictions',
         shortDescription:
-            'Call the winner of every match — add the exact score for bonus points, and double down with one banker pick a day.',
+            'Call the winner of every match, add the exact score for bonus points, and double down with one banker pick a day.',
         longDescription:
             'Call the winner of every match, add the exact score for bonus points, and double down with one banker pick a day to climb faster.',
         icon: Target,

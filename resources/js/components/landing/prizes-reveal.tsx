@@ -8,12 +8,12 @@ import { usePlayerCount } from '@/hooks/use-player-count';
 
 const STATE_A_EYEBROW = 'every day';
 const STATE_A_HEADLINE =
-    'win airtime every single day of the tournament — top the daily board and it lands straight on your verified phone.';
+    'win airtime every single day of the tournament, top the daily board and it lands straight on your verified phone.';
 const STATE_B_EYEBROW = 'The grand prize';
 const STATE_B_HEADLINE =
     'every prediction flows toward one grand prize at the final whistle. It unlocks the moment we reach 1,000 players.';
 const PERSISTENT_LINE =
-    'plus surprise drops at random moments — be playing when they hit.';
+    'plus surprise drops at random moments, ensure you are active to win!';
 
 /* -------------------------------------------------------------------------- */
 /*  Math                                                                       */
@@ -131,7 +131,6 @@ function StateBlock({
 function PersistentLine() {
     return (
         <p className="flex items-center gap-2 text-sm leading-relaxed text-wc-ink/60">
-            <Sparkles className="size-4 shrink-0 text-wc-gold" />
             {PERSISTENT_LINE}
         </p>
     );
