@@ -6,6 +6,7 @@ use App\Bracket\Contracts\BestThirdQualifier;
 use App\Bracket\PointsBestThirdQualifier;
 use App\FootballData\FootballDataLinker;
 use App\Http\Client\LogOutgoingApiRequest;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\PasskeyLoginResponse;
 use App\Http\Responses\RedirectAsIntended as AppRedirectAsIntended;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Inertia\ExceptionResponse;
+use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
@@ -72,6 +75,27 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAuthResponses();
         $this->configureOutgoingApiLogging();
+        $this->configureInertiaErrors();
+    }
+
+    protected function configureInertiaErrors(): void
+    {
+        Inertia::handleExceptionsUsing(function (ExceptionResponse $response) {
+            $status = $response->statusCode();
+
+            if (! in_array($status, [403, 404, 419, 500, 503], true)) {
+                return null;
+            }
+
+            if (app()->environment('local') && $status === 500) {
+                return null;
+            }
+
+            return $response
+                ->render('ErrorPage', ['status' => $status])
+                ->withSharedData()
+                ->usingMiddleware(HandleInertiaRequests::class);
+        });
     }
 
     protected function configureLogViewer(): void

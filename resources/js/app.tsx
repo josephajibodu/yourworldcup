@@ -17,6 +17,7 @@ createInertiaApp({
             case name === 'leaderboard':
             case name === 'referrals':
             case name === 'predict':
+            case name === 'ErrorPage':
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
