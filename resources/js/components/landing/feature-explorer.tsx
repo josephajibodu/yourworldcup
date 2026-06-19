@@ -409,7 +409,8 @@ const SEED_PLAYERS: Player[] = [
 
 const ROW_H = 56;
 const ROW_GAP = 8;
-const TICK_MS = 2200;
+const TICK_MS = 1400;
+const INITIAL_TICK_MS = 400;
 
 function CountUp({ value, animate }: { value: number; animate: boolean }) {
     const [display, setDisplay] = useState(value);
@@ -504,7 +505,7 @@ function RewardsDemo({ reduced }: { reduced: boolean }) {
             return;
         }
 
-        const interval = window.setInterval(() => {
+        const tick = () => {
             const current = playersRef.current;
             const count = 1 + Math.floor(Math.random() * 2);
             const chosen = new Set<number>();
@@ -530,9 +531,15 @@ function RewardsDemo({ reduced }: { reduced: boolean }) {
 
             setPlayers(next);
             setBumped(bumpedIds);
-        }, TICK_MS);
+        };
 
-        return () => window.clearInterval(interval);
+        const initialTimeout = window.setTimeout(tick, INITIAL_TICK_MS);
+        const interval = window.setInterval(tick, TICK_MS);
+
+        return () => {
+            window.clearTimeout(initialTimeout);
+            window.clearInterval(interval);
+        };
     }, [reduced]);
 
     // Detect upward rank movement → brief pulse cue.
