@@ -11,22 +11,23 @@ const TWITTER_URL = `https://x.com/${TWITTER_HANDLE}`;
 
 interface LeaderboardPageProps {
     overall: StandingsRow[];
-    daily: StandingsRow[];
+    weekly: StandingsRow[];
     dates: string[];
     selectedDate: string | null;
     [key: string]: unknown;
 }
 
-function formatDay(date: string): string {
-    return new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-    });
+function formatWeek(weekStart: string): string {
+    const start = new Date(`${weekStart}T12:00:00`);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const fmt = (d: Date) =>
+        d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return `${fmt(start)} – ${fmt(end)}`;
 }
 
 export default function Leaderboard() {
-    const { overall, daily, dates, selectedDate, auth } =
+    const { overall, weekly, dates, selectedDate, auth } =
         usePage<LeaderboardPageProps>().props;
     const currentUserId = auth.user?.id ?? null;
 
@@ -45,7 +46,7 @@ export default function Leaderboard() {
                             leaderboard
                         </h1>
                         <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                            points land as results come in. climb the daily
+                            points land as results come in. climb the weekly
                             board for airtime, and the overall table for the
                             grand prize.
                         </p>
@@ -68,13 +69,13 @@ export default function Leaderboard() {
                                 the final whistle.
                             </p>
                             <p className="mt-1 text-sm leading-relaxed text-wc-ink/60">
-                                keep climbing the overall table — the top spot
+                                keep climbing the overall table, the top spot
                                 when the tournament ends wins the grand prize,
                                 unlocked once we reach 1,000 players.
                             </p>
                             <p className="mt-3 text-sm leading-relaxed text-wc-ink/60">
-                                to qualify for any reward — daily airtime or
-                                the grand prize — you must be following{' '}
+                                to qualify for any reward, weekly airtime or the
+                                grand prize, you must be following{' '}
                                 <a
                                     href={TWITTER_URL}
                                     target="_blank"
@@ -112,10 +113,10 @@ export default function Leaderboard() {
                                 <div className="flex items-center gap-2">
                                     <div>
                                         <h2 className="text-lg font-bold tracking-tight text-wc-ink">
-                                            daily
+                                            weekly
                                         </h2>
                                         <p className="text-xs text-muted-foreground">
-                                            top the day for airtime rewards
+                                            top the week for airtime rewards
                                         </p>
                                     </div>
                                 </div>
@@ -141,9 +142,9 @@ export default function Leaderboard() {
                                             </span>
                                         )}
                                     </Button>
-                                    <span className="min-w-28 text-center font-mono text-xs font-semibold tracking-wider text-wc-ink/70 uppercase tabular-nums">
+                                    <span className="min-w-36 text-center font-mono text-xs font-semibold tracking-wider text-wc-ink/70 uppercase tabular-nums">
                                         {selectedDate
-                                            ? formatDay(selectedDate)
+                                            ? formatWeek(selectedDate)
                                             : '—'}
                                     </span>
                                     <Button
@@ -170,9 +171,9 @@ export default function Leaderboard() {
                                 </div>
                             </div>
                             <StandingsTable
-                                rows={daily}
+                                rows={weekly}
                                 currentUserId={currentUserId}
-                                emptyMessage="No picks or referrals on this day yet."
+                                emptyMessage="No picks or referrals this week yet."
                             />
                         </div>
                     </div>

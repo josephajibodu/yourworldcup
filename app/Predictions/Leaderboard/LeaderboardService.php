@@ -28,32 +28,32 @@ class LeaderboardService
     }
 
     /**
-     * Standings for a single WAT match day: users who predicted that day's
-     * fixtures or earned a referral credit that day, ranked by points scored.
+     * Standings for a single WAT week (Mon–Sun): users who predicted that
+     * week's fixtures or earned a referral credit that week, ranked by points.
      *
      * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
      */
-    public function daily(string $watDate, int $limit = 50): Collection
+    public function weekly(string $weekStart, int $limit = 50): Collection
     {
         return collect($this->cache->remember(
             'leaderboard',
-            "daily:{$watDate}:{$limit}",
-            fn (): array => $this->computeDaily($watDate, $limit)->all(),
+            "weekly:{$weekStart}:{$limit}",
+            fn (): array => $this->computeWeekly($weekStart, $limit)->all(),
         ));
     }
 
     /**
-     * WAT calendar days with daily-board activity: predictions on that match
-     * day or referral credits earned that day.
+     * WAT week-start dates (Mondays) that have weekly-board activity:
+     * predictions on that week's fixtures or referral credits earned that week.
      *
      * @return array<int, string>
      */
-    public function dailyDates(): array
+    public function weeklyDates(): array
     {
         return $this->cache->remember(
             'leaderboard',
-            'dates',
-            fn (): array => $this->computeDailyDates(),
+            'weeks',
+            fn (): array => $this->computeWeeklyDates(),
         );
     }
 
@@ -83,17 +83,18 @@ class LeaderboardService
     /**
      * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
      */
-    private function computeDaily(string $watDate, int $limit): Collection
+    private function computeWeekly(string $weekStart, int $limit): Collection
     {
-        [$start, $end] = $this->watDayWindow($watDate);
+        [$start, $end] = $this->watWeekWindow($weekStart);
+        $weekEnd = Carbon::parse($weekStart, config('predictions.timezone'))->addDays(6)->toDateString();
 
         $rows = DB::query()
-            ->fromSub($this->dailyParticipantsSubquery($start, $end, $watDate), 'participants')
+            ->fromSub($this->weeklyParticipantsSubquery($start, $end, $weekStart, $weekEnd), 'participants')
             ->join('users', 'users.id', '=', 'participants.user_id')
             ->leftJoinSub(
                 $this->combinedScoreSubquery(
                     predictionFilter: fn (Builder $query) => $query->whereBetween('fixtures.kickoff_at', [$start, $end]),
-                    referralFilter: fn (Builder $query) => $query->where('referrals.wat_date', $watDate),
+                    referralFilter: fn (Builder $query) => $query->whereBetween('referrals.wat_date', [$weekStart, $weekEnd]),
                 ),
                 'scores',
                 'users.id',
@@ -117,29 +118,22 @@ class LeaderboardService
     /**
      * @return array<int, string>
      */
-    private function computeDailyDates(): array
+    private function computeWeeklyDates(): array
     {
-        $fromPredictions = DB::table('predictions')
-            ->join('fixture_markets', 'fixture_markets.id', '=', 'predictions.fixture_market_id')
-            ->join('fixtures', 'fixtures.id', '=', 'fixture_markets.fixture_id')
-            ->select('fixtures.kickoff_at')
-            ->distinct()
-            ->get()
-            ->map(fn (\stdClass $row): string => Carbon::parse($row->kickoff_at)
-                ->setTimezone(config('predictions.timezone'))
-                ->toDateString());
+        $timezone = config('predictions.timezone');
 
-        $fromReferrals = DB::table('referrals')
-            ->distinct()
-            ->pluck('wat_date')
-            ->map(fn (mixed $date): string => (string) $date);
+        $firstWeek = Carbon::parse('2026-06-11', $timezone)->startOfWeek(Carbon::MONDAY);
+        $currentWeek = Carbon::now($timezone)->startOfWeek(Carbon::MONDAY);
 
-        return $fromPredictions
-            ->merge($fromReferrals)
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
+        $weeks = [];
+        $week = $firstWeek->copy();
+
+        while ($week->lte($currentWeek)) {
+            $weeks[] = $week->toDateString();
+            $week->addWeek();
+        }
+
+        return $weeks;
     }
 
     /**
@@ -197,7 +191,7 @@ class LeaderboardService
             ->groupBy('predictions.user_id');
     }
 
-    private function dailyParticipantsSubquery(Carbon $start, Carbon $end, string $watDate): Builder
+    private function weeklyParticipantsSubquery(Carbon $start, Carbon $end, string $weekStart, string $weekEnd): Builder
     {
         $fromPredictions = DB::table('predictions')
             ->join('fixture_markets', 'fixture_markets.id', '=', 'predictions.fixture_market_id')
@@ -210,7 +204,7 @@ class LeaderboardService
             ->groupBy('predictions.user_id');
 
         $fromReferrals = DB::table('referrals')
-            ->where('referrals.wat_date', $watDate)
+            ->whereBetween('referrals.wat_date', [$weekStart, $weekEnd])
             ->select(
                 'referrals.referrer_id as user_id',
                 DB::raw('MIN(referrals.credited_at) as first_at'),
@@ -245,12 +239,14 @@ class LeaderboardService
     }
 
     /**
+     * Returns the UTC [start, end) window for a WAT week beginning on $weekStart (a Monday).
+     *
      * @return array{0: Carbon, 1: Carbon}
      */
-    private function watDayWindow(string $watDate): array
+    private function watWeekWindow(string $weekStart): array
     {
-        $start = Carbon::parse($watDate, config('predictions.timezone'))->startOfDay();
+        $start = Carbon::parse($weekStart, config('predictions.timezone'))->startOfDay();
 
-        return [$start->copy()->utc(), $start->copy()->addDay()->utc()];
+        return [$start->copy()->utc(), $start->copy()->addWeek()->utc()];
     }
 }

@@ -11,14 +11,14 @@ class LeaderboardController extends Controller
 {
     public function index(Request $request, LeaderboardService $leaderboard): Response
     {
-        $dates = $leaderboard->dailyDates();
-        $selected = $this->selectedDate($request->query('date'), $dates);
+        $weeks = $leaderboard->weeklyDates();
+        $selected = $this->selectedDate($request->query('date'), $weeks);
 
         return Inertia::render('leaderboard', [
             'overall' => $leaderboard->overall(),
-            'dates' => $dates,
+            'dates' => $weeks,
             'selectedDate' => $selected,
-            'daily' => $selected === null ? [] : $leaderboard->daily($selected),
+            'weekly' => $selected === null ? [] : $leaderboard->weekly($selected),
         ]);
     }
 
