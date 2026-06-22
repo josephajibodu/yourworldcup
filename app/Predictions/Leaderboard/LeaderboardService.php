@@ -20,11 +20,11 @@ class LeaderboardService
      */
     public function overall(int $limit = 50): Collection
     {
-        return $this->cache->remember(
+        return collect($this->cache->remember(
             'leaderboard',
             "overall:{$limit}",
-            fn (): Collection => $this->computeOverall($limit),
-        );
+            fn (): array => $this->computeOverall($limit)->all(),
+        ));
     }
 
     /**
@@ -35,11 +35,11 @@ class LeaderboardService
      */
     public function daily(string $watDate, int $limit = 50): Collection
     {
-        return $this->cache->remember(
+        return collect($this->cache->remember(
             'leaderboard',
             "daily:{$watDate}:{$limit}",
-            fn (): Collection => $this->computeDaily($watDate, $limit),
-        );
+            fn (): array => $this->computeDaily($watDate, $limit)->all(),
+        ));
     }
 
     /**
