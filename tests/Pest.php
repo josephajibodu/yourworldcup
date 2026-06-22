@@ -87,6 +87,13 @@ function finalFixtureWithMarkets(int $home, int $away): array
     return ['fixture' => $fixture, 'winner' => $winner, 'score' => $score];
 }
 
+function watWeekStart(string $watDate): string
+{
+    return Carbon::parse($watDate, config('predictions.timezone'))
+        ->startOfWeek(Carbon::MONDAY)
+        ->toDateString();
+}
+
 function siteAdmin(): User
 {
     return User::factory()->create([

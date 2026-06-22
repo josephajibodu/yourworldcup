@@ -198,21 +198,21 @@ it('adds referral points to the overall leaderboard', function () {
         ->and($overall->last())->toMatchArray(['name' => 'Ada', 'points' => 1, 'rank' => 2]);
 });
 
-it('adds referral points to the daily leaderboard for the credit day', function () {
+it('adds referral points to the weekly leaderboard for the credit week', function () {
     ['fixture' => $fixture] = finalFixtureWithMarkets(1, 0);
     $referrer = User::factory()->create(['name' => 'Referrer']);
     $referred = User::factory()->create(['referred_by_id' => $referrer->id]);
-    $watDate = $fixture->watDate();
+    $weekStart = watWeekStart($fixture->watDate());
 
     Referral::factory()->create([
         'referrer_id' => $referrer->id,
         'referred_id' => $referred->id,
         'points' => 1,
-        'wat_date' => $watDate,
+        'wat_date' => $fixture->watDate(),
     ]);
 
     $service = app(LeaderboardService::class);
 
-    expect($service->daily($watDate))->toHaveCount(1)
-        ->and($service->daily('2026-01-01'))->toHaveCount(0);
+    expect($service->weekly($weekStart))->toHaveCount(1)
+        ->and($service->weekly('2026-01-05'))->toHaveCount(0);
 });

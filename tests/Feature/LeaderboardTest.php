@@ -76,7 +76,7 @@ it('lists predictors on the overall board before their picks are scored', functi
         ->and($overall->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
 });
 
-it('scopes the daily board to the match day', function () {
+it('scopes the weekly board to the match week', function () {
     ['fixture' => $fixture, 'winner' => $winner] = finalFixtureWithMarkets(1, 0);
     $user = User::factory()->create();
     Prediction::factory()->for($user)->create([
@@ -86,14 +86,14 @@ it('scopes the daily board to the match day', function () {
 
     app(SettlementService::class)->settleFixture($fixture);
 
-    $watDate = $fixture->watDate();
+    $weekStart = watWeekStart($fixture->watDate());
     $service = app(LeaderboardService::class);
 
-    expect($service->daily($watDate))->toHaveCount(1)
-        ->and($service->daily('2026-01-01'))->toHaveCount(0);
+    expect($service->weekly($weekStart))->toHaveCount(1)
+        ->and($service->weekly('2026-01-05'))->toHaveCount(0);
 });
 
-it('lists daily participants who predicted before results are scored', function () {
+it('lists weekly participants who predicted before results are scored', function () {
     ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
     $user = User::factory()->create(['name' => 'Early Bird']);
 
@@ -102,10 +102,10 @@ it('lists daily participants who predicted before results are scored', function 
         'value' => ['selected' => 'home'],
     ]);
 
-    $daily = app(LeaderboardService::class)->daily($fixture->watDate());
+    $weekly = app(LeaderboardService::class)->weekly(watWeekStart($fixture->watDate()));
 
-    expect($daily)->toHaveCount(1)
-        ->and($daily->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
+    expect($weekly)->toHaveCount(1)
+        ->and($weekly->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
 });
 
 it('renders the leaderboard page publicly with both boards', function () {
@@ -116,13 +116,15 @@ it('renders the leaderboard page publicly with both boards', function () {
     ]);
     app(SettlementService::class)->settleFixture($fixture);
 
+    $weekStart = watWeekStart($fixture->watDate());
+
     $this->get(route('leaderboard'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('leaderboard')
-            ->where('selectedDate', $fixture->watDate())
+            ->where('selectedDate', $weekStart)
             ->has('overall', 1)
-            ->has('daily', 1)
+            ->has('weekly', 1)
             ->where('overall.0.name', 'Ada')
         );
 });
