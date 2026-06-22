@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Bracket\Contracts\BestThirdQualifier;
 use App\Bracket\PointsBestThirdQualifier;
+use App\Cache\TournamentCache;
 use App\FootballData\FootballDataLinker;
 use App\Http\Client\LogOutgoingApiRequest;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -64,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(FortifyRedirectAsIntended::class, fn ($app, array $params) => new AppRedirectAsIntended($params['name'] ?? 'login'));
         $this->app->bind(BestThirdQualifier::class, PointsBestThirdQualifier::class);
+        $this->app->singleton(TournamentCache::class);
         $this->app->singleton(FootballDataLinker::class, fn (): FootballDataLinker => FootballDataLinker::fromConfig());
     }
 

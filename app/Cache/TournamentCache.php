@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Cache;
 class TournamentCache
 {
     /** @var list<string> */
-    public const DOMAINS = ['bracket', 'predict', 'leaderboard'];
+    public const array DOMAINS = ['bracket', 'predict', 'leaderboard'];
+
+    /** @var array<string, int> */
+    private array $versions = [];
 
     public function remember(
         string $domain,
@@ -23,12 +26,15 @@ class TournamentCache
 
     public function bump(string $domain): void
     {
-        Cache::increment($this->versionKey($domain));
+        $key = $this->versionKey($domain);
+
+        $this->versions[$domain] = (int) Cache::get($key, 0) + 1;
+        Cache::forever($key, $this->versions[$domain]);
     }
 
     public function version(string $domain): int
     {
-        return (int) Cache::get($this->versionKey($domain), 0);
+        return $this->versions[$domain] ??= (int) Cache::get($this->versionKey($domain), 0);
     }
 
     private function versionKey(string $domain): string

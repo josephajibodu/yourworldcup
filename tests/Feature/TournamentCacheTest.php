@@ -14,6 +14,10 @@ use App\Predictions\Settlement\SettlementService;
 use Database\Seeders\PredictionMarketSeeder;
 use Illuminate\Support\Facades\DB;
 
+it('resolves as a singleton', function () {
+    expect(app(TournamentCache::class))->toBe(app(TournamentCache::class));
+});
+
 it('returns cached value on second remember call', function () {
     $cache = app(TournamentCache::class);
     $calls = 0;
