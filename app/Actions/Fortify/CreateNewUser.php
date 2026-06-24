@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
+use App\Support\TwitterHandle;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -19,10 +20,14 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        if (isset($input['name'])) {
+            $input['name'] = TwitterHandle::normalize($input['name']);
+        }
+
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
-        ])->validate();
+        ], TwitterHandle::messages())->validate();
 
         $user = User::create([
             'name' => $input['name'],

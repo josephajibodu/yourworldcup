@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react';
+import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { cn } from '@/lib/utils';
 
 export interface StandingsRow {
@@ -64,7 +65,7 @@ export function StandingsTable({
                             <Star className="size-4 shrink-0 fill-wc-gold text-wc-gold" />
                         )}
                         <span className="flex-1 truncate text-sm font-medium">
-                            {row.name}
+                            {formatTwitterHandle(row.name)}
                             {isCurrent && (
                                 <span className="ml-2 rounded bg-wc-ink px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-wc-surface uppercase">
                                     You

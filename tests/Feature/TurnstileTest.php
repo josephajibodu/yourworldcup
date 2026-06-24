@@ -78,7 +78,7 @@ test('registration rejects an invalid turnstile token when turnstile is enabled'
 
     $this->from(route('register'))
         ->post(route('register.store'), [
-            'name' => 'Test User',
+            'name' => 'turnstile_user',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',

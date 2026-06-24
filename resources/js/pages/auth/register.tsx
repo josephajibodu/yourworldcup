@@ -35,16 +35,17 @@ export default function Register({ passwordRules }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">name</Label>
+                                <Label htmlFor="name">X handle</Label>
                                 <Input
                                     id="name"
                                     type="text"
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="name"
+                                    autoComplete="username"
                                     name="name"
-                                    placeholder="your name"
+                                    placeholder="@yourhandle"
+                                    spellCheck={false}
                                 />
                                 <InputError
                                     message={errors.name}

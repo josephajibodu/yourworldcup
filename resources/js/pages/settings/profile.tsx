@@ -45,7 +45,7 @@ export default function Profile({
                 <Heading
                     variant="small"
                     title="Profile"
-                    description="Update your name and email address"
+                    description="Update your X handle and email address"
                 />
 
                 <Form
@@ -58,7 +58,7 @@ export default function Profile({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">X handle</Label>
 
                                 <Input
                                     id="name"
@@ -66,8 +66,9 @@ export default function Profile({
                                     defaultValue={user.name}
                                     name="name"
                                     required
-                                    autoComplete="name"
-                                    placeholder="Full name"
+                                    autoComplete="username"
+                                    placeholder="@yourhandle"
+                                    spellCheck={false}
                                 />
 
                                 <InputError

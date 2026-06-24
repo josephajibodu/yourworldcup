@@ -164,7 +164,7 @@ export function PredictAuthDialog({
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="predict-auth-name">
-                                        name
+                                        X handle
                                     </Label>
                                     <Input
                                         id="predict-auth-name"
@@ -172,8 +172,9 @@ export function PredictAuthDialog({
                                         name="name"
                                         required
                                         autoFocus
-                                        autoComplete="name"
-                                        placeholder="your name"
+                                        autoComplete="username"
+                                        placeholder="@yourhandle"
+                                        spellCheck={false}
                                     />
                                     <InputError message={errors.name} />
                                 </div>

@@ -32,7 +32,7 @@ it('links a new user to their referrer at registration', function () {
     $this->get('/register?ref='.$referrer->referral_code);
 
     $this->post(route('register.store'), [
-        'name' => 'Referred User',
+        'name' => 'referred_user',
         'email' => 'referred@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

@@ -56,14 +56,14 @@ it('breaks ties on total points using the earliest submitted_at', function () {
 });
 
 it('does not list registered users without predictions on the overall board', function () {
-    User::factory()->create(['name' => 'New Player']);
+    User::factory()->create(['name' => 'new_player']);
 
     expect(app(LeaderboardService::class)->overall())->toHaveCount(0);
 });
 
 it('lists predictors on the overall board before their picks are scored', function () {
     ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
-    $user = User::factory()->create(['name' => 'Early Bird']);
+    $user = User::factory()->create(['name' => 'early_bird']);
 
     Prediction::factory()->for($user)->create([
         'fixture_market_id' => $winner->id,
@@ -73,7 +73,7 @@ it('lists predictors on the overall board before their picks are scored', functi
     $overall = app(LeaderboardService::class)->overall();
 
     expect($overall)->toHaveCount(1)
-        ->and($overall->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
+        ->and($overall->first())->toMatchArray(['name' => 'early_bird', 'points' => 0, 'rank' => 1]);
 });
 
 it('scopes the weekly board to the match week', function () {
@@ -95,7 +95,7 @@ it('scopes the weekly board to the match week', function () {
 
 it('lists weekly participants who predicted before results are scored', function () {
     ['fixture' => $fixture, 'winner' => $winner] = predictableFixture();
-    $user = User::factory()->create(['name' => 'Early Bird']);
+    $user = User::factory()->create(['name' => 'early_bird']);
 
     Prediction::factory()->for($user)->create([
         'fixture_market_id' => $winner->id,
@@ -105,7 +105,7 @@ it('lists weekly participants who predicted before results are scored', function
     $weekly = app(LeaderboardService::class)->weekly(watWeekStart($fixture->watDate()));
 
     expect($weekly)->toHaveCount(1)
-        ->and($weekly->first())->toMatchArray(['name' => 'Early Bird', 'points' => 0, 'rank' => 1]);
+        ->and($weekly->first())->toMatchArray(['name' => 'early_bird', 'points' => 0, 'rank' => 1]);
 });
 
 it('renders the leaderboard page publicly with both boards', function () {
