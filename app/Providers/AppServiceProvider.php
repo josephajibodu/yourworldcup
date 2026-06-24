@@ -103,7 +103,7 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureLogViewer(): void
     {
-        LogViewer::auth(fn () => auth()->check() && auth()->user()->isAdmin());
+        LogViewer::auth(fn () => auth()->check() && auth()->user()->isSiteAdmin());
     }
 
     protected function configureOutgoingApiLogging(): void
