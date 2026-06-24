@@ -50,7 +50,7 @@ export default function Welcome() {
                             </div>
                         </div>
 
-                        <div className="w-screen px-0 pt-10">
+                        <div className="hidden w-screen px-0 pt-10 md:block">
                             <QualificationFlow />
                         </div>
                     </div>
