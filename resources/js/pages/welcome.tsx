@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { FeatureExplorer } from '@/components/landing/feature-explorer';
 import { PrizesReveal } from '@/components/landing/prizes-reveal';
 import { QualificationFlow } from '@/components/landing/qualification-flow';
+import { QualificationFlowMobile } from '@/components/landing/qualification-flow-mobile';
 import { ProductShell } from '@/components/product-shell';
 import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,9 @@ export default function Welcome() {
                             </div>
                         </div>
 
+                        <div className="block w-screen px-0 pt-8 md:hidden">
+                            <QualificationFlowMobile />
+                        </div>
                         <div className="hidden w-screen px-0 pt-10 md:block">
                             <QualificationFlow />
                         </div>
