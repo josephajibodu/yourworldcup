@@ -15,18 +15,34 @@ const TEAMS: Team[] = [
     { name: 'Portugal',     code: 'POR', flag: 'https://flagcdn.com/w80/pt.png' },
     { name: 'Senegal',      code: 'SEN', flag: 'https://flagcdn.com/w80/sn.png' },
     { name: 'South Africa', code: 'RSA', flag: 'https://flagcdn.com/w80/za.png' },
+    { name: 'Germany',      code: 'GER', flag: 'https://flagcdn.com/w80/de.png' },
+    { name: 'Spain',        code: 'ESP', flag: 'https://flagcdn.com/w80/es.png' },
+    { name: 'USA',          code: 'USA', flag: 'https://flagcdn.com/w80/us.png' },
+    { name: 'South Korea',  code: 'KOR', flag: 'https://flagcdn.com/w80/kr.png' },
+    { name: 'Japan',        code: 'JPN', flag: 'https://flagcdn.com/w80/jp.png' },
+    { name: 'Colombia',     code: 'COL', flag: 'https://flagcdn.com/w80/co.png' },
+    { name: 'Netherlands',  code: 'NED', flag: 'https://flagcdn.com/w80/nl.png' },
+    { name: 'Canada',       code: 'CAN', flag: 'https://flagcdn.com/w80/ca.png' },
 ];
+
+const T = TEAMS;
 
 const CHAMPION_CYCLE: Team[] = [
-    TEAMS[0], // Brazil
-    TEAMS[2], // Morocco
-    TEAMS[4], // Mexico
-    TEAMS[1], // France
-    TEAMS[3], // Argentina
-    TEAMS[5], // Portugal
+    T[0],  // Brazil
+    T[2],  // Morocco
+    T[8],  // Germany
+    T[4],  // Mexico
+    T[9],  // Spain
+    T[1],  // France
+    T[10], // USA
+    T[3],  // Argentina
+    T[11], // South Korea
+    T[5],  // Portugal
+    T[12], // Japan
+    T[14], // Netherlands
 ];
 
-const CYCLE_MS = 14_000;
+const CYCLE_MS = 5_000;
 
 interface LaneDef {
     teams: Team[];
@@ -45,28 +61,28 @@ interface LaneDef {
 const LANES: LaneDef[] = [
     {
         // Deep background — tiny, slow, very faded
-        teams: [TEAMS[0], TEAMS[1], TEAMS[4], TEAMS[6], TEAMS[2], TEAMS[7]],
+        teams: [T[0], T[1], T[8], T[6], T[13], T[2], T[15], T[12]],
         dir: 'ltr', sec: 40, offset: '-8s',
         w: 46, h: 30, gap: 22,
         opacity: 0.18, top: '9%', blur: 1.5,
     },
     {
         // Mid background — RTL, medium fade
-        teams: [TEAMS[3], TEAMS[5], TEAMS[6], TEAMS[0], TEAMS[7], TEAMS[1]],
+        teams: [T[3], T[9], T[6], T[0], T[7], T[14], T[1], T[11]],
         dir: 'rtl', sec: 28, offset: '-5s',
         w: 64, h: 43, gap: 30,
         opacity: 0.52, top: '34%',
     },
     {
         // Primary foreground — LTR, full opacity, largest flags
-        teams: [TEAMS[0], TEAMS[2], TEAMS[4], TEAMS[1], TEAMS[5], TEAMS[7]],
+        teams: [T[0], T[2], T[10], T[1], T[5], T[8], T[4], T[14]],
         dir: 'ltr', sec: 22, offset: '-14s',
         w: 88, h: 58, gap: 42,
         opacity: 1.0, top: '63%',
     },
     {
         // Far background — RTL, barely visible
-        teams: [TEAMS[7], TEAMS[3], TEAMS[2], TEAMS[6], TEAMS[4], TEAMS[5]],
+        teams: [T[7], T[12], T[2], T[15], T[11], T[9], T[13], T[4]],
         dir: 'rtl', sec: 34, offset: '-20s',
         w: 36, h: 24, gap: 18,
         opacity: 0.13, top: '89%', blur: 2,
@@ -148,19 +164,6 @@ function ChampionMoment({ team }: { team: Team }) {
                 pointerEvents: 'none',
             }}
         >
-            {/* Soft backdrop circle to lift the flag above the lanes */}
-            <div
-                style={{
-                    position: 'absolute',
-                    width: 200,
-                    height: 200,
-                    borderRadius: '50%',
-                    background:
-                        'radial-gradient(circle, rgba(247,245,240,0.88) 0%, rgba(247,245,240,0.45) 52%, transparent 72%)',
-                    animation: `mob-champion-appear ${CYCLE_MS / 1000}s ease-in-out forwards`,
-                }}
-            />
-
             <div
                 className="mob-champion"
                 style={{
@@ -266,7 +269,7 @@ export function QualificationFlowMobile() {
             {/* key forces remount so champion-appear animation restarts each cycle */}
             <ChampionMoment key={idx} team={champion} />
 
-            {/* Left / right vignette */}
+            {/* Soft edge fade — left and right only, very narrow */}
             <div
                 aria-hidden
                 style={{
@@ -275,19 +278,7 @@ export function QualificationFlowMobile() {
                     zIndex: 20,
                     pointerEvents: 'none',
                     background:
-                        'linear-gradient(90deg,#F7F5F0 0%,rgba(247,245,240,0.88) 14%,rgba(247,245,240,0) 30%,rgba(247,245,240,0) 70%,rgba(247,245,240,0.88) 86%,#F7F5F0 100%)',
-                }}
-            />
-            {/* Top / bottom vignette */}
-            <div
-                aria-hidden
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 20,
-                    pointerEvents: 'none',
-                    background:
-                        'linear-gradient(180deg,#F7F5F0 0%,rgba(247,245,240,0) 20%,rgba(247,245,240,0) 80%,#F7F5F0 100%)',
+                        'linear-gradient(90deg,rgba(247,245,240,0.9) 0%,rgba(247,245,240,0) 9%,rgba(247,245,240,0) 91%,rgba(247,245,240,0.9) 100%)',
                 }}
             />
 
@@ -312,9 +303,9 @@ const CSS = `
     }
 
     @keyframes mob-champion-appear {
-        0%, 6%       { opacity: 0; transform: scale(0.68); }
-        18%, 72%     { opacity: 1; transform: scale(1);    }
-        84%, 100%    { opacity: 0; transform: scale(0.82); }
+        0%, 5%       { opacity: 0; transform: scale(0.72); }
+        16%, 78%     { opacity: 1; transform: scale(1);    }
+        90%, 100%    { opacity: 0; transform: scale(0.88); }
     }
 
     @keyframes mob-glow-pulse {
