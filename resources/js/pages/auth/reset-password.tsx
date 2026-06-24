@@ -29,7 +29,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
             <Form
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
-                resetOnSuccess={['password', 'password_confirmation']}
+                resetOnSuccess={['password']}
             >
                 {({ processing, errors }) => (
                     <div className="grid gap-5">
@@ -62,24 +62,6 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                                 passwordrules={passwordRules}
                             />
                             <InputError message={errors.password} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">
-                                confirm password
-                            </Label>
-                            <PasswordInput
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                autoComplete="new-password"
-                                className="mt-1 block w-full"
-                                placeholder="repeat your new password"
-                                passwordrules={passwordRules}
-                            />
-                            <InputError
-                                message={errors.password_confirmation}
-                                className="mt-2"
-                            />
                         </div>
 
                         <TurnstileWidget

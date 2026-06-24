@@ -27,7 +27,7 @@ export default function Register({ passwordRules }: Props) {
             />
             <Form
                 {...store.form()}
-                resetOnSuccess={['password', 'password_confirmation']}
+                resetOnSuccess={['password']}
                 disableWhileProcessing
                 className="flex flex-col gap-6"
             >
@@ -81,24 +81,6 @@ export default function Register({ passwordRules }: Props) {
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    confirm password
-                                </Label>
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    required
-                                    tabIndex={4}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="repeat your password"
-                                    passwordrules={passwordRules}
-                                />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
                             <TurnstileWidget
                                 error={errors['cf-turnstile-response']}
                             />
@@ -108,7 +90,7 @@ export default function Register({ passwordRules }: Props) {
                                 variant="ink"
                                 size="lg"
                                 className="mt-2 w-full rounded-full"
-                                tabIndex={5}
+                                tabIndex={4}
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
@@ -118,7 +100,7 @@ export default function Register({ passwordRules }: Props) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink href={login()} tabIndex={5}>
                                 log in
                             </TextLink>
                         </div>

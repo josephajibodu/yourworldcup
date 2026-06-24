@@ -152,10 +152,7 @@ export function PredictAuthDialog({
                 ) : (
                     <Form
                         {...registerStore.form()}
-                        resetOnSuccess={[
-                            'password',
-                            'password_confirmation',
-                        ]}
+                        resetOnSuccess={['password']}
                         disableWhileProcessing
                         className="flex flex-col gap-4"
                         onSuccess={() => onOpenChange(false)}
@@ -207,23 +204,6 @@ export function PredictAuthDialog({
                                         passwordrules={passwordRules}
                                     />
                                     <InputError message={errors.password} />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="predict-auth-password-confirmation">
-                                        confirm password
-                                    </Label>
-                                    <PasswordInput
-                                        id="predict-auth-password-confirmation"
-                                        name="password_confirmation"
-                                        required
-                                        autoComplete="new-password"
-                                        placeholder="repeat your password"
-                                        passwordrules={passwordRules}
-                                    />
-                                    <InputError
-                                        message={errors.password_confirmation}
-                                    />
                                 </div>
 
                                 <Button

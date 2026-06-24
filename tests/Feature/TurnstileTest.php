@@ -81,7 +81,6 @@ test('registration rejects an invalid turnstile token when turnstile is enabled'
             'name' => 'turnstile_user',
             'email' => 'test@example.com',
             'password' => 'password',
-            'password_confirmation' => 'password',
             'cf-turnstile-response' => 'invalid-token',
         ])
         ->assertRedirect(route('register'))

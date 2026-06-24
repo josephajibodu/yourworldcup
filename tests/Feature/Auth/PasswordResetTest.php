@@ -53,7 +53,6 @@ test('password can be reset with valid token', function () {
             'token' => $notification->token,
             'email' => $user->email,
             'password' => 'password',
-            'password_confirmation' => 'password',
         ]);
 
         $response
@@ -71,7 +70,6 @@ test('password cannot be reset with invalid token', function () {
         'token' => 'invalid-token',
         'email' => $user->email,
         'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123',
     ]);
 
     $response->assertSessionHasErrors('email');

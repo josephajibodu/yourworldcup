@@ -35,7 +35,6 @@ it('links a new user to their referrer at registration', function () {
         'name' => 'referred_user',
         'email' => 'referred@example.com',
         'password' => 'password',
-        'password_confirmation' => 'password',
     ])->assertRedirect(route('predict', absolute: false));
 
     $referred = User::query()->where('email', 'referred@example.com')->first();
