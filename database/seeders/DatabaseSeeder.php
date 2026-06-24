@@ -19,10 +19,5 @@ class DatabaseSeeder extends Seeder
             PredictionMarketSeeder::class,
             WorldCupSeeder::class,
         ]);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
     }
 }
