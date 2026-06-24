@@ -64,7 +64,7 @@ function TeamSide({
             ) : (
                 <span className="h-5 w-7 shrink-0 rounded-[2px] bg-muted" />
             )}
-            <span className="truncate text-sm font-semibold">
+            <span className="truncate text-xs font-semibold sm:text-sm">
                 {team?.name ?? 'TBD'}
             </span>
         </div>

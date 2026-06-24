@@ -23,8 +23,8 @@ import {
 
 const navItems = [
     { title: 'Predict', href: predict() },
-    { title: 'Bracket', href: bracket() },
     { title: 'Leaderboard', href: leaderboard() },
+    { title: 'Bracket', href: bracket() },
     { title: 'Referrals', href: referrals() },
 ];
 
