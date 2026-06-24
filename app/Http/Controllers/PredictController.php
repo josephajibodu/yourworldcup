@@ -106,6 +106,7 @@ class PredictController extends Controller
         $predictions = $this->userPredictions($request, $marketIds);
 
         return collect($shared)
+            ->map(fn (array $fixture): array => $this->refreshMatchWinnerOptionLabels($fixture))
             ->map(fn (array $fixture): array => $this->mergeFixturePredictions($fixture, $predictions))
             ->all();
     }
@@ -231,13 +232,54 @@ class PredictController extends Controller
             return null;
         }
 
-        $labels = $market->market->key === 'match_winner'
-            ? [
-                'home' => 'Home',
-                'draw' => 'Draw',
-                'away' => 'Away',
-            ]
-            : [];
+        if ($market->market->key === 'match_winner') {
+            return $this->relabelMatchWinnerOptions($options);
+        }
+
+        return array_map(
+            static fn (array $option): array => [
+                'value' => (string) $option['value'],
+                'label' => (string) ($option['label'] ?? $option['value']),
+            ],
+            $options,
+        );
+    }
+
+    /**
+     * Cached predict payloads may still carry old team-name labels; always
+     * normalize match-winner options when serving a day.
+     *
+     * @param  array<string, mixed>  $fixture
+     * @return array<string, mixed>
+     */
+    private function refreshMatchWinnerOptionLabels(array $fixture): array
+    {
+        $fixture['markets'] = collect($fixture['markets'] ?? [])
+            ->map(function (array $market): array {
+                if (($market['key'] ?? '') !== 'match_winner' || ! is_array($market['options'] ?? null)) {
+                    return $market;
+                }
+
+                $market['options'] = $this->relabelMatchWinnerOptions($market['options']);
+
+                return $market;
+            })
+            ->all();
+
+        return $fixture;
+    }
+
+    /**
+     * @param  array<int, array{value: string, label?: string}>  $options
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function relabelMatchWinnerOptions(array $options): array
+    {
+        $labels = [
+            'home' => 'Home',
+            'draw' => 'Draw',
+            'away' => 'Away',
+        ];
 
         return array_map(
             static fn (array $option): array => [

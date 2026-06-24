@@ -1,5 +1,6 @@
 <?php
 
+use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
@@ -8,6 +9,7 @@ use App\Models\PredictionMarket;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 use function Pest\Laravel\actingAs;
@@ -84,6 +86,46 @@ it('labels match winner options as home draw and away', function () {
     $fixture = predictableFixture()['fixture'];
 
     $this->get(route('predict', ['date' => $fixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('fixtures.0.markets.0.options', [
+                ['value' => 'home', 'label' => 'Home'],
+                ['value' => 'draw', 'label' => 'Draw'],
+                ['value' => 'away', 'label' => 'Away'],
+            ])
+        );
+});
+
+it('refreshes stale cached match winner labels', function () {
+    ['fixture' => $fixture, 'winner' => $winner, 'score' => $score] = predictableFixture();
+    $watDate = $fixture->watDate();
+    $cache = app(TournamentCache::class);
+
+    Cache::put(
+        'tournament:predict:v'.$cache->version('predict').":day:{$watDate}",
+        [[
+            'id' => $fixture->id,
+            'markets' => [
+                [
+                    'id' => $winner->id,
+                    'key' => 'match_winner',
+                    'options' => [
+                        ['value' => 'home', 'label' => 'Mexico'],
+                        ['value' => 'draw', 'label' => 'Draw'],
+                        ['value' => 'away', 'label' => 'Spain'],
+                    ],
+                ],
+                [
+                    'id' => $score->id,
+                    'key' => 'exact_score',
+                    'options' => null,
+                ],
+            ],
+        ]],
+        86400,
+    );
+
+    $this->get(route('predict', ['date' => $watDate]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('fixtures.0.markets.0.options', [
