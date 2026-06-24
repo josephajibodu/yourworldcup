@@ -57,7 +57,6 @@ class PredictionService
                     $this->fail('That market is no longer available.');
                 }
 
-                $this->assertBelongsToDay($fixtureMarket, $start, $end);
                 $this->assertOpen($fixtureMarket);
 
                 $value = $this->validator->validate($fixtureMarket, $entry['value']);
@@ -108,7 +107,6 @@ class PredictionService
         }
 
         $fixtureMarket = $prediction->fixtureMarket;
-        $this->assertBelongsToDay($fixtureMarket, $start, $end);
         $this->assertOpen($fixtureMarket, 'banker');
 
         $prediction->update(['is_banker' => true]);
@@ -141,15 +139,6 @@ class PredictionService
     {
         if (! $fixtureMarket->isOpenForPrediction()) {
             $this->fail('This market is locked — predictions closed before kickoff.', $key ?? "markets.{$fixtureMarket->id}");
-        }
-    }
-
-    private function assertBelongsToDay(FixtureMarket $fixtureMarket, Carbon $start, Carbon $end): void
-    {
-        $kickoff = $fixtureMarket->fixture->kickoff_at;
-
-        if ($kickoff->lessThan($start) || $kickoff->greaterThanOrEqualTo($end)) {
-            $this->fail('That market is not part of this match day.');
         }
     }
 

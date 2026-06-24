@@ -198,8 +198,13 @@ function PredictDay({
 
                         toast.success('Your picks are in.');
                     },
-                    onError: (formErrors) =>
-                        setErrors(formErrors as Record<string, string>),
+                    onError: (formErrors) => {
+                        setErrors(formErrors as Record<string, string>);
+                        const unique = [
+                            ...new Set(Object.values(formErrors)),
+                        ];
+                        unique.forEach((msg) => toast.error(String(msg)));
+                    },
                 },
             );
         },
