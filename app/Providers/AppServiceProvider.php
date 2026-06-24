@@ -78,6 +78,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureAuthResponses();
         $this->configureOutgoingApiLogging();
         $this->configureInertiaErrors();
+        $this->configureLogViewer();
     }
 
     protected function configureInertiaErrors(): void
