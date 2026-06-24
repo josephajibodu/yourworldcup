@@ -11,11 +11,19 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { bracket, home, leaderboard, login, predict, referrals, register } from '@/routes';
+import {
+    bracket,
+    home,
+    leaderboard,
+    login,
+    predict,
+    referrals,
+    register,
+} from '@/routes';
 
 const navItems = [
-    { title: 'Bracket', href: bracket() },
     { title: 'Predict', href: predict() },
+    { title: 'Bracket', href: bracket() },
     { title: 'Leaderboard', href: leaderboard() },
     { title: 'Referrals', href: referrals() },
 ];
@@ -30,7 +38,7 @@ function NavLinks({ className }: { className?: string }) {
                     key={item.title}
                     href={item.href}
                     className={cn(
-                        'rounded-full px-3.5 py-2 text-sm font-semibold transition-colors',
+                        'rounded-full px-3.5 py-2 text-xs font-semibold transition-colors sm:text-sm',
                         isCurrentOrParentUrl(item.href)
                             ? 'bg-wc-ink text-wc-surface'
                             : 'text-wc-ink/70 hover:bg-wc-surface-2 hover:text-wc-ink',
@@ -66,7 +74,7 @@ export function SiteHeader({ variant = 'surface' }: SiteHeaderProps) {
                         className="flex min-w-0 items-center gap-2.5"
                     >
                         <AppLogoIcon className="size-8 shrink-0" />
-                        <span className="truncate font-display text-xl tracking-[0.22em]">
+                        <span className="truncate font-display text-sm font-bold tracking-[0.22em] sm:text-xl sm:font-normal">
                             YOURWORLD<span className="text-wc-gold">CUP</span>
                         </span>
                     </Link>
