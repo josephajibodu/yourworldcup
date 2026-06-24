@@ -35,7 +35,9 @@
     <meta name="description" content="Daily World Cup predictions, a living bracket, and skill-ranked leaderboards.">
     <meta property="og:site_name" content="{{ config('app.name') }}">
     <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="{{ rtrim(config('app.url'), '/') }}/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ rtrim(config('app.url'), '/') }}/og-image.png">
 
     @fonts
 

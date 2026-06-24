@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { ogImage } from '@/lib/seo';
 
 interface SeoHeadProps {
     title: string;
@@ -20,7 +21,7 @@ export function SeoHead({
     title,
     description,
     path,
-    image = '/apple-touch-icon.png',
+    image = ogImage,
     robots,
     type = 'website',
 }: SeoHeadProps) {
@@ -63,7 +64,7 @@ export function SeoHead({
             <meta
                 head-key="twitter:card"
                 name="twitter:card"
-                content="summary"
+                content="summary_large_image"
             />
             <meta
                 head-key="twitter:title"

@@ -1,3 +1,5 @@
+export const ogImage = '/og-image.png';
+
 export const siteDescription =
     'Daily World Cup predictions, a living bracket, and skill-ranked leaderboards. Pick winners, call exact scores, and climb the daily board.';
 
