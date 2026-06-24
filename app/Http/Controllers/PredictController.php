@@ -211,7 +211,7 @@ class PredictController extends Controller
             'name' => $market->market->name,
             'description' => $market->market->description,
             'inputType' => $market->market->input_type->value,
-            'options' => $this->options($market, $fixture),
+            'options' => $this->options($market),
             'points' => $market->effectiveBasePoints(),
             'locked' => ! $market->isOpenForPrediction(),
         ];
@@ -219,11 +219,11 @@ class PredictController extends Controller
 
     /**
      * Display options for a single-select market, with the match-winner market
-     * relabelled to the actual team names.
+     * labelled as Home, Draw, and Away.
      *
      * @return array<int, array{value: string, label: string}>|null
      */
-    private function options(FixtureMarket $market, Fixture $fixture): ?array
+    private function options(FixtureMarket $market): ?array
     {
         $options = $market->resolvedOptions();
 
@@ -233,9 +233,9 @@ class PredictController extends Controller
 
         $labels = $market->market->key === 'match_winner'
             ? [
-                'home' => $fixture->homeTeam->name,
+                'home' => 'Home',
                 'draw' => 'Draw',
-                'away' => $fixture->awayTeam->name,
+                'away' => 'Away',
             ]
             : [];
 

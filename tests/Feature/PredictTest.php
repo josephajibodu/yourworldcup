@@ -80,6 +80,20 @@ it('shows the selected day fixtures to a signed-in user', function () {
         );
 });
 
+it('labels match winner options as home draw and away', function () {
+    $fixture = predictableFixture()['fixture'];
+
+    $this->get(route('predict', ['date' => $fixture->watDate()]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('fixtures.0.markets.0.options', [
+                ['value' => 'home', 'label' => 'Home'],
+                ['value' => 'draw', 'label' => 'Draw'],
+                ['value' => 'away', 'label' => 'Away'],
+            ])
+        );
+});
+
 it('shows final scores on finished fixtures', function () {
     ['fixture' => $fixture] = predictableFixture();
     $fixture->update([
