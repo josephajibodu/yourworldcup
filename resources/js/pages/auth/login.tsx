@@ -1,7 +1,8 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
+import { SeoHead } from '@/components/seo-head';
 import TextLink from '@/components/text-link';
 import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { privatePageRobots } from '@/lib/seo';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -21,7 +23,12 @@ type Props = {
 export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
-            <Head title="log in" />
+            <SeoHead
+                title="log in"
+                description="Sign in to YourWorldCup to save picks and climb the leaderboards."
+                path="/login"
+                robots={privatePageRobots}
+            />
 
             <PasskeyVerify />
 

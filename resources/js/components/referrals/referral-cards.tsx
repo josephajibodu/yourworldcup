@@ -11,6 +11,7 @@ interface ReferralShareCardProps {
 async function copyText(text: string): Promise<boolean> {
     try {
         await navigator.clipboard.writeText(text);
+
         return true;
     } catch {
         return false;
@@ -22,6 +23,7 @@ export function ReferralShareCard({ code, url }: ReferralShareCardProps) {
 
     const handleCopy = async (value: string, kind: 'code' | 'url') => {
         const ok = await copyText(value);
+
         if (!ok) {
             return;
         }

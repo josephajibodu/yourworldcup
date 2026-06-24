@@ -1,11 +1,13 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { SeoHead } from '@/components/seo-head';
 import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { privatePageRobots } from '@/lib/seo';
 import { update } from '@/routes/password';
 
 type Props = {
@@ -17,7 +19,12 @@ type Props = {
 export default function ResetPassword({ token, email, passwordRules }: Props) {
     return (
         <>
-            <Head title="reset password" />
+            <SeoHead
+                title="reset password"
+                description="Choose a new password for your YourWorldCup account."
+                path="/reset-password"
+                robots={privatePageRobots}
+            />
 
             <Form
                 {...update.form()}

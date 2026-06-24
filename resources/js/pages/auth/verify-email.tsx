@@ -1,14 +1,21 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
+import { SeoHead } from '@/components/seo-head';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { privatePageRobots } from '@/lib/seo';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
         <>
-            <Head title="verify email" />
+            <SeoHead
+                title="verify email"
+                description="Verify your email address to finish setting up your YourWorldCup account."
+                path="/email/verify"
+                robots={privatePageRobots}
+            />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-wc-green">

@@ -1,11 +1,13 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ArrowRight, UserPlus } from 'lucide-react';
+import { ProductShell } from '@/components/product-shell';
 import {
     ReferralShareCard,
     ReferralStatsCard,
 } from '@/components/referrals/referral-cards';
-import { ProductShell } from '@/components/product-shell';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
+import { seo } from '@/lib/seo';
 import { login, predict, register } from '@/routes';
 
 interface ReferralRules {
@@ -38,7 +40,7 @@ export default function Referrals() {
 
     return (
         <>
-            <Head title="Referrals" />
+            <SeoHead {...seo.referrals} />
             <ProductShell>
                 <div className="mx-auto min-w-0 max-w-6xl px-4 py-10 sm:px-6 md:py-14">
                     <div className="max-w-2xl">

@@ -1,12 +1,14 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { SeoHead } from '@/components/seo-head';
 import TextLink from '@/components/text-link';
 import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { privatePageRobots } from '@/lib/seo';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
@@ -17,7 +19,12 @@ type Props = {
 export default function Register({ passwordRules }: Props) {
     return (
         <>
-            <Head title="sign up" />
+            <SeoHead
+                title="sign up"
+                description="Create a free YourWorldCup account to make daily predictions and join the leaderboards."
+                path="/register"
+                robots={privatePageRobots}
+            />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}

@@ -1,9 +1,11 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { StandingsTable } from '@/components/leaderboard/standings-table';
 import type { StandingsRow } from '@/components/leaderboard/standings-table';
 import { ProductShell } from '@/components/product-shell';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
+import { seo } from '@/lib/seo';
 import { leaderboard } from '@/routes';
 
 const TWITTER_HANDLE = 'joseph_ajibodu';
@@ -23,6 +25,7 @@ function formatWeek(weekStart: string): string {
     end.setDate(end.getDate() + 6);
     const fmt = (d: Date) =>
         d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
     return `${fmt(start)} – ${fmt(end)}`;
 }
 
@@ -38,7 +41,7 @@ export default function Leaderboard() {
 
     return (
         <>
-            <Head title="Leaderboard" />
+            <SeoHead {...seo.leaderboard} />
             <ProductShell>
                 <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
                     <div className="max-w-2xl">

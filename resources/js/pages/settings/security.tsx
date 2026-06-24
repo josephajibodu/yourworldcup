@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/heading';
@@ -8,8 +8,10 @@ import ManagePasskeys from '@/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
 import ManageTwoFactor from '@/components/manage-two-factor';
 import PasswordInput from '@/components/password-input';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { privatePageRobots } from '@/lib/seo';
 import { edit } from '@/routes/security';
 
 type Props = {
@@ -23,7 +25,12 @@ export default function Security(props: Props) {
 
     return (
         <>
-            <Head title="Security settings" />
+            <SeoHead
+                title="Security settings"
+                description="Manage your YourWorldCup password, passkeys, and two-factor authentication."
+                path="/settings/security"
+                robots={privatePageRobots}
+            />
 
             <h1 className="sr-only">Security settings</h1>
 

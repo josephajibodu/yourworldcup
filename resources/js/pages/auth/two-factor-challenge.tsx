@@ -1,7 +1,8 @@
-import { Form, Head, setLayoutProps } from '@inertiajs/react';
+import { Form, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,6 +11,7 @@ import {
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
+import { privatePageRobots } from '@/lib/seo';
 import { store } from '@/routes/two-factor/login';
 
 export default function TwoFactorChallenge() {
@@ -51,7 +53,12 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="two-factor authentication" />
+            <SeoHead
+                title="two-factor authentication"
+                description="Complete two-factor authentication to sign in to YourWorldCup."
+                path="/two-factor-challenge"
+                robots={privatePageRobots}
+            />
 
             <div className="space-y-6">
                 <Form

@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import {
     Background,
     BackgroundVariant,
@@ -15,6 +15,8 @@ import { MatchNode } from '@/components/bracket/match-node';
 import { TrophyNode } from '@/components/bracket/trophy-node';
 import type { GroupTable, KnockoutMatch } from '@/components/bracket/types';
 import { ProductShell } from '@/components/product-shell';
+import { SeoHead } from '@/components/seo-head';
+import { seo } from '@/lib/seo';
 
 interface BracketPageProps {
     groups: GroupTable[];
@@ -202,7 +204,7 @@ export default function Bracket() {
 
     return (
         <>
-            <Head title="Living bracket" />
+            <SeoHead {...seo.bracket} />
             <ProductShell
                 className="bg-wc-surface text-wc-ink"
                 mainClassName="relative min-h-[calc(100svh-11rem)] flex-1"

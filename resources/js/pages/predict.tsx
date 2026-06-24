@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ import { PredictUpdateDialog } from '@/components/predict/predict-update-dialog'
 import { ScoreStepperProvider } from '@/components/predict/score-stepper-context';
 import type { MarketValue, PredictFixture } from '@/components/predict/types';
 import { ProductShell } from '@/components/product-shell';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
 import { useNow } from '@/hooks/use-now';
 import {
@@ -20,6 +21,7 @@ import {
     savePredictDraft,
 } from '@/lib/predict-draft';
 import { hasSavedPicksForDay } from '@/lib/predict-saved-picks';
+import { seo } from '@/lib/seo';
 import { predict } from '@/routes';
 import type { Auth } from '@/types';
 
@@ -189,9 +191,11 @@ function PredictDay({
                     onFinish: () => setProcessing(false),
                     onSuccess: () => {
                         setErrors({});
+
                         if (clearDraftOnSuccess && selectedDate !== null) {
                             clearPredictDraft(selectedDate);
                         }
+
                         toast.success('Your picks are in.');
                     },
                     onError: (formErrors) =>
@@ -471,7 +475,7 @@ export default function Predict() {
 
     return (
         <>
-            <Head title="Make your picks" />
+            <SeoHead {...seo.predict} />
             <ProductShell>
                 <PredictDay key={props.selectedDate ?? 'none'} {...props} />
             </ProductShell>

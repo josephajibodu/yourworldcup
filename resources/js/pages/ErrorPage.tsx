@@ -1,7 +1,9 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
+import { privatePageRobots } from '@/lib/seo';
 import { home, predict } from '@/routes';
 
 type ErrorDefinition = {
@@ -49,7 +51,12 @@ export default function ErrorPage({ status }: ErrorPageProps) {
 
     return (
         <>
-            <Head title={error.title} />
+            <SeoHead
+                title={error.title}
+                description={error.description}
+                path="/"
+                robots={privatePageRobots}
+            />
             <div className="flex min-h-screen flex-col bg-wc-surface font-sans text-wc-ink">
                 <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-6 py-16 text-center">
                     <Link href={home()} className="mb-10">

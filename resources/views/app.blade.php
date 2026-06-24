@@ -32,6 +32,11 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+    <meta name="description" content="Daily World Cup predictions, a living bracket, and skill-ranked leaderboards.">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+
     @fonts
 
     {{-- yourworldcup brand numerals; Instrument Sans is loaded by Vite's font plugin. --}}

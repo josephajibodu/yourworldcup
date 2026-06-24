@@ -1,18 +1,25 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
+import { SeoHead } from '@/components/seo-head';
 import TextLink from '@/components/text-link';
 import TurnstileWidget from '@/components/turnstile-widget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { privatePageRobots } from '@/lib/seo';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
         <>
-            <Head title="forgot password" />
+            <SeoHead
+                title="forgot password"
+                description="Reset your YourWorldCup account password."
+                path="/forgot-password"
+                robots={privatePageRobots}
+            />
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-wc-green">

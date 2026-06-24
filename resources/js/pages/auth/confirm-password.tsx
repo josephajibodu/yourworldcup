@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
 import {
     index as confirmOptions,
     store as confirmStore,
@@ -6,15 +6,22 @@ import {
 import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { privatePageRobots } from '@/lib/seo';
 import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
     return (
         <>
-            <Head title="confirm password" />
+            <SeoHead
+                title="confirm password"
+                description="Confirm your password to continue in YourWorldCup."
+                path="/user/confirm-password"
+                robots={privatePageRobots}
+            />
 
             <PasskeyVerify
                 routes={{

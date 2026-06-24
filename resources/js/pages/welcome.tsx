@@ -1,18 +1,18 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import { FeatureExplorer } from '@/components/landing/feature-explorer';
 import { PrizesReveal } from '@/components/landing/prizes-reveal';
 import { QualificationFlow } from '@/components/landing/qualification-flow';
 import { ProductShell } from '@/components/product-shell';
+import { SeoHead } from '@/components/seo-head';
 import { Button } from '@/components/ui/button';
-import { bracket, predict, register } from '@/routes';
+import { seo } from '@/lib/seo';
+import { bracket, predict } from '@/routes';
 
 export default function Welcome() {
-    const { auth } = usePage().props;
-
     return (
         <>
-            <Head title="Predict the World Cup, daily" />
+            <SeoHead {...seo.home} />
             <ProductShell>
                 <section className="overflow-hidden bg-wc-surface text-wc-ink">
                     <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-20">

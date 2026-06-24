@@ -1,5 +1,5 @@
 import { Lock, Star } from 'lucide-react';
-import { type FocusEvent } from 'react';
+import type {FocusEvent} from 'react';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
