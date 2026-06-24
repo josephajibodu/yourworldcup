@@ -2,9 +2,12 @@
 
 namespace App\FootballData;
 
+use GuzzleHttp\TransferStats;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class FootballDataApiClient
@@ -41,11 +44,17 @@ class FootballDataApiClient
     public function competitionMatches(array $query = []): array
     {
         $query = array_merge(['season' => $this->season], $query);
+        $path = "/v4/competitions/{$this->competitionId}/matches";
 
-        $response = $this->client()->get(
-            "/v4/competitions/{$this->competitionId}/matches",
-            $query,
-        );
+        try {
+            $response = $this->client()->get($path, $query);
+        } catch (ConnectionException $exception) {
+            $this->logRequest('GET', $path, $query, null, $exception->getMessage());
+
+            throw $exception;
+        }
+
+        $this->logRequest('GET', $path, $query, $response);
 
         $this->ensureSuccessful($response);
 
@@ -73,5 +82,46 @@ class FootballDataApiClient
             $response->status(),
             $response->body(),
         ));
+    }
+
+    /**
+     * @param  array<string, scalar|null>  $requestBody
+     */
+    private function logRequest(
+        string $method,
+        string $path,
+        array $requestBody,
+        ?Response $response,
+        ?string $error = null,
+    ): void {
+        Log::channel('outgoing_api')->info('Football Data API request', [
+            'method' => $method,
+            'url' => $this->baseUrl.$path,
+            'request_body' => $requestBody,
+            'status' => $response?->status(),
+            'response_body' => $response !== null ? $this->responseBody($response) : null,
+            'duration_ms' => $this->durationMs($response?->transferStats),
+            'error' => $error,
+        ]);
+    }
+
+    private function responseBody(Response $response): array|string|null
+    {
+        if ($response->body() === '') {
+            return null;
+        }
+
+        $json = $response->json();
+
+        return is_array($json) ? $json : $response->body();
+    }
+
+    private function durationMs(?TransferStats $stats): ?float
+    {
+        if ($stats === null) {
+            return null;
+        }
+
+        return round($stats->getTransferTime() * 1000, 2);
     }
 }
