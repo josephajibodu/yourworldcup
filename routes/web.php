@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BracketSlotController as AdminBracketSlotController;
 use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
 use App\Http\Controllers\Admin\LeaderboardController as AdminLeaderboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
         Route::get('fixtures', [AdminFixtureController::class, 'index'])->name('fixtures.index');
         Route::patch('fixtures/{fixture}', [AdminFixtureController::class, 'update'])->name('fixtures.update');
+
+        Route::get('bracket-slots', [AdminBracketSlotController::class, 'index'])->name('bracket-slots.index');
+        Route::patch('bracket-slots/{bracketSlot}', [AdminBracketSlotController::class, 'update'])->name('bracket-slots.update');
 
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');

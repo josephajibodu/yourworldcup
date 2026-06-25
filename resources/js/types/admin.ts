@@ -81,3 +81,33 @@ export type AdminFilterOption = {
     name: string;
     city?: string | null;
 };
+
+export type AdminBracketSlotTeamOption = {
+    id: number;
+    name: string;
+    code: string;
+    flag: string | null;
+    groupCode: string | null;
+    standingPosition: number | null;
+};
+
+export type AdminBracketSlotSummary = {
+    id: number;
+    label: string | null;
+    displayCode: string;
+    slotType: string;
+    side: string;
+    feedsFixture: {
+        id: number;
+        externalId: string | null;
+        stageLabel: string;
+    } | null;
+    resolvedTeam: {
+        id: number;
+        name: string;
+        code: string;
+        flag: string | null;
+        groupCode: string | null;
+    } | null;
+    eligibleTeams: AdminBracketSlotTeamOption[];
+};

@@ -24,6 +24,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { bracket, bestThirds, dashboard, leaderboard, predict } from '@/routes';
+import { index as adminBracketSlotsIndex } from '@/routes/admin/bracket-slots';
 import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminUsersIndex } from '@/routes/admin/users';
@@ -51,6 +52,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 title: 'Fixtures',
                 href: adminFixturesIndex(),
                 icon: CalendarDays,
+            },
+            {
+                title: 'Bracket slots',
+                href: adminBracketSlotsIndex(),
+                icon: Network,
             },
             {
                 title: 'Best 3rd',
