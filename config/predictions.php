@@ -46,6 +46,12 @@ return [
     'timezone' => 'Africa/Lagos',
 
     /*
+    | WAT calendar bounds for the World Cup tournament (daily admin views).
+    */
+    'tournament_start' => '2026-06-11',
+    'tournament_end' => '2026-07-19',
+
+    /*
     | How many calendar days ahead of today (in the timezone above) users may
     | browse and submit predictions. 1 means today and tomorrow only.
     */

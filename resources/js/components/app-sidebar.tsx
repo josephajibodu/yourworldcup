@@ -22,11 +22,32 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
+import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import type { Auth, NavItem } from '@/types';
 
 function mainNavItems(isAdmin: boolean): NavItem[] {
-    const items: NavItem[] = [
+    if (isAdmin) {
+        return [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Users',
+                href: adminUsersIndex(),
+                icon: Users,
+            },
+            {
+                title: 'Leaderboard',
+                href: adminLeaderboard(),
+                icon: Trophy,
+            },
+        ];
+    }
+
+    return [
         {
             title: 'Predict',
             href: predict(),
@@ -43,23 +64,6 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
             icon: Trophy,
         },
     ];
-
-    if (isAdmin) {
-        items.unshift(
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-                icon: LayoutGrid,
-            },
-            {
-                title: 'Users',
-                href: adminUsersIndex(),
-                icon: Users,
-            },
-        );
-    }
-
-    return items;
 }
 
 const footerNavItems: NavItem[] = [

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\LeaderboardController as AdminLeaderboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
 use App\Http\Controllers\BracketController;
@@ -27,6 +28,10 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('leaderboard', [AdminLeaderboardController::class, 'overall'])->name('leaderboard');
+        Route::get('leaderboard/weekly', [AdminLeaderboardController::class, 'weekly'])->name('leaderboard.weekly');
+        Route::get('leaderboard/daily', [AdminLeaderboardController::class, 'daily'])->name('leaderboard.daily');
+
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::patch('users/{user}', [AdminUserController::class, 'update'])->name('users.update');

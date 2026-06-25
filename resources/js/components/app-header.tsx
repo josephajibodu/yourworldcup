@@ -44,6 +44,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
 import { index as adminUsersIndex } from '@/routes/admin/users';
+import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -51,7 +52,27 @@ type Props = {
 };
 
 function mainNavItems(isAdmin: boolean): NavItem[] {
-    const items: NavItem[] = [
+    if (isAdmin) {
+        return [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Users',
+                href: adminUsersIndex(),
+                icon: Users,
+            },
+            {
+                title: 'Leaderboard',
+                href: adminLeaderboard(),
+                icon: Trophy,
+            },
+        ];
+    }
+
+    return [
         {
             title: 'Predict',
             href: predict(),
@@ -68,23 +89,6 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
             icon: Trophy,
         },
     ];
-
-    if (isAdmin) {
-        items.unshift(
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-                icon: LayoutGrid,
-            },
-            {
-                title: 'Users',
-                href: adminUsersIndex(),
-                icon: Users,
-            },
-        );
-    }
-
-    return items;
 }
 
 const rightNavItems: NavItem[] = [

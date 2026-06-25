@@ -14,7 +14,7 @@ class LeaderboardService
 
     /**
      * Cumulative tournament standings: users who have submitted at least one
-     * prediction, ranked by prediction + referral points.
+     * prediction or referral credit, ranked by prediction + referral points.
      *
      * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
      */
@@ -43,6 +43,21 @@ class LeaderboardService
     }
 
     /**
+     * Standings for a single WAT day: users who predicted that day's
+     * fixtures or earned a referral credit that day, ranked by points.
+     *
+     * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
+     */
+    public function daily(string $watDate, int $limit = 50): Collection
+    {
+        return collect($this->cache->remember(
+            'leaderboard',
+            "daily:{$watDate}:{$limit}",
+            fn (): array => $this->computeDaily($watDate, $limit)->all(),
+        ));
+    }
+
+    /**
      * WAT week-start dates (Mondays) that have weekly-board activity:
      * predictions on that week's fixtures or referral credits earned that week.
      *
@@ -55,6 +70,54 @@ class LeaderboardService
             'weeks',
             fn (): array => $this->computeWeeklyDates(),
         );
+    }
+
+    /**
+     * WAT calendar days for the World Cup tournament window.
+     *
+     * @return array<int, string>
+     */
+    public function dailyDates(): array
+    {
+        return $this->cache->remember(
+            'leaderboard',
+            'tournament-days',
+            fn (): array => $this->computeDailyDates(),
+        );
+    }
+
+    /**
+     * @return Collection<int, array{userId: int, name: string, points: int, rank: int}>
+     */
+    private function computeDaily(string $watDate, int $limit): Collection
+    {
+        [$start, $end] = $this->watDayWindow($watDate);
+
+        $rows = DB::query()
+            ->fromSub($this->dailyParticipantsSubquery($start, $end, $watDate), 'participants')
+            ->join('users', 'users.id', '=', 'participants.user_id')
+            ->leftJoinSub(
+                $this->combinedScoreSubquery(
+                    predictionFilter: fn (Builder $query) => $query->whereBetween('fixtures.kickoff_at', [$start, $end]),
+                    referralFilter: fn (Builder $query) => $query->where('referrals.wat_date', $watDate),
+                ),
+                'scores',
+                'users.id',
+                '=',
+                'scores.user_id',
+            )
+            ->select(
+                'users.id',
+                'users.name',
+                DB::raw('COALESCE(scores.points, 0) as points'),
+                DB::raw('COALESCE(scores.first_at, participants.first_at) as first_at'),
+            )
+            ->orderByDesc('points')
+            ->orderBy('first_at')
+            ->limit($limit)
+            ->get();
+
+        return $this->rank($rows);
     }
 
     /**
@@ -137,6 +200,26 @@ class LeaderboardService
     }
 
     /**
+     * @return array<int, string>
+     */
+    private function computeDailyDates(): array
+    {
+        $timezone = config('predictions.timezone');
+        $start = Carbon::parse(config('predictions.tournament_start'), $timezone)->startOfDay();
+        $end = Carbon::parse(config('predictions.tournament_end'), $timezone)->startOfDay();
+
+        $dates = [];
+        $day = $start->copy();
+
+        while ($day->lte($end)) {
+            $dates[] = $day->toDateString();
+            $day->addDay();
+        }
+
+        return $dates;
+    }
+
+    /**
      * @param  (callable(Builder): void)|null  $predictionFilter
      * @param  (callable(Builder): void)|null  $referralFilter
      */
@@ -183,12 +266,56 @@ class LeaderboardService
 
     private function overallParticipantsSubquery(): Builder
     {
-        return DB::table('predictions')
+        $fromPredictions = DB::table('predictions')
             ->select(
                 'predictions.user_id',
                 DB::raw('MIN(predictions.submitted_at) as first_at'),
             )
             ->groupBy('predictions.user_id');
+
+        $fromReferrals = DB::table('referrals')
+            ->select(
+                'referrals.referrer_id as user_id',
+                DB::raw('MIN(referrals.credited_at) as first_at'),
+            )
+            ->groupBy('referrals.referrer_id');
+
+        return DB::query()
+            ->fromSub($fromPredictions->unionAll($fromReferrals), 'participants')
+            ->groupBy('participants.user_id')
+            ->select(
+                'participants.user_id',
+                DB::raw('MIN(participants.first_at) as first_at'),
+            );
+    }
+
+    private function dailyParticipantsSubquery(Carbon $start, Carbon $end, string $watDate): Builder
+    {
+        $fromPredictions = DB::table('predictions')
+            ->join('fixture_markets', 'fixture_markets.id', '=', 'predictions.fixture_market_id')
+            ->join('fixtures', 'fixtures.id', '=', 'fixture_markets.fixture_id')
+            ->whereBetween('fixtures.kickoff_at', [$start, $end])
+            ->select(
+                'predictions.user_id',
+                DB::raw('MIN(predictions.submitted_at) as first_at'),
+            )
+            ->groupBy('predictions.user_id');
+
+        $fromReferrals = DB::table('referrals')
+            ->where('referrals.wat_date', $watDate)
+            ->select(
+                'referrals.referrer_id as user_id',
+                DB::raw('MIN(referrals.credited_at) as first_at'),
+            )
+            ->groupBy('referrals.referrer_id');
+
+        return DB::query()
+            ->fromSub($fromPredictions->unionAll($fromReferrals), 'participants')
+            ->groupBy('participants.user_id')
+            ->select(
+                'participants.user_id',
+                DB::raw('MIN(participants.first_at) as first_at'),
+            );
     }
 
     private function weeklyParticipantsSubquery(Carbon $start, Carbon $end, string $weekStart, string $weekEnd): Builder
@@ -236,6 +363,18 @@ class LeaderboardService
                 'rank' => $index + 1,
             ];
         });
+    }
+
+    /**
+     * Returns the UTC [start, end) window for a WAT day.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function watDayWindow(string $watDate): array
+    {
+        $start = Carbon::parse($watDate, config('predictions.timezone'))->startOfDay();
+
+        return [$start->copy()->utc(), $start->copy()->addDay()->utc()];
     }
 
     /**
