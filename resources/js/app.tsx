@@ -14,6 +14,7 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
             case name === 'bracket':
+            case name === 'best-thirds':
             case name === 'leaderboard':
             case name === 'referrals':
             case name === 'predict':

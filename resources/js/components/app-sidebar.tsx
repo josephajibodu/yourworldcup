@@ -24,9 +24,9 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { bracket, bestThirds, dashboard, leaderboard, predict } from '@/routes';
+import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminBracketSlotsIndex } from '@/routes/admin/bracket-slots';
 import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
-import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import type { Auth, NavItem } from '@/types';
 
@@ -58,11 +58,6 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 href: adminBracketSlotsIndex(),
                 icon: Network,
             },
-            {
-                title: 'Best 3rd',
-                href: bestThirds(),
-                icon: Medal,
-            },
         ];
     }
 
@@ -78,7 +73,7 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
             icon: Network,
         },
         {
-            title: 'Best 3rd',
+            title: '3rd-place ranking',
             href: bestThirds(),
             icon: Medal,
         },
