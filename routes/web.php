@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PlayerCountController;
@@ -23,6 +24,12 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::patch('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    });
 });
 
 require __DIR__.'/settings.php';

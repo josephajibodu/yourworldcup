@@ -6,6 +6,7 @@ import {
     Network,
     Target,
     Trophy,
+    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -21,6 +22,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
+import { index as adminUsersIndex } from '@/routes/admin/users';
 import type { Auth, NavItem } from '@/types';
 
 function mainNavItems(isAdmin: boolean): NavItem[] {
@@ -43,11 +45,18 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
     ];
 
     if (isAdmin) {
-        items.unshift({
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
-        });
+        items.unshift(
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Users',
+                href: adminUsersIndex(),
+                icon: Users,
+            },
+        );
     }
 
     return items;

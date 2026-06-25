@@ -8,6 +8,7 @@ import {
     Search,
     Target,
     Trophy,
+    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -42,6 +43,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
+import { index as adminUsersIndex } from '@/routes/admin/users';
 import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -68,11 +70,18 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
     ];
 
     if (isAdmin) {
-        items.unshift({
-            title: 'Dashboard',
-            href: dashboard(),
-            icon: LayoutGrid,
-        });
+        items.unshift(
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Users',
+                href: adminUsersIndex(),
+                icon: Users,
+            },
+        );
     }
 
     return items;
