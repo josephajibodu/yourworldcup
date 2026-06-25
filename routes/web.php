@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PlayerCountController;
@@ -29,6 +30,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::patch('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::get('users/{user}/predictions', [AdminUserPredictionController::class, 'index'])->name('users.predictions.index');
     });
 });
 

@@ -1,5 +1,5 @@
 import { Form, Link, router } from '@inertiajs/react';
-import { Eye, Pencil, Search, Users } from 'lucide-react';
+import { Eye, ListChecks, Pencil, Search, Users } from 'lucide-react';
 import { useState } from 'react';
 import { show } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { UserEditDialogContent } from '@/components/admin/user-edit-dialog';
@@ -21,6 +21,7 @@ import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { cn } from '@/lib/utils';
 import { privatePageRobots } from '@/lib/seo';
 import { index as usersIndex } from '@/routes/admin/users';
+import { index as userPredictionsIndex } from '@/routes/admin/users/predictions';
 import { dashboard } from '@/routes';
 import type {
     AdminUserDetail,
@@ -146,7 +147,7 @@ export default function AdminUsersIndex({
                     </div>
                 ) : (
                     <div className="overflow-hidden rounded-xl border border-wc-ink/10 bg-card">
-                        <div className="hidden border-b border-wc-ink/8 px-4 py-3 text-xs font-medium tracking-wide text-muted-foreground uppercase md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_9rem_4rem_11rem] md:gap-4">
+                        <div className="hidden border-b border-wc-ink/8 px-4 py-3 text-xs font-medium tracking-wide text-muted-foreground uppercase md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_9rem_4rem_16rem] md:gap-4">
                             <span>Handle</span>
                             <span>Email</span>
                             <span className="text-right">Joined</span>
@@ -158,7 +159,7 @@ export default function AdminUsersIndex({
                             {users.data.map((user) => (
                                 <li
                                     key={user.id}
-                                    className="flex flex-col gap-3 border-b border-wc-ink/8 px-4 py-4 last:border-b-0 md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_9rem_4rem_11rem] md:items-center md:gap-4"
+                                    className="flex flex-col gap-3 border-b border-wc-ink/8 px-4 py-4 last:border-b-0 md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(0,1.4fr)_9rem_4rem_16rem] md:items-center md:gap-4"
                                 >
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-medium">
@@ -186,7 +187,7 @@ export default function AdminUsersIndex({
                                         {user.predictionsCount}
                                     </p>
 
-                                    <div className="grid grid-cols-2 gap-1 md:justify-self-end">
+                                    <div className="grid grid-cols-3 gap-1 md:justify-self-end">
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -208,6 +209,23 @@ export default function AdminUsersIndex({
                                         >
                                             <Pencil className="size-4" />
                                             Edit
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start md:w-full"
+                                            asChild
+                                        >
+                                            <Link
+                                                href={userPredictionsIndex.url(
+                                                    user.id,
+                                                )}
+                                                preserveScroll
+                                            >
+                                                <ListChecks className="size-4" />
+                                                Picks
+                                            </Link>
                                         </Button>
                                     </div>
                                 </li>
@@ -279,6 +297,14 @@ export default function AdminUsersIndex({
                         <>
                             <UserViewDialogContent user={viewUser} />
                             <div className="flex justify-end gap-2">
+                                <Button type="button" variant="secondary" asChild>
+                                    <Link
+                                        href={userPredictionsIndex.url(viewUser.id)}
+                                    >
+                                        <ListChecks className="size-4" />
+                                        View picks
+                                    </Link>
+                                </Button>
                                 <Button
                                     type="button"
                                     variant="secondary"

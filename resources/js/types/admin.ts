@@ -32,3 +32,24 @@ export type Paginated<T> = {
         active: boolean;
     }>;
 };
+
+export type AdminUserPrediction = {
+    id: number;
+    isBanker: boolean;
+    submittedAt: string;
+    isScored: boolean;
+    outcome: 'won' | 'lost' | null;
+    pointsAwarded: number | null;
+    marketName: string;
+    value: Record<string, unknown>;
+    fixture: {
+        id: number;
+        stageLabel: string;
+        status: string;
+        kickoffAt: string;
+        homeTeam: string | null;
+        awayTeam: string | null;
+        homeScore: number | null;
+        awayScore: number | null;
+    };
+};
