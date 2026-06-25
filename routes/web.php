@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
 use App\Http\Controllers\BestThirdController;
 use App\Http\Controllers\BracketController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PlayerCountController;
 use App\Http\Controllers\PredictController;
@@ -29,7 +30,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('leaderboard', [AdminLeaderboardController::class, 'overall'])->name('leaderboard');

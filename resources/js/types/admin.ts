@@ -111,3 +111,68 @@ export type AdminBracketSlotSummary = {
     } | null;
     eligibleTeams: AdminBracketSlotTeamOption[];
 };
+
+export type AdminDashboardFixture = {
+    id: number;
+    externalId: string | null;
+    stageLabel: string;
+    groupCode: string | null;
+    status: string;
+    kickoffAt: string;
+    homeTeam: string | null;
+    awayTeam: string | null;
+    homeScore: number | null;
+    awayScore: number | null;
+    unsettledMarketsCount?: number;
+    marketsCount?: number;
+};
+
+export type AdminDashboardBracketSlot = {
+    id: number;
+    label: string | null;
+    displayCode: string;
+    feedsFixtureExternalId: string | null;
+    feedsFixtureStageLabel: string | null;
+};
+
+export type AdminDashboardSummary = {
+    stats: {
+        users: {
+            total: number;
+            verified: number;
+            withPredictions: number;
+            grandPrizeTarget: number;
+        };
+        predictions: {
+            total: number;
+            unscored: number;
+        };
+        referrals: {
+            total: number;
+        };
+        fixtures: {
+            total: number;
+            live: number;
+            today: number;
+            final: number;
+            unsettledFinal: number;
+        };
+        bracketSlots: {
+            total: number;
+            assigned: number;
+        };
+        tournament: {
+            allGroupsComplete: boolean;
+        };
+    };
+    leaderboardTop: Array<{
+        userId: number;
+        name: string;
+        points: number;
+        rank: number;
+    }>;
+    liveFixtures: AdminDashboardFixture[];
+    upcomingFixtures: AdminDashboardFixture[];
+    fixturesNeedingSettlement: AdminDashboardFixture[];
+    unassignedBracketSlots: AdminDashboardBracketSlot[];
+};
