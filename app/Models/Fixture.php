@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $home_team_id
  * @property int|null $away_team_id
  * @property int|null $stadium_id
+ * @property string|null $referee
  * @property Carbon $kickoff_at
  * @property Carbon $lock_at
  * @property FixtureStatus $status

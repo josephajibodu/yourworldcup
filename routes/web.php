@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
 use App\Http\Controllers\Admin\LeaderboardController as AdminLeaderboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
@@ -31,6 +32,9 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('leaderboard', [AdminLeaderboardController::class, 'overall'])->name('leaderboard');
         Route::get('leaderboard/weekly', [AdminLeaderboardController::class, 'weekly'])->name('leaderboard.weekly');
         Route::get('leaderboard/daily', [AdminLeaderboardController::class, 'daily'])->name('leaderboard.daily');
+
+        Route::get('fixtures', [AdminFixtureController::class, 'index'])->name('fixtures.index');
+        Route::patch('fixtures/{fixture}', [AdminFixtureController::class, 'update'])->name('fixtures.update');
 
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');

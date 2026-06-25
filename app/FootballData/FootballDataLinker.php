@@ -112,6 +112,7 @@ class FootballDataLinker
             }
 
             if ($fixture->provider === $this->provider && $fixture->provider_match_id === $providerMatchId) {
+                $this->syncReferee($fixture, $row);
                 $skipped++;
 
                 continue;
@@ -120,12 +121,42 @@ class FootballDataLinker
             $fixture->update([
                 'provider' => $this->provider,
                 'provider_match_id' => $providerMatchId,
+                'referee' => $this->extractReferee($row) ?? $fixture->referee,
             ]);
 
             $linked++;
         }
 
         return compact('linked', 'skipped', 'unmatched');
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function syncReferee(Fixture $fixture, array $row): void
+    {
+        $referee = $this->extractReferee($row);
+
+        if ($referee !== null && $fixture->referee !== $referee) {
+            $fixture->update(['referee' => $referee]);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function extractReferee(array $row): ?string
+    {
+        /** @var list<array<string, mixed>> $referees */
+        $referees = $row['referees'] ?? [];
+
+        foreach ($referees as $referee) {
+            if (($referee['type'] ?? '') === 'REFEREE' && isset($referee['name'])) {
+                return (string) $referee['name'];
+            }
+        }
+
+        return isset($referees[0]['name']) ? (string) $referees[0]['name'] : null;
     }
 
     /**

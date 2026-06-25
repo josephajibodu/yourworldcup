@@ -20,19 +20,6 @@ export type AdminUserDetail = AdminUserSummary & {
     updatedAt: string;
 };
 
-export type Paginated<T> = {
-    data: T[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    links: Array<{
-        url: string | null;
-        label: string;
-        active: boolean;
-    }>;
-};
-
 export type AdminUserPrediction = {
     id: number;
     isBanker: boolean;
@@ -52,4 +39,45 @@ export type AdminUserPrediction = {
         homeScore: number | null;
         awayScore: number | null;
     };
+};
+
+export type Paginated<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+};
+
+export type AdminFixtureSummary = {
+    id: number;
+    externalId: string | null;
+    stageLabel: string;
+    groupCode: string | null;
+    status: string;
+    kickoffAt: string;
+    watDate: string;
+    homeTeam: string | null;
+    awayTeam: string | null;
+    stadium: {
+        id: number;
+        name: string;
+        city: string | null;
+    } | null;
+    referee: string | null;
+    homeScore: number | null;
+    awayScore: number | null;
+    marketsCount: number;
+    settledMarketsCount: number;
+};
+
+export type AdminFilterOption = {
+    id: number;
+    name: string;
+    city?: string | null;
 };

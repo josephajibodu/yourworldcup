@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarDays,
     Folder,
     LayoutGrid,
     Menu,
@@ -44,6 +45,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
 import { index as adminUsersIndex } from '@/routes/admin/users';
+import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import type { Auth, BreadcrumbItem, NavItem } from '@/types';
 
@@ -68,6 +70,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 title: 'Leaderboard',
                 href: adminLeaderboard(),
                 icon: Trophy,
+            },
+            {
+                title: 'Fixtures',
+                href: adminFixturesIndex(),
+                icon: CalendarDays,
             },
         ];
     }
