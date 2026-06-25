@@ -17,18 +17,36 @@ class PointsBestThirdQualifier implements BestThirdQualifier
     private const int QUALIFIER_COUNT = 8;
 
     /**
-     * @param  Collection<int, array{team: Team, row: array<string, mixed>}>  $thirdPlaceTeams
+     * @param  Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool}>  $thirdPlaceTeams
+     * @return Collection<int, array{rank: int, qualifies: bool, team: Team, row: array<string, mixed>, groupComplete: bool}>
+     */
+    public function rankAll(Collection $thirdPlaceTeams): Collection
+    {
+        return $thirdPlaceTeams
+            ->sort(function (array $a, array $b): int {
+                return [$b['row']['points'], $b['row']['gd'], $b['row']['gf']] <=> [$a['row']['points'], $a['row']['gd'], $a['row']['gf']]
+                    ?: strcmp($a['team']->name, $b['team']->name);
+            })
+            ->values()
+            ->map(function (array $entry, int $index): array {
+                $rank = $index + 1;
+
+                return [
+                    ...$entry,
+                    'rank' => $rank,
+                    'qualifies' => $rank <= self::QUALIFIER_COUNT,
+                ];
+            });
+    }
+
+    /**
+     * @param  Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool}>  $thirdPlaceTeams
      * @return Collection<int, Team>
      */
     public function qualify(Collection $thirdPlaceTeams): Collection
     {
-        return $thirdPlaceTeams
-            ->sortByDesc(fn (array $entry): array => [
-                $entry['row']['points'],
-                $entry['row']['gd'],
-                $entry['row']['gf'],
-            ])
-            ->take(self::QUALIFIER_COUNT)
+        return $this->rankAll($thirdPlaceTeams)
+            ->where('qualifies', true)
             ->map(fn (array $entry): Team => $entry['team'])
             ->values();
     }

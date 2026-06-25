@@ -4,6 +4,7 @@ import {
     CalendarDays,
     FolderGit2,
     LayoutGrid,
+    Medal,
     Network,
     Target,
     Trophy,
@@ -22,7 +23,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { bracket, dashboard, leaderboard, predict } from '@/routes';
+import { bracket, bestThirds, dashboard, leaderboard, predict } from '@/routes';
 import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminUsersIndex } from '@/routes/admin/users';
@@ -51,6 +52,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 href: adminFixturesIndex(),
                 icon: CalendarDays,
             },
+            {
+                title: 'Best 3rd',
+                href: bestThirds(),
+                icon: Medal,
+            },
         ];
     }
 
@@ -64,6 +70,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
             title: 'Bracket',
             href: bracket(),
             icon: Network,
+        },
+        {
+            title: 'Best 3rd',
+            href: bestThirds(),
+            icon: Medal,
         },
         {
             title: 'Leaderboard',

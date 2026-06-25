@@ -88,6 +88,22 @@ class GroupStandingsService
      */
     public function thirdPlaceTeams(): Collection
     {
+        return $this->provisionalThirdPlaceTeams()
+            ->where('groupComplete', true)
+            ->map(fn (array $entry): array => [
+                'team' => $entry['team'],
+                'row' => $entry['row'],
+            ])
+            ->values();
+    }
+
+    /**
+     * Current third-place team in each group from standings so far.
+     *
+     * @return Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool}>
+     */
+    public function provisionalThirdPlaceTeams(): Collection
+    {
         $groups = Team::query()
             ->whereNotNull('group_code')
             ->distinct()
@@ -96,10 +112,6 @@ class GroupStandingsService
 
         return $groups
             ->map(function (string $groupCode): ?array {
-                if (! $this->isGroupComplete($groupCode)) {
-                    return null;
-                }
-
                 $row = $this->teamAtPosition($groupCode, 3);
 
                 if ($row === null) {
@@ -115,6 +127,7 @@ class GroupStandingsService
                 return [
                     'team' => $team,
                     'row' => $row,
+                    'groupComplete' => $this->isGroupComplete($groupCode),
                 ];
             })
             ->filter()

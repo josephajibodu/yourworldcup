@@ -22,6 +22,12 @@ export const seo = {
             'Follow the World Cup knockout bracket as it updates — from the round of 32 through to the final.',
         path: '/bracket',
     },
+    bestThirds: {
+        title: 'Best third-place teams',
+        description:
+            'See how all twelve third-place teams rank for the eight round-of-32 spots — by points, goal difference, and goals scored.',
+        path: '/best-thirds',
+    },
     leaderboard: {
         title: 'Leaderboard',
         description:
