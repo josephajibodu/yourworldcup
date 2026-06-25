@@ -415,6 +415,14 @@ function PredictDay({
                     </Button>
                 </div>
 
+                {nextDate !== null && (
+                    <p className="mt-2 flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                        tomorrow&apos;s fixtures are open — tap
+                        <ChevronRight className="size-3.5" aria-hidden />
+                        to predict early
+                    </p>
+                )}
+
                 {(errors.predictions || errors.banker) && (
                     <p className="mt-4 rounded-md bg-wc-primary/10 px-3 py-2 text-sm font-medium text-wc-primary">
                         {errors.predictions ?? errors.banker}
