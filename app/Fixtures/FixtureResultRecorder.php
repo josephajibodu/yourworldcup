@@ -127,6 +127,36 @@ class FixtureResultRecorder
         return $fixture->fresh(['homeTeam', 'awayTeam']);
     }
 
+    public function recordLive(Fixture $fixture, int $homeScore, int $awayScore): Fixture
+    {
+        if ($homeScore < 0 || $homeScore > 30 || $awayScore < 0 || $awayScore > 30) {
+            throw ValidationException::withMessages([
+                'scores' => 'Scores must be between 0 and 30.',
+            ]);
+        }
+
+        $homeTeamId = $fixture->home_team_id;
+        $awayTeamId = $fixture->away_team_id;
+
+        $winnerId = null;
+
+        if ($homeTeamId !== null && $awayTeamId !== null && $homeScore !== $awayScore) {
+            $winnerId = $homeScore > $awayScore ? $homeTeamId : $awayTeamId;
+        }
+
+        $fixture->update([
+            'status' => FixtureStatus::Live,
+            'home_score' => $homeScore,
+            'away_score' => $awayScore,
+            'winner_team_id' => $winnerId,
+        ]);
+
+        $this->cache->bump('bracket');
+        $this->cache->bump('predict');
+
+        return $fixture->fresh(['homeTeam', 'awayTeam']);
+    }
+
     public function describe(Fixture $fixture): string
     {
         $home = $fixture->homeTeam?->name ?? 'TBD';

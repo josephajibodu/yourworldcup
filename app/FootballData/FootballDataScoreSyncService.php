@@ -106,7 +106,7 @@ class FootballDataScoreSyncService
         }
 
         if ($this->isLiveProviderStatus($providerStatus)) {
-            $this->applyLiveMatch($fixture, $result);
+            $this->applyLiveMatch($fixture, $match, $result);
 
             return;
         }
@@ -149,24 +149,70 @@ class FootballDataScoreSyncService
         }
     }
 
-    private function applyLiveMatch(Fixture $fixture, FootballDataSyncResult $result): void
-    {
+    /**
+     * @param  array<string, mixed>  $match
+     */
+    private function applyLiveMatch(
+        Fixture $fixture,
+        array $match,
+        FootballDataSyncResult $result,
+    ): void {
         if (in_array($fixture->status, [FixtureStatus::Final, FixtureStatus::Void], true)) {
             $result->skipped++;
 
             return;
         }
 
-        if ($fixture->status === FixtureStatus::Live) {
+        $scores = $this->extractProviderScores($match);
+
+        if ($scores === null) {
+            if ($fixture->status === FixtureStatus::Live) {
+                $result->skipped++;
+
+                return;
+            }
+
+            $fixture->update(['status' => FixtureStatus::Live]);
+            $this->cache->bump('bracket');
+            $this->cache->bump('predict');
+            $result->updated++;
+
+            return;
+        }
+
+        [$homeScore, $awayScore] = $scores;
+
+        if ($this->alreadyRecordedLive($fixture, $homeScore, $awayScore)) {
             $result->skipped++;
 
             return;
         }
 
-        $fixture->update(['status' => FixtureStatus::Live]);
-        $this->cache->bump('bracket');
-        $this->cache->bump('predict');
+        $this->recorder->recordLive($fixture, $homeScore, $awayScore);
         $result->updated++;
+    }
+
+    /**
+     * @param  array<string, mixed>  $match
+     * @return array{0: int, 1: int}|null
+     */
+    private function extractProviderScores(array $match): ?array
+    {
+        $homeScore = $match['score']['fullTime']['home'] ?? null;
+        $awayScore = $match['score']['fullTime']['away'] ?? null;
+
+        if (is_numeric($homeScore) && is_numeric($awayScore)) {
+            return [(int) $homeScore, (int) $awayScore];
+        }
+
+        return null;
+    }
+
+    private function alreadyRecordedLive(Fixture $fixture, int $homeScore, int $awayScore): bool
+    {
+        return $fixture->status === FixtureStatus::Live
+            && $fixture->home_score === $homeScore
+            && $fixture->away_score === $awayScore;
     }
 
     private function isLiveProviderStatus(string $providerStatus): bool

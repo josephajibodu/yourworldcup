@@ -51,16 +51,20 @@ function finishedFootballDataMatch(int $id, int $home, int $away, string $utcDat
     ];
 }
 
-function liveFootballDataMatch(int $id, string $utcDate = '2026-06-11T19:00:00Z'): array
-{
+function liveFootballDataMatch(
+    int $id,
+    string $utcDate = '2026-06-11T19:00:00Z',
+    ?int $home = null,
+    ?int $away = null,
+): array {
     return [
         'id' => $id,
         'utcDate' => $utcDate,
         'status' => 'IN_PLAY',
         'score' => [
             'fullTime' => [
-                'home' => null,
-                'away' => null,
+                'home' => $home,
+                'away' => $away,
             ],
         ],
     ];
@@ -147,7 +151,7 @@ it('syncs all played matches without settling by default', function () {
         ->and(Prediction::query()->sole()->points_awarded)->toBeNull();
 });
 
-it('marks in-play matches as live without recording scores', function () {
+it('marks in-play matches as live without recording scores when none are available', function () {
     $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
 
     expect($fixture->status)->toBe(FixtureStatus::Scheduled);
@@ -169,6 +173,65 @@ it('marks in-play matches as live without recording scores', function () {
     expect($fixture->status)->toBe(FixtureStatus::Live)
         ->and($fixture->home_score)->toBeNull()
         ->and($fixture->away_score)->toBeNull();
+});
+
+it('records live scores without settling predictions', function () {
+    $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
+    ['matchWinner' => $matchWinner] = predictionMarkets();
+
+    $winner = $fixture->markets()->where('prediction_market_id', $matchWinner->id)->firstOrFail();
+
+    Prediction::factory()->for(User::factory())->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'home'],
+    ]);
+
+    Http::fake([
+        'api.football-data.org/v4/competitions/2000/matches*' => Http::response(
+            footballDataMatchesResponse([
+                liveFootballDataMatch(537327, home: 1, away: 0),
+            ]),
+        ),
+    ]);
+
+    $this->artisan('football-data:sync-scores')
+        ->expectsOutputToContain('updated 1')
+        ->assertSuccessful();
+
+    $fixture->refresh();
+
+    expect($fixture->status)->toBe(FixtureStatus::Live)
+        ->and($fixture->home_score)->toBe(1)
+        ->and($fixture->away_score)->toBe(0)
+        ->and($winner->fresh()->status)->toBe(MarketStatus::Open)
+        ->and(Prediction::query()->sole()->points_awarded)->toBeNull();
+});
+
+it('updates live scores on subsequent syncs', function () {
+    $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
+    $fixture->update([
+        'status' => FixtureStatus::Live,
+        'home_score' => 1,
+        'away_score' => 0,
+    ]);
+
+    Http::fake([
+        'api.football-data.org/v4/competitions/2000/matches*' => Http::response(
+            footballDataMatchesResponse([
+                liveFootballDataMatch(537327, home: 2, away: 1),
+            ]),
+        ),
+    ]);
+
+    $this->artisan('football-data:sync-scores')
+        ->expectsOutputToContain('updated 1')
+        ->assertSuccessful();
+
+    $fixture->refresh();
+
+    expect($fixture->status)->toBe(FixtureStatus::Live)
+        ->and($fixture->home_score)->toBe(2)
+        ->and($fixture->away_score)->toBe(1);
 });
 
 it('skips fixtures that already have the same final score', function () {

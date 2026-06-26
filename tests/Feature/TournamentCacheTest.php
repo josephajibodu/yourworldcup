@@ -97,6 +97,26 @@ it('busts standings cache when a group fixture result is recorded', function () 
     expect($before)->not->toBe($after);
 });
 
+it('includes live group fixtures with scores in standings', function () {
+    $this->seed(PredictionMarketSeeder::class);
+    WorldCupImporter::fromDefaultPath()->import();
+
+    $service = app(GroupStandingsService::class);
+    $before = $service->standingsForGroup('A');
+
+    $fixture = Fixture::query()
+        ->where('stage', FixtureStage::Group)
+        ->where('group_code', 'A')
+        ->where('status', '!=', FixtureStatus::Final)
+        ->firstOrFail();
+
+    app(FixtureResultRecorder::class)->recordLive($fixture, 2, 1);
+
+    $after = $service->standingsForGroup('A');
+
+    expect($before)->not->toBe($after);
+});
+
 it('busts leaderboard cache when predictions are settled', function () {
     ['fixture' => $fixture, 'winner' => $winner] = finalFixtureWithMarkets(2, 1);
     $user = User::factory()->create(['name' => 'Ada']);

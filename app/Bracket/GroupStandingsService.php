@@ -164,7 +164,7 @@ class GroupStandingsService
         $finished = Fixture::query()
             ->where('stage', FixtureStage::Group)
             ->where('group_code', $groupCode)
-            ->where('status', FixtureStatus::Final)
+            ->whereIn('status', [FixtureStatus::Final, FixtureStatus::Live])
             ->get();
 
         return $this->buildStandings($teams, $finished);
@@ -183,7 +183,7 @@ class GroupStandingsService
 
         $finished = Fixture::query()
             ->where('stage', FixtureStage::Group)
-            ->where('status', FixtureStatus::Final)
+            ->whereIn('status', [FixtureStatus::Final, FixtureStatus::Live])
             ->get();
 
         return $this->buildStandings($teams, $finished);
@@ -216,8 +216,12 @@ class GroupStandingsService
                 continue;
             }
 
-            $home = $fixture->home_score ?? 0;
-            $away = $fixture->away_score ?? 0;
+            if ($fixture->home_score === null || $fixture->away_score === null) {
+                continue;
+            }
+
+            $home = $fixture->home_score;
+            $away = $fixture->away_score;
             $this->applyResult($rows[$fixture->home_team_id], $home, $away);
             $this->applyResult($rows[$fixture->away_team_id], $away, $home);
         }
