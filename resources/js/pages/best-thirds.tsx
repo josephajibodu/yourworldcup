@@ -1,8 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, Medal } from 'lucide-react';
+import { useMemo } from 'react';
+import { LiveIndicator } from '@/components/live-indicator';
 import { ProductShell } from '@/components/product-shell';
 import { SeoHead } from '@/components/seo-head';
 import { Badge } from '@/components/ui/badge';
+import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
+import { useNow } from '@/hooks/use-now';
+import { liveTeamIds, type FixtureTeamRef } from '@/lib/fixture-live';
 import { cn } from '@/lib/utils';
 import { seo } from '@/lib/seo';
 import { bestThirds, bracket } from '@/routes';
@@ -32,6 +37,7 @@ interface BestThirdRankingRow {
 interface BestThirdsPageProps {
     rankings: BestThirdRankingRow[];
     allGroupsComplete: boolean;
+    openGroupFixtures: FixtureTeamRef[];
     [key: string]: unknown;
 }
 
@@ -48,8 +54,14 @@ function formatMatchesLeft(count: number): string {
 }
 
 export default function BestThirds() {
-    const { rankings, allGroupsComplete } =
+    const { rankings, allGroupsComplete, openGroupFixtures } =
         usePage<BestThirdsPageProps>().props;
+    const now = useNow();
+    const matchDurationMinutes = useMatchDurationMinutes();
+    const playingTeamIds = useMemo(
+        () => liveTeamIds(openGroupFixtures, matchDurationMinutes, now),
+        [openGroupFixtures, matchDurationMinutes, now],
+    );
 
     return (
         <>
@@ -104,7 +116,12 @@ export default function BestThirds() {
                         </div>
 
                         <ul>
-                            {rankings.map((row) => (
+                            {rankings.map((row) => {
+                                const isPlaying = playingTeamIds.has(
+                                    row.team.id,
+                                );
+
+                                return (
                                 <li
                                     key={row.team.id}
                                     className={cn(
@@ -144,15 +161,25 @@ export default function BestThirds() {
                                                 <p className="truncate font-medium text-wc-ink">
                                                     {row.team.name}
                                                 </p>
-                                                {row.matchesLeft > 0 && (
+                                                {isPlaying ? (
                                                     <Badge
                                                         variant="outline"
-                                                        className="h-5 shrink-0 px-1.5 text-[10px] font-normal"
+                                                        className="h-5 shrink-0 gap-1 px-1.5 text-[10px] font-normal"
                                                     >
-                                                        {formatMatchesLeft(
-                                                            row.matchesLeft,
-                                                        )}
+                                                        <LiveIndicator label="" />
+                                                        Currently playing
                                                     </Badge>
+                                                ) : (
+                                                    row.matchesLeft > 0 && (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="h-5 shrink-0 px-1.5 text-[10px] font-normal"
+                                                        >
+                                                            {formatMatchesLeft(
+                                                                row.matchesLeft,
+                                                            )}
+                                                        </Badge>
+                                                    )
                                                 )}
                                             </div>
                                             <div className="mt-0.5 sm:hidden">
@@ -185,7 +212,8 @@ export default function BestThirds() {
                                         {row.points}
                                     </span>
                                 </li>
-                            ))}
+                                );
+                            })}
                         </ul>
                     </div>
 

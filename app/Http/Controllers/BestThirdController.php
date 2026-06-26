@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Bracket\Contracts\BestThirdQualifier;
 use App\Bracket\GroupStandingsService;
+use App\Enums\FixtureStage;
+use App\Enums\FixtureStatus;
+use App\Models\Fixture;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,6 +48,21 @@ class BestThirdController extends Controller
         return Inertia::render('best-thirds', [
             'rankings' => $rankings,
             'allGroupsComplete' => $this->standings->allGroupsComplete(),
+            'openGroupFixtures' => Fixture::query()
+                ->where('stage', FixtureStage::Group)
+                ->whereNotNull('group_code')
+                ->whereNotNull('home_team_id')
+                ->whereNotNull('away_team_id')
+                ->whereNotIn('status', [FixtureStatus::Final, FixtureStatus::Void])
+                ->get()
+                ->map(fn (Fixture $fixture): array => [
+                    'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
+                    'status' => $fixture->status->value,
+                    'homeTeamId' => $fixture->home_team_id,
+                    'awayTeamId' => $fixture->away_team_id,
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 }

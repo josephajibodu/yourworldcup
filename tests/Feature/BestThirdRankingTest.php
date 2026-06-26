@@ -1,6 +1,9 @@
 <?php
 
 use App\Bracket\PointsBestThirdQualifier;
+use App\Enums\FixtureStage;
+use App\Enums\FixtureStatus;
+use App\Models\Fixture;
 use App\Models\Team;
 use App\Predictions\Importing\WorldCupImporter;
 use Database\Seeders\PredictionMarketSeeder;
@@ -69,6 +72,35 @@ it('includes matches left for teams in incomplete groups', function () {
                 ->and($rankings->every(fn (array $row): bool => $row['matchesLeft'] === max(0, 3 - $row['played'])))->toBeTrue()
                 ->and($rankings->where('groupComplete', true)->every(fn (array $row): bool => $row['matchesLeft'] === 0))->toBeTrue();
         });
+});
+
+it('passes open group fixtures for live team highlighting', function () {
+    $home = Team::query()->where('group_code', 'C')->orderBy('id')->first();
+    $away = Team::query()
+        ->where('group_code', 'C')
+        ->where('id', '!=', $home->id)
+        ->orderBy('id')
+        ->first();
+
+    Fixture::factory()->create([
+        'stage' => FixtureStage::Group,
+        'group_code' => 'C',
+        'home_team_id' => $home->id,
+        'away_team_id' => $away->id,
+        'kickoff_at' => now()->subMinutes(20),
+        'lock_at' => now()->subMinutes(80),
+        'status' => FixtureStatus::Live,
+    ]);
+
+    $this->get(route('best-thirds'))
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->has('openGroupFixtures')
+            ->where('openGroupFixtures', fn ($fixtures): bool => collect($fixtures)->contains(
+                fn (array $fixture): bool => $fixture['status'] === 'live'
+                    && $fixture['homeTeamId'] === $home->id
+                    && $fixture['awayTeamId'] === $away->id,
+            )));
 });
 
 it('marks the top eight teams as qualifiers', function () {
