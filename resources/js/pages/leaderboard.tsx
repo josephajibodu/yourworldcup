@@ -43,7 +43,7 @@ export default function Leaderboard() {
         <>
             <SeoHead {...seo.leaderboard} />
             <ProductShell>
-                <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+                <div className="mx-auto max-w-6xl px-6 sm:py-10 md:py-14">
                     <div className="max-w-2xl">
                         <h1 className="text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
                             leaderboard

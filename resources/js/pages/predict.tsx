@@ -344,7 +344,7 @@ function PredictDay({
 
     return (
         <ScoreStepperProvider>
-            <div className="mx-auto w-full max-w-3xl px-4 py-6">
+            <div className="mx-auto w-full max-w-3xl px-4 sm:py-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h1 className="font-display text-4xl tracking-wide">

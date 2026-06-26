@@ -21,7 +21,7 @@ export function ProductShell({
             )}
         >
             <SiteHeader />
-            <main className={cn('flex-1', mainClassName)}>{children}</main>
+            <main className={cn('flex-1 pb-6', mainClassName)}>{children}</main>
             <SiteFooter />
         </div>
     );

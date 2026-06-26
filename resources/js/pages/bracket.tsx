@@ -206,7 +206,7 @@ export default function Bracket() {
     return (
         <>
             <SeoHead {...seo.bracket} />
-            <ThirdPlaceRankingFloatingLink className="top-24" />
+            <ThirdPlaceRankingFloatingLink className="top-34 sm:top-24" />
             <ProductShell
                 className="bg-wc-surface text-wc-ink"
                 mainClassName="relative min-h-[calc(100svh-11rem)] flex-1"

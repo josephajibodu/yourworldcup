@@ -50,7 +50,7 @@ export default function BestThirds() {
         <>
             <SeoHead {...seo.bestThirds} />
             <ProductShell>
-                <div className="mx-auto max-w-4xl px-6 py-10 md:py-14">
+                <div className="mx-auto max-w-4xl px-6 sm:py-10 md:py-14">
                     <Link
                         href={bracket()}
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-wc-ink"
@@ -59,36 +59,14 @@ export default function BestThirds() {
                         Bracket
                     </Link>
 
-                    <div className="mt-6 max-w-2xl">
-                        <h1 className="text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
+                    <div className="mt-2 sm:mt-6 max-w-2xl">
+                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
                             best third-place teams
                         </h1>
-                        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-                            Twelve third-place teams are ranked together. The top
-                            eight advance to the round of 32.
-                        </p>
-                    </div>
-
-                    <div className="mt-8 rounded-2xl border border-wc-ink/10 bg-wc-surface-2/60 p-5">
-                        <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-ink/70 uppercase">
-                            tiebreak order
-                        </p>
-                        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-wc-ink/80">
-                            <li>Total points</li>
-                            <li>Goal difference</li>
-                            <li>Goals scored</li>
-                            <li className="text-muted-foreground">
-                                Team conduct (yellow and red cards) — not applied
-                                yet
-                            </li>
-                            <li className="text-muted-foreground">
-                                FIFA ranking — not applied yet
-                            </li>
-                        </ol>
                     </div>
 
                     {!allGroupsComplete && (
-                        <p className="mt-6 text-sm text-muted-foreground">
+                        <p className="mt-2 sm:mt-6 text-sm text-muted-foreground">
                             Rankings update as group matches finish. Third-place
                             teams from incomplete groups are shown based on
                             current standings and may change.
@@ -216,6 +194,24 @@ export default function BestThirds() {
                         Top eight teams highlighted in green qualify for the
                         round of 32.
                     </p>
+
+                    <div className="mt-8 rounded-2xl border border-wc-ink/10 bg-wc-surface-2/60 p-5">
+                        <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-ink/70 uppercase">
+                            tiebreak order
+                        </p>
+                        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-wc-ink/80">
+                            <li>Total points</li>
+                            <li>Goal difference</li>
+                            <li>Goals scored</li>
+                            <li className="text-muted-foreground">
+                                Team conduct (yellow and red cards) — not applied
+                                yet
+                            </li>
+                            <li className="text-muted-foreground">
+                                FIFA ranking — not applied yet
+                            </li>
+                        </ol>
+                    </div>
                 </div>
             </ProductShell>
         </>

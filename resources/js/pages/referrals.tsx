@@ -42,7 +42,7 @@ export default function Referrals() {
         <>
             <SeoHead {...seo.referrals} />
             <ProductShell>
-                <div className="mx-auto min-w-0 max-w-6xl px-4 py-10 sm:px-6 md:py-14">
+                <div className="mx-auto min-w-0 max-w-6xl px-4 sm:py-10 sm:px-6 md:py-14">
                     <div className="max-w-2xl">
                         <h1 className="text-4xl font-bold tracking-tight text-wc-ink md:text-5xl">
                             referrals
