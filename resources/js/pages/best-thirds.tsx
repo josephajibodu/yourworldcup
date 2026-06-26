@@ -12,6 +12,7 @@ interface BestThirdRankingRow {
     qualifies: boolean;
     groupCode: string;
     groupComplete: boolean;
+    matchesLeft: number;
     team: {
         id: number;
         name: string;
@@ -40,6 +41,10 @@ function formatGoalDifference(gd: number): string {
     }
 
     return String(gd);
+}
+
+function formatMatchesLeft(count: number): string {
+    return `${count} match${count === 1 ? '' : 'es'} left`;
 }
 
 export default function BestThirds() {
@@ -134,22 +139,26 @@ export default function BestThirds() {
                                         ) : (
                                             <span className="h-4 w-6 shrink-0 rounded-[2px] bg-muted" />
                                         )}
-                                        <div className="min-w-0">
-                                            <p className="truncate font-medium text-wc-ink">
-                                                {row.team.name}
-                                            </p>
-                                            <div className="mt-0.5 flex flex-wrap items-center gap-2 sm:hidden">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <p className="truncate font-medium text-wc-ink">
+                                                    {row.team.name}
+                                                </p>
+                                                {row.matchesLeft > 0 && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="h-5 shrink-0 px-1.5 text-[10px] font-normal"
+                                                    >
+                                                        {formatMatchesLeft(
+                                                            row.matchesLeft,
+                                                        )}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="mt-0.5 sm:hidden">
                                                 <span className="font-mono text-[11px] text-muted-foreground">
                                                     Group {row.groupCode}
                                                 </span>
-                                                {!row.groupComplete && (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="h-5 px-1.5 text-[10px] font-normal"
-                                                    >
-                                                        In progress
-                                                    </Badge>
-                                                )}
                                             </div>
                                         </div>
                                         {row.qualifies && (
@@ -159,19 +168,9 @@ export default function BestThirds() {
                                         )}
                                     </div>
 
-                                    <div className="hidden items-center gap-2 sm:flex">
-                                        <span className="w-12 font-mono text-xs text-muted-foreground">
-                                            {row.groupCode}
-                                        </span>
-                                        {!row.groupComplete && (
-                                            <Badge
-                                                variant="outline"
-                                                className="h-5 px-1.5 text-[10px] font-normal"
-                                            >
-                                                In progress
-                                            </Badge>
-                                        )}
-                                    </div>
+                                    <span className="hidden w-12 font-mono text-xs text-muted-foreground sm:block">
+                                        {row.groupCode}
+                                    </span>
 
                                     <span className="hidden w-8 text-right font-mono text-xs text-muted-foreground sm:block">
                                         {row.played}

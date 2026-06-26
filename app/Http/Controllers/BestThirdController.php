@@ -23,6 +23,7 @@ class BestThirdController extends Controller
                 'qualifies' => $entry['qualifies'],
                 'groupCode' => $entry['team']->group_code,
                 'groupComplete' => $entry['groupComplete'],
+                'matchesLeft' => $entry['matchesLeft'],
                 'team' => [
                     'id' => $entry['team']->id,
                     'name' => $entry['team']->name,

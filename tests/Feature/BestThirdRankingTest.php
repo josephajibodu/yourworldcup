@@ -59,6 +59,18 @@ it('displays the best third-place ranking page', function () {
         );
 });
 
+it('includes matches left for teams in incomplete groups', function () {
+    $this->get(route('best-thirds'))
+        ->assertSuccessful()
+        ->assertInertia(function ($page) {
+            $rankings = collect($page->toArray()['props']['rankings']);
+
+            expect($rankings->where('matchesLeft', '>', 0))->not->toBeEmpty()
+                ->and($rankings->every(fn (array $row): bool => $row['matchesLeft'] === max(0, 3 - $row['played'])))->toBeTrue()
+                ->and($rankings->where('groupComplete', true)->every(fn (array $row): bool => $row['matchesLeft'] === 0))->toBeTrue();
+        });
+});
+
 it('marks the top eight teams as qualifiers', function () {
     $this->get(route('best-thirds'))
         ->assertSuccessful()

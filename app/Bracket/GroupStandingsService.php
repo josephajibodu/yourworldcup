@@ -11,6 +11,8 @@ use Illuminate\Support\Collection;
 
 class GroupStandingsService
 {
+    private const int GROUP_MATCHES_PER_TEAM = 3;
+
     public function __construct(private TournamentCache $cache) {}
 
     /**
@@ -39,13 +41,22 @@ class GroupStandingsService
 
     public function isGroupComplete(string $groupCode): bool
     {
+        return $this->remainingGroupMatches($groupCode) === 0
+            && Fixture::query()
+                ->where('stage', FixtureStage::Group)
+                ->where('group_code', $groupCode)
+                ->exists();
+    }
+
+    public function remainingGroupMatches(string $groupCode): int
+    {
         $expected = Fixture::query()
             ->where('stage', FixtureStage::Group)
             ->where('group_code', $groupCode)
             ->count();
 
         if ($expected === 0) {
-            return false;
+            return 0;
         }
 
         $finished = Fixture::query()
@@ -54,7 +65,12 @@ class GroupStandingsService
             ->where('status', FixtureStatus::Final)
             ->count();
 
-        return $finished === $expected;
+        return max(0, $expected - $finished);
+    }
+
+    public function remainingGroupMatchesForTeam(int $played): int
+    {
+        return max(0, self::GROUP_MATCHES_PER_TEAM - $played);
     }
 
     public function allGroupsComplete(): bool
@@ -100,7 +116,7 @@ class GroupStandingsService
     /**
      * Current third-place team in each group from standings so far.
      *
-     * @return Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool}>
+     * @return Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool, matchesLeft: int}>
      */
     public function provisionalThirdPlaceTeams(): Collection
     {
@@ -128,6 +144,7 @@ class GroupStandingsService
                     'team' => $team,
                     'row' => $row,
                     'groupComplete' => $this->isGroupComplete($groupCode),
+                    'matchesLeft' => $this->remainingGroupMatchesForTeam($row['played']),
                 ];
             })
             ->filter()
