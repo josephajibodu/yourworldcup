@@ -88,8 +88,8 @@ class BracketResolverService
 
         $resolved = 0;
 
-        $winner = $this->standings->teamAtPosition($groupCode, 1);
-        $runnerUp = $this->standings->teamAtPosition($groupCode, 2);
+        $winner = $this->standings->teamAtPosition($groupCode, 1, fresh: true);
+        $runnerUp = $this->standings->teamAtPosition($groupCode, 2, fresh: true);
 
         $slots = BracketSlot::query()
             ->whereIn('slot_type', [
@@ -127,7 +127,7 @@ class BracketResolverService
             return 0;
         }
 
-        $thirdPlaceTeams = $this->standings->thirdPlaceTeams();
+        $thirdPlaceTeams = $this->standings->thirdPlaceTeams(fresh: true);
 
         if ($thirdPlaceTeams->count() < 12) {
             return 0;

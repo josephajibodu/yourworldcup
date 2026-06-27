@@ -90,11 +90,21 @@ class GroupStandingsService
     }
 
     /**
+     * @return array<int, array{id: int, name: string, code: string, flag: string|null, played: int, won: int, drawn: int, lost: int, gf: int, ga: int, gd: int, points: int}>
+     */
+    public function freshStandingsForGroup(string $groupCode): array
+    {
+        return $this->computeStandingsForGroup($groupCode);
+    }
+
+    /**
      * @return array{id: int, name: string, code: string, flag: string|null, played: int, won: int, drawn: int, lost: int, gf: int, ga: int, gd: int, points: int}|null
      */
-    public function teamAtPosition(string $groupCode, int $position): ?array
+    public function teamAtPosition(string $groupCode, int $position, bool $fresh = false): ?array
     {
-        $standings = $this->standingsForGroup($groupCode);
+        $standings = $fresh
+            ? $this->computeStandingsForGroup($groupCode)
+            : $this->standingsForGroup($groupCode);
 
         return $standings[$position - 1] ?? null;
     }
@@ -102,9 +112,9 @@ class GroupStandingsService
     /**
      * @return Collection<int, array{team: Team, row: array<string, mixed>}>
      */
-    public function thirdPlaceTeams(): Collection
+    public function thirdPlaceTeams(bool $fresh = false): Collection
     {
-        return $this->provisionalThirdPlaceTeams()
+        return $this->provisionalThirdPlaceTeams($fresh)
             ->where('groupComplete', true)
             ->map(fn (array $entry): array => [
                 'team' => $entry['team'],
@@ -118,7 +128,7 @@ class GroupStandingsService
      *
      * @return Collection<int, array{team: Team, row: array<string, mixed>, groupComplete: bool, matchesLeft: int}>
      */
-    public function provisionalThirdPlaceTeams(): Collection
+    public function provisionalThirdPlaceTeams(bool $fresh = false): Collection
     {
         $groups = Team::query()
             ->whereNotNull('group_code')
@@ -127,8 +137,8 @@ class GroupStandingsService
             ->pluck('group_code');
 
         return $groups
-            ->map(function (string $groupCode): ?array {
-                $row = $this->teamAtPosition($groupCode, 3);
+            ->map(function (string $groupCode) use ($fresh): ?array {
+                $row = $this->teamAtPosition($groupCode, 3, $fresh);
 
                 if ($row === null) {
                     return null;

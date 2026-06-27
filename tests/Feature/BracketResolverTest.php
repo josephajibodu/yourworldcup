@@ -2,6 +2,7 @@
 
 use App\Bracket\BracketResolverService;
 use App\Bracket\BracketSlotLabelParser;
+use App\Bracket\GroupStandingsService;
 use App\Enums\BracketSlotSide;
 use App\Enums\BracketSlotType;
 use App\Enums\FixtureStage;
@@ -89,6 +90,65 @@ it('dispatches bracket resolution after a group fixture settles', function () {
     app(SettlementService::class)->settleFixture($fixture->fresh());
 
     Bus::assertDispatched(ResolveBracketSlots::class);
+});
+
+it('corrects group slots from fresh standings when the cache is stale', function () {
+    $standings = app(GroupStandingsService::class);
+
+    $teams = Team::query()
+        ->where('group_code', 'A')
+        ->orderByExternalId()
+        ->get()
+        ->values();
+
+    $fixtures = Fixture::query()
+        ->where('stage', FixtureStage::Group)
+        ->where('group_code', 'A')
+        ->orderBy('external_id')
+        ->get()
+        ->values();
+
+    foreach ($fixtures->take(4) as $fixture) {
+        $homeWins = $fixture->home_team_id === $teams[0]->id;
+
+        $fixture->update([
+            'status' => FixtureStatus::Final,
+            'home_score' => $homeWins ? 2 : 0,
+            'away_score' => $homeWins ? 0 : 2,
+            'winner_team_id' => $homeWins ? $fixture->home_team_id : $fixture->away_team_id,
+        ]);
+    }
+
+    $standings->standingsForGroup('A');
+
+    foreach ($fixtures->skip(4) as $fixture) {
+        $fixture->update([
+            'status' => FixtureStatus::Final,
+            'home_score' => 0,
+            'away_score' => 0,
+            'winner_team_id' => null,
+        ]);
+    }
+
+    $expectedRunnerUpId = $standings->teamAtPosition('A', 2, fresh: true)['id'];
+
+    $runnerUpSlot = BracketSlot::query()
+        ->where('slot_type', BracketSlotType::GroupRunnerUp)
+        ->where('slot_spec->group', 'A')
+        ->firstOrFail();
+
+    $wrongTeam = $teams->first(fn (Team $team): bool => $team->id !== $expectedRunnerUpId);
+
+    $runnerUpSlot->update(['resolved_team_id' => $wrongTeam->id]);
+    $runnerUpSlot->feedsFixture?->update(['away_team_id' => $wrongTeam->id]);
+
+    $resolved = app(BracketResolverService::class)->resolveGroup('A');
+
+    expect($resolved)->toBeGreaterThan(0);
+
+    $runnerUpSlot->refresh();
+
+    expect($runnerUpSlot->resolved_team_id)->toBe($expectedRunnerUpId);
 });
 
 function finishGroup(string $groupCode): void
