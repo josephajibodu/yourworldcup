@@ -39,4 +39,24 @@ return [
         103 => [101, 102],
         104 => [101, 102],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Showpiece match presentation (Final & third-place play-off)
+    |--------------------------------------------------------------------------
+    */
+    'showpiece_headlines' => [
+        103 => '3rd-Place Match',
+        104 => '2026 FIFA World Cup Final',
+    ],
+
+    'showpiece_broadcasters' => [
+        103 => 'FOX/Tele',
+        104 => 'FOX/Tele',
+    ],
+
+    'stadium_states' => [
+        '8' => 'Florida',
+        '11' => 'New Jersey',
+    ],
 ];

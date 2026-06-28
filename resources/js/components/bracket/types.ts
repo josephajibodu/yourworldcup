@@ -46,6 +46,10 @@ export interface KnockoutMatch {
     kickoffAt: string;
     stadium: string | null;
     city: string | null;
+    headline: string | null;
+    location: string | null;
+    broadcast: string | null;
+    timezone: string | null;
     home: Slot;
     away: Slot;
     homeScore: number | null;

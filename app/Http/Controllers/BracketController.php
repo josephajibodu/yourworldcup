@@ -9,6 +9,7 @@ use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
+use App\Models\Stadium;
 use App\Models\Team;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -169,6 +170,7 @@ class BracketController extends Controller
                     fn (BracketSlot $slot): bool => $slot->side === BracketSlotSide::Away,
                 );
                 $pair = $this->feedersForFixture($homeSlot, $awaySlot, $feeders[$id] ?? null);
+                $showpiece = $this->showpieceMeta($fixture);
 
                 return [
                     'id' => $id,
@@ -179,6 +181,10 @@ class BracketController extends Controller
                     'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
                     'stadium' => $fixture->stadium?->name,
                     'city' => $fixture->stadium?->city,
+                    'headline' => $showpiece['headline'],
+                    'location' => $showpiece['location'],
+                    'broadcast' => $showpiece['broadcast'],
+                    'timezone' => $showpiece['timezone'],
                     'home' => $this->slot($fixture->homeTeam, $homeSlot, $pair[0] ?? null, $isThird),
                     'away' => $this->slot($fixture->awayTeam, $awaySlot, $pair[1] ?? null, $isThird),
                     'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,
@@ -203,6 +209,49 @@ class BracketController extends Controller
         }
 
         return $configFeeders;
+    }
+
+    /**
+     * @return array{headline: ?string, location: ?string, broadcast: ?string, timezone: ?string}
+     */
+    private function showpieceMeta(Fixture $fixture): array
+    {
+        if (! in_array($fixture->stage, [FixtureStage::Final, FixtureStage::ThirdPlace], true)) {
+            return [
+                'headline' => null,
+                'location' => null,
+                'broadcast' => null,
+                'timezone' => null,
+            ];
+        }
+
+        $externalId = (string) $fixture->external_id;
+
+        return [
+            'headline' => config("bracket.showpiece_headlines.{$externalId}"),
+            'location' => $fixture->stadium !== null
+                ? $this->formatVenueLabel($fixture->stadium)
+                : null,
+            'broadcast' => config("bracket.showpiece_broadcasters.{$externalId}"),
+            'timezone' => $fixture->stadium?->timezone,
+        ];
+    }
+
+    private function formatVenueLabel(Stadium $stadium): string
+    {
+        $city = $stadium->city ?? '';
+
+        if (preg_match('/\(([^)]+)\)/', $city, $matches)) {
+            $locality = trim($matches[1]);
+        } else {
+            $locality = trim(explode('/', $city)[0] ?? $city);
+        }
+
+        $state = config("bracket.stadium_states.{$stadium->external_id}");
+
+        return is_string($state) && $state !== ''
+            ? "{$locality}, {$state}"
+            : $locality;
     }
 
     /**

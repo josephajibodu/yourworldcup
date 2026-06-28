@@ -2,6 +2,12 @@ import type { Edge, Node } from '@xyflow/react';
 import type { BracketEdgeData } from './bracket-edge';
 import type { GroupTable, KnockoutMatch } from './types';
 import { TROPHY_SIZE } from './trophy-node';
+import {
+    isShowpieceStage,
+    SHOWPIECE_CONNECTOR_Y,
+    SHOWPIECE_NODE_H,
+    SHOWPIECE_NODE_W,
+} from '@/lib/showpiece-match';
 
 export const GROUP_STEP = 224;
 export const NODE_H = 84;
@@ -32,6 +38,8 @@ const GROUP_BRACKET_GAP = 96;
 
 const BRACKET_ORIGIN = GROUP_TABLE_W + GROUP_BRACKET_GAP;
 
+const TROPHY_GAP = 28;
+
 export const COLUMN_X: Record<string, number> = {
     group: 0,
     r32: BRACKET_ORIGIN,
@@ -39,7 +47,7 @@ export const COLUMN_X: Record<string, number> = {
     qf: BRACKET_ORIGIN + COLUMN_STEP * 2,
     sf: BRACKET_ORIGIN + COLUMN_STEP * 3,
     final: BRACKET_ORIGIN + COLUMN_STEP * 4,
-    trophy: BRACKET_ORIGIN + COLUMN_STEP * 4 + 220,
+    trophy: BRACKET_ORIGIN + COLUMN_STEP * 4 + SHOWPIECE_NODE_W + TROPHY_GAP,
 };
 
 interface LayoutContext {
@@ -111,6 +119,23 @@ function yBetweenNodes(topY: number, bottomY: number): number {
     const bottomCenter = bottomY + NODE_H / 2;
 
     return (topCenter + bottomCenter) / 2 - NODE_H / 2;
+}
+
+function yCenteredBetween(
+    topY: number,
+    topHeight: number,
+    bottomY: number,
+    bottomHeight: number,
+    parentHeight: number,
+): number {
+    const topCenter = topY + topHeight / 2;
+    const bottomCenter = bottomY + bottomHeight / 2;
+
+    return (topCenter + bottomCenter) / 2 - parentHeight / 2;
+}
+
+function nodeHeight(match: KnockoutMatch): number {
+    return isShowpieceStage(match.stage) ? SHOWPIECE_NODE_H : NODE_H;
 }
 
 function yFromFeeders(
@@ -328,7 +353,11 @@ export function buildGraph(
     const final = (byStage.final ?? [])[0];
     const third = (byStage.third_place ?? [])[0];
     const knockoutHeight = Math.max(
-        ...Array.from(positions.values()).map((position) => position.y + NODE_H),
+        ...Array.from(positions.entries()).map(([id, position]) => {
+            const match = knockout.find((entry) => `m${entry.id}` === id);
+
+            return position.y + (match ? nodeHeight(match) : NODE_H);
+        }),
         0,
     );
     const groupHeight = groups.length * GROUP_STEP;
@@ -349,14 +378,28 @@ export function buildGraph(
     if (final) {
         const finalY =
             final.feeders !== null
-                ? (yFromFeeders(positions, final.feeders) ??
-                  totalHeight / 2 - NODE_H / 2)
-                : totalHeight / 2 - NODE_H / 2;
+                ? (() => {
+                      const top = positions.get(`m${final.feeders[0]}`);
+                      const bottom = positions.get(`m${final.feeders[1]}`);
+
+                      if (top === undefined || bottom === undefined) {
+                          return totalHeight / 2 - SHOWPIECE_NODE_H / 2;
+                      }
+
+                      return yCenteredBetween(
+                          top.y,
+                          NODE_H,
+                          bottom.y,
+                          NODE_H,
+                          SHOWPIECE_NODE_H,
+                      );
+                  })()
+                : totalHeight / 2 - SHOWPIECE_NODE_H / 2;
 
         placeMatchNode(ctx, final, COLUMN_X.final, finalY);
 
-        const finalCenterY = finalY + NODE_H / 2;
-        const trophyY = finalCenterY - TROPHY_SIZE / 2;
+        const connectorY = finalY + SHOWPIECE_CONNECTOR_Y;
+        const trophyY = connectorY - TROPHY_SIZE / 2;
 
         nodes.push({
             id: 'trophy',
@@ -383,8 +426,8 @@ export function buildGraph(
         const finalY = positions.get(`m${final?.id}`)?.y;
         const thirdY =
             finalY !== undefined
-                ? finalY + NODE_H + THIRD_PLACE_GAP
-                : totalHeight / 2 + 200 - NODE_H / 2;
+                ? finalY + SHOWPIECE_NODE_H + THIRD_PLACE_GAP
+                : totalHeight / 2 + 200 - SHOWPIECE_NODE_H / 2;
 
         placeMatchNode(ctx, third, COLUMN_X.final, thirdY);
     }

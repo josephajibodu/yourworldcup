@@ -1,11 +1,19 @@
-import { Handle,   Position } from '@xyflow/react';
-import type {Node, NodeProps} from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import type { Node, NodeProps } from '@xyflow/react';
+import { Shield } from 'lucide-react';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { useNow } from '@/hooks/use-now';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
+import {
+    formatShowpieceKickoff,
+    isShowpieceStage,
+    SHOWPIECE_HANDLE_TOP,
+    SHOWPIECE_NODE_H,
+    SHOWPIECE_NODE_W,
+} from '@/lib/showpiece-match';
 import { cn } from '@/lib/utils';
-import type { MatchNodeData, Slot } from './types';
+import type { KnockoutMatch, MatchNodeData, Slot } from './types';
 
 type MatchNode = Node<MatchNodeData, 'match'>;
 
@@ -13,15 +21,19 @@ function SlotRow({
     slot,
     divider,
     score,
+    showpiece = false,
 }: {
     slot: Slot;
     divider: boolean;
     score?: number | null;
+    showpiece?: boolean;
 }) {
     return (
         <div
             className={cn(
-                'flex items-center gap-2 px-2.5 py-1.5',
+                showpiece
+                    ? 'flex items-center gap-2.5 px-4 py-2'
+                    : 'flex items-center gap-2 px-2.5 py-1.5',
                 divider && 'border-t border-border',
             )}
         >
@@ -31,13 +43,23 @@ function SlotRow({
                         <img
                             src={slot.team.flag}
                             alt=""
-                            className="h-3.5 w-5 shrink-0 rounded-[2px] object-cover"
+                            className="h-4 w-5 shrink-0 rounded-[2px] object-cover"
                         />
                     ) : (
-                        <span className="h-3.5 w-5 shrink-0 rounded-[2px] bg-muted" />
+                        <span className="h-4 w-5 shrink-0 rounded-[2px] bg-muted" />
                     )}
-                    <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                         {slot.team.name}
+                    </span>
+                </>
+            ) : showpiece ? (
+                <>
+                    <Shield
+                        className="size-4 shrink-0 text-muted-foreground/70"
+                        aria-hidden
+                    />
+                    <span className="min-w-0 flex-1 truncate font-mono text-xs text-muted-foreground">
+                        {slot.label ?? 'TBD'}
                     </span>
                 </>
             ) : (
@@ -51,9 +73,91 @@ function SlotRow({
                 </>
             )}
             {score != null && (
-                <span className="shrink-0 font-mono text-xs font-semibold tabular-nums text-foreground">
+                <span className="shrink-0 font-mono text-sm font-semibold tabular-nums text-foreground">
                     {score}
                 </span>
+            )}
+        </div>
+    );
+}
+
+function ShowpieceMatchCard({
+    match,
+    active,
+    live,
+    final,
+}: {
+    match: KnockoutMatch;
+    active?: boolean;
+    live: boolean;
+    final: boolean;
+}) {
+    const isThird = match.stage === 'third_place';
+    const kickoffLabel = formatShowpieceKickoff(
+        match.kickoffAt,
+        match.timezone,
+    );
+
+    return (
+        <div
+            className={cn(
+                'overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm',
+                isThird
+                    ? 'border-sky-500/80'
+                    : active
+                      ? 'border-wc-gold ring-2 ring-wc-gold/35 shadow-md'
+                      : 'border-wc-ink/10',
+            )}
+            style={{ width: SHOWPIECE_NODE_W, height: SHOWPIECE_NODE_H }}
+        >
+            <Handle
+                type="target"
+                position={Position.Left}
+                className="!size-1.5 !border-0 !bg-wc-ink-3"
+                style={{ top: SHOWPIECE_HANDLE_TOP }}
+            />
+            <div className="border-b border-border px-4 py-3 text-center">
+                <div className="flex items-center justify-center gap-1.5">
+                    <h3 className="text-sm font-bold tracking-tight text-foreground">
+                        {match.headline ?? match.stageLabel}
+                    </h3>
+                    {live && <LiveIndicator label="" />}
+                    {final && (
+                        <span className="rounded bg-wc-ink/10 px-1 py-0.5 text-[9px] font-semibold text-wc-ink">
+                            FT
+                        </span>
+                    )}
+                </div>
+                {(match.stadium || match.location) && (
+                    <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                        {match.stadium && <p>{match.stadium}</p>}
+                        {match.location && <p>{match.location}</p>}
+                    </div>
+                )}
+            </div>
+            <SlotRow
+                slot={match.home}
+                divider={false}
+                score={final ? match.homeScore : null}
+                showpiece
+            />
+            <SlotRow
+                slot={match.away}
+                divider
+                score={final ? match.awayScore : null}
+                showpiece
+            />
+            <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
+                <span>{kickoffLabel}</span>
+                {match.broadcast && <span>{match.broadcast}</span>}
+            </div>
+            {!isThird && (
+                <Handle
+                    type="source"
+                    position={Position.Right}
+                    className="!size-1.5 !border-0 !bg-wc-ink-3"
+                    style={{ top: SHOWPIECE_HANDLE_TOP }}
+                />
             )}
         </div>
     );
@@ -70,6 +174,18 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
         now,
     );
     const final = isFixtureFinal(match.status);
+
+    if (isShowpieceStage(match.stage)) {
+        return (
+            <ShowpieceMatchCard
+                match={match}
+                active={active}
+                live={live}
+                final={final}
+            />
+        );
+    }
+
     const kickoff = new Date(match.kickoffAt);
     const date = kickoff.toLocaleDateString('en-GB', {
         day: '2-digit',

@@ -68,6 +68,21 @@ it('resolves feeder labels for later rounds and the final feeds the trophy', fun
     );
 });
 
+it('includes showpiece details for the final and third-place play-off', function () {
+    $this->get(route('bracket'))->assertInertia(function (Assert $page) {
+        $knockout = $page->toArray()['props']['knockout'];
+        $byCode = collect($knockout)->keyBy('code');
+
+        expect($byCode['M104']['headline'])->toBe('2026 FIFA World Cup Final')
+            ->and($byCode['M104']['stadium'])->toBe('MetLife Stadium')
+            ->and($byCode['M104']['location'])->toBe('East Rutherford, New Jersey')
+            ->and($byCode['M104']['broadcast'])->toBe('FOX/Tele')
+            ->and($byCode['M103']['headline'])->toBe('3rd-Place Match')
+            ->and($byCode['M103']['stadium'])->toBe('Hard Rock Stadium')
+            ->and($byCode['M103']['location'])->toBe('Miami Gardens, Florida');
+    });
+});
+
 it('derives knockout pathway edges from bracket slots', function () {
     $this->get(route('bracket'))->assertInertia(function (Assert $page) {
         $knockout = $page->toArray()['props']['knockout'];
