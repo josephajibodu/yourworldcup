@@ -67,4 +67,14 @@ class BracketSlot extends Model
             BracketSlotType::KnockoutLoser => 'RU'.($this->slot_spec['match'] ?? '?'),
         };
     }
+
+    public function knockoutFeederMatchId(): ?int
+    {
+        return match ($this->slot_type) {
+            BracketSlotType::KnockoutWinner, BracketSlotType::KnockoutLoser => isset($this->slot_spec['match'])
+                ? (int) $this->slot_spec['match']
+                : null,
+            default => null,
+        };
+    }
 }

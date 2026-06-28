@@ -14,15 +14,14 @@ return [
     | match labels in `database/data/football.matches.json` (1A, 2B, 3rd D/E/I/J/L, …).
     | `BracketResolverService` fills them after group or knockout results land.
     | Swap `BestThirdQualifier` in the container for FIFA-accurate third-place ranking.
-    | for matches 89–92 are a best-effort placeholder — verify against the official
-    | bracket before launch.
+    | Knockout pathway edges prefer `bracket_slots`; this map is a fallback only.
     |
     */
     'feeders' => [
         // Round of 16
-        89 => [73, 74],
-        90 => [75, 76],
-        91 => [77, 78],
+        89 => [74, 77],
+        90 => [73, 75],
+        91 => [76, 78],
         92 => [79, 80],
         93 => [83, 84],
         94 => [81, 82],

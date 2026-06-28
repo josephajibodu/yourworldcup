@@ -68,6 +68,17 @@ it('resolves feeder labels for later rounds and the final feeds the trophy', fun
     );
 });
 
+it('derives knockout pathway edges from bracket slots', function () {
+    $this->get(route('bracket'))->assertInertia(function (Assert $page) {
+        $knockout = $page->toArray()['props']['knockout'];
+        $byCode = collect($knockout)->keyBy('code');
+
+        expect($byCode['M89']['feeders'])->toBe([74, 77])
+            ->and($byCode['M90']['feeders'])->toBe([73, 75])
+            ->and($byCode['M91']['feeders'])->toBe([76, 78]);
+    });
+});
+
 it('passes final scores for finished knockout matches', function () {
     $fixture = Fixture::query()
         ->where('external_id', '73')

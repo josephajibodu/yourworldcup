@@ -160,7 +160,6 @@ class BracketController extends Controller
             ->get()
             ->map(function (Fixture $fixture) use ($feeders): array {
                 $id = (int) $fixture->external_id;
-                $pair = $feeders[$id] ?? null;
                 $isThird = $fixture->stage === FixtureStage::ThirdPlace;
 
                 $homeSlot = $fixture->bracketSlots->first(
@@ -169,6 +168,7 @@ class BracketController extends Controller
                 $awaySlot = $fixture->bracketSlots->first(
                     fn (BracketSlot $slot): bool => $slot->side === BracketSlotSide::Away,
                 );
+                $pair = $this->feedersForFixture($homeSlot, $awaySlot, $feeders[$id] ?? null);
 
                 return [
                     'id' => $id,
@@ -187,6 +187,22 @@ class BracketController extends Controller
                 ];
             })
             ->all();
+    }
+
+    /**
+     * @param  array{0: int, 1: int}|null  $configFeeders
+     * @return array{0: int, 1: int}|null
+     */
+    private function feedersForFixture(?BracketSlot $homeSlot, ?BracketSlot $awaySlot, ?array $configFeeders): ?array
+    {
+        $homeFeeder = $homeSlot?->knockoutFeederMatchId();
+        $awayFeeder = $awaySlot?->knockoutFeederMatchId();
+
+        if ($homeFeeder !== null && $awayFeeder !== null) {
+            return [$homeFeeder, $awayFeeder];
+        }
+
+        return $configFeeders;
     }
 
     /**
