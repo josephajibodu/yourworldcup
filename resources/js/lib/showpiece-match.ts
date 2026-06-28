@@ -19,7 +19,7 @@ export function isShowpieceStage(stage: string): boolean {
     return stage === 'final' || stage === 'third_place';
 }
 
-export function formatShowpieceKickoff(
+export function formatMatchKickoff(
     kickoffAt: string,
     timezone?: string | null,
 ): string {

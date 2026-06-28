@@ -184,7 +184,7 @@ class BracketController extends Controller
                     'headline' => $showpiece['headline'],
                     'location' => $showpiece['location'],
                     'broadcast' => $showpiece['broadcast'],
-                    'timezone' => $showpiece['timezone'],
+                    'timezone' => $fixture->stadium?->timezone,
                     'home' => $this->slot($fixture->homeTeam, $homeSlot, $pair[0] ?? null, $isThird),
                     'away' => $this->slot($fixture->awayTeam, $awaySlot, $pair[1] ?? null, $isThird),
                     'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,

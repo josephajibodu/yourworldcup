@@ -6,7 +6,7 @@ import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { useNow } from '@/hooks/use-now';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
 import {
-    formatShowpieceKickoff,
+    formatMatchKickoff,
     isShowpieceStage,
     SHOWPIECE_HANDLE_TOP,
     SHOWPIECE_NODE_H,
@@ -93,10 +93,7 @@ function ShowpieceMatchCard({
     final: boolean;
 }) {
     const isThird = match.stage === 'third_place';
-    const kickoffLabel = formatShowpieceKickoff(
-        match.kickoffAt,
-        match.timezone,
-    );
+    const kickoffLabel = formatMatchKickoff(match.kickoffAt, match.timezone);
 
     return (
         <div
@@ -186,11 +183,7 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
         );
     }
 
-    const kickoff = new Date(match.kickoffAt);
-    const date = kickoff.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-    });
+    const kickoffLabel = formatMatchKickoff(match.kickoffAt, match.timezone);
 
     return (
         <div
@@ -206,8 +199,8 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
                 position={Position.Left}
                 className="!size-1.5 !border-0 !bg-wc-ink-3"
             />
-            <div className="flex items-center justify-between bg-wc-surface-2 px-2.5 py-1">
-                <span className="flex items-center gap-1.5 font-mono text-[10px] font-semibold tracking-wider text-wc-ink/70">
+            <div className="flex items-center justify-between gap-2 bg-wc-surface-2 px-2.5 py-1">
+                <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] font-semibold tracking-wider text-wc-ink/70">
                     {match.code}
                     {live && <LiveIndicator label="" />}
                     {final && (
@@ -216,8 +209,8 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
                         </span>
                     )}
                 </span>
-                <span className="font-mono text-[10px] tracking-wider text-muted-foreground">
-                    {date}
+                <span className="truncate text-right font-mono text-[10px] tracking-wide text-muted-foreground">
+                    {kickoffLabel}
                 </span>
             </div>
             <SlotRow

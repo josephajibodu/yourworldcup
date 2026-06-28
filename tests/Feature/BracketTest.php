@@ -77,6 +77,8 @@ it('includes showpiece details for the final and third-place play-off', function
             ->and($byCode['M104']['stadium'])->toBe('MetLife Stadium')
             ->and($byCode['M104']['location'])->toBe('East Rutherford, New Jersey')
             ->and($byCode['M104']['broadcast'])->toBe('FOX/Tele')
+            ->and($byCode['M104']['timezone'])->toBe('America/New_York')
+            ->and($byCode['M73']['timezone'])->not->toBeNull()
             ->and($byCode['M103']['headline'])->toBe('3rd-Place Match')
             ->and($byCode['M103']['stadium'])->toBe('Hard Rock Stadium')
             ->and($byCode['M103']['location'])->toBe('Miami Gardens, Florida');
