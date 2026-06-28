@@ -9,6 +9,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useEffect, useMemo } from 'react';
+import { BracketEdge } from '@/components/bracket/bracket-edge';
 import { buildGraph } from '@/components/bracket/build-graph';
 import { GroupTableNode } from '@/components/bracket/group-table-node';
 import { MatchNode } from '@/components/bracket/match-node';
@@ -30,6 +31,10 @@ const nodeTypes = {
     group: GroupTableNode,
     match: MatchNode,
     trophy: TrophyNode,
+};
+
+const edgeTypes = {
+    bracket: BracketEdge,
 };
 
 const prefersReducedMotion = () =>
@@ -83,6 +88,7 @@ export default function Bracket() {
                         nodes={nodes}
                         edges={edges}
                         nodeTypes={nodeTypes}
+                        edgeTypes={edgeTypes}
                         fitView={false}
                         minZoom={0.1}
                         maxZoom={1.5}
