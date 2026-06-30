@@ -16,7 +16,6 @@ import { MatchNode } from '@/components/bracket/match-node';
 import { TrophyNode } from '@/components/bracket/trophy-node';
 import type { GroupTable, KnockoutMatch } from '@/components/bracket/types';
 import { ProductShell } from '@/components/product-shell';
-import { ThirdPlaceRankingFloatingLink } from '@/components/third-place-ranking-floating-link';
 import { SeoHead } from '@/components/seo-head';
 import { seo } from '@/lib/seo';
 
@@ -78,7 +77,6 @@ export default function Bracket() {
     return (
         <>
             <SeoHead {...seo.bracket} />
-            <ThirdPlaceRankingFloatingLink className="top-34 sm:top-24" />
             <ProductShell
                 className="bg-wc-surface text-wc-ink"
                 mainClassName="relative min-h-[calc(100svh-11rem)] flex-1"

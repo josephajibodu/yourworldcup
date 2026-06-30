@@ -6,7 +6,6 @@ import { QualificationFlow } from '@/components/landing/qualification-flow';
 import { QualificationFlowMobile } from '@/components/landing/qualification-flow-mobile';
 import { ProductShell } from '@/components/product-shell';
 import { SeoHead } from '@/components/seo-head';
-import { ThirdPlaceRankingFloatingLink } from '@/components/third-place-ranking-floating-link';
 import { Button } from '@/components/ui/button';
 import { seo } from '@/lib/seo';
 import { bracket, predict } from '@/routes';
@@ -15,7 +14,6 @@ export default function Welcome() {
     return (
         <>
             <SeoHead {...seo.home} />
-            <ThirdPlaceRankingFloatingLink />
             <ProductShell>
                 <section className="overflow-hidden bg-wc-surface text-wc-ink">
                     <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-6xl flex-col items-center px-6 py-16 text-center lg:py-20">
