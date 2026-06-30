@@ -27,7 +27,7 @@ class SettlementService
      * fixture voids its markets and zeroes their predictions. Returns the
      * number of predictions scored.
      */
-    public function settleFixture(Fixture $fixture): int
+    public function settleFixture(Fixture $fixture, bool $includeSettled = false): int
     {
         if ($fixture->status === FixtureStatus::Void) {
             $scored = $this->voidFixture($fixture);
@@ -43,8 +43,14 @@ class SettlementService
             return 0;
         }
 
+        $statuses = [MarketStatus::Open];
+
+        if ($includeSettled) {
+            $statuses[] = MarketStatus::Settled;
+        }
+
         $markets = $fixture->markets()
-            ->where('status', MarketStatus::Open)
+            ->whereIn('status', $statuses)
             ->with(['market', 'predictions'])
             ->get();
 

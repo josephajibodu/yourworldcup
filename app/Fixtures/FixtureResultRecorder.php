@@ -97,7 +97,7 @@ class FixtureResultRecorder
         return $fixture;
     }
 
-    public function record(Fixture $fixture, int $homeScore, int $awayScore): Fixture
+    public function record(Fixture $fixture, int $homeScore, int $awayScore, ?int $winnerTeamId = null): Fixture
     {
         if ($homeScore < 0 || $homeScore > 30 || $awayScore < 0 || $awayScore > 30) {
             throw ValidationException::withMessages([
@@ -108,11 +108,11 @@ class FixtureResultRecorder
         $homeTeamId = $fixture->home_team_id;
         $awayTeamId = $fixture->away_team_id;
 
-        $winnerId = null;
-
-        if ($homeTeamId !== null && $awayTeamId !== null && $homeScore !== $awayScore) {
-            $winnerId = $homeScore > $awayScore ? $homeTeamId : $awayTeamId;
-        }
+        $winnerId = match (true) {
+            $winnerTeamId !== null => $winnerTeamId,
+            $homeTeamId !== null && $awayTeamId !== null && $homeScore !== $awayScore => $homeScore > $awayScore ? $homeTeamId : $awayTeamId,
+            default => null,
+        };
 
         $fixture->update([
             'status' => FixtureStatus::Final,

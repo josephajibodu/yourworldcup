@@ -51,6 +51,40 @@ function finishedFootballDataMatch(int $id, int $home, int $away, string $utcDat
     ];
 }
 
+function finishedFootballDataMatchAfterPenalties(
+    int $id,
+    int $regularHome,
+    int $regularAway,
+    string $overallWinner,
+    string $utcDate = '2026-06-30T01:00:00Z',
+): array {
+    return [
+        'id' => $id,
+        'utcDate' => $utcDate,
+        'status' => 'FINISHED',
+        'score' => [
+            'winner' => $overallWinner,
+            'duration' => 'PENALTY_SHOOTOUT',
+            'fullTime' => [
+                'home' => $regularHome + 2,
+                'away' => $regularAway + 3,
+            ],
+            'regularTime' => [
+                'home' => $regularHome,
+                'away' => $regularAway,
+            ],
+            'extraTime' => [
+                'home' => 0,
+                'away' => 0,
+            ],
+            'penalties' => [
+                'home' => 2,
+                'away' => 3,
+            ],
+        ],
+    ];
+}
+
 function liveFootballDataMatch(
     int $id,
     string $utcDate = '2026-06-11T19:00:00Z',
@@ -261,4 +295,92 @@ it('fails when the api token is missing', function () {
     $this->artisan('football-data:sync-scores')
         ->expectsOutputToContain('FOOTBALL_DATA_API_TOKEN is not configured.')
         ->assertFailed();
+});
+
+it('uses regular time scores for penalty shootouts and keeps the advancing team', function () {
+    $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
+    ['matchWinner' => $matchWinner, 'exactScore' => $exactScore] = predictionMarkets();
+
+    $winner = $fixture->markets()->where('prediction_market_id', $matchWinner->id)->firstOrFail();
+    $score = $fixture->markets()->where('prediction_market_id', $exactScore->id)->firstOrFail();
+
+    $drawPicker = User::factory()->create();
+    $scorePicker = User::factory()->create();
+
+    Prediction::factory()->for($drawPicker)->create([
+        'fixture_market_id' => $winner->id,
+        'value' => ['selected' => 'draw'],
+    ]);
+    Prediction::factory()->for($scorePicker)->create([
+        'fixture_market_id' => $score->id,
+        'value' => ['home' => 1, 'away' => 1],
+    ]);
+
+    Http::fake([
+        'api.football-data.org/v4/competitions/2000/matches*' => Http::response(
+            footballDataMatchesResponse([
+                finishedFootballDataMatchAfterPenalties(537327, 1, 1, 'AWAY_TEAM'),
+            ]),
+        ),
+    ]);
+
+    $this->artisan('football-data:sync-scores')->assertSuccessful();
+
+    $fixture->refresh();
+
+    expect($fixture->status)->toBe(FixtureStatus::Final)
+        ->and($fixture->home_score)->toBe(1)
+        ->and($fixture->away_score)->toBe(1)
+        ->and($fixture->winner_team_id)->toBe($fixture->away_team_id)
+        ->and($winner->fresh()->status)->toBe(MarketStatus::Settled)
+        ->and($winner->fresh()->settlement_value)->toBe(['winner' => 'draw'])
+        ->and($score->fresh()->status)->toBe(MarketStatus::Settled)
+        ->and($score->fresh()->settlement_value)->toBe(['home' => 1, 'away' => 1])
+        ->and(Prediction::query()->where('user_id', $drawPicker->id)->sole()->points_awarded)->toBe(1)
+        ->and(Prediction::query()->where('user_id', $scorePicker->id)->sole()->points_awarded)->toBe(3);
+});
+
+it('re-settles predictions when a final score is corrected to regular time', function () {
+    $fixture = Fixture::query()->where('external_id', '1')->firstOrFail();
+    ['exactScore' => $exactScore] = predictionMarkets();
+
+    $score = $fixture->markets()->where('prediction_market_id', $exactScore->id)->firstOrFail();
+    $picker = User::factory()->create();
+
+    $fixture->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => 3,
+        'away_score' => 4,
+        'winner_team_id' => $fixture->away_team_id,
+    ]);
+
+    $score->update([
+        'status' => MarketStatus::Settled,
+        'settlement_value' => ['home' => 3, 'away' => 4],
+        'settled_at' => now(),
+    ]);
+
+    Prediction::factory()->for($picker)->create([
+        'fixture_market_id' => $score->id,
+        'value' => ['home' => 1, 'away' => 1],
+        'points_awarded' => 0,
+        'scored_at' => now(),
+    ]);
+
+    Http::fake([
+        'api.football-data.org/v4/competitions/2000/matches*' => Http::response(
+            footballDataMatchesResponse([
+                finishedFootballDataMatchAfterPenalties(537327, 1, 1, 'AWAY_TEAM'),
+            ]),
+        ),
+    ]);
+
+    $this->artisan('football-data:sync-scores')->assertSuccessful();
+
+    $fixture->refresh();
+
+    expect($fixture->home_score)->toBe(1)
+        ->and($fixture->away_score)->toBe(1)
+        ->and($score->fresh()->settlement_value)->toBe(['home' => 1, 'away' => 1])
+        ->and(Prediction::query()->where('user_id', $picker->id)->sole()->points_awarded)->toBe(3);
 });
