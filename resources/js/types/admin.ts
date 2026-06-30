@@ -38,6 +38,12 @@ export type AdminUserPrediction = {
         awayTeam: string | null;
         homeScore: number | null;
         awayScore: number | null;
+        extraTimeHome?: number | null;
+        extraTimeAway?: number | null;
+        penaltiesHome?: number | null;
+        penaltiesAway?: number | null;
+        resultDuration?: 'regular' | 'extra_time' | 'penalties' | null;
+        scoreLabel?: string | null;
     };
 };
 
@@ -72,6 +78,12 @@ export type AdminFixtureSummary = {
     referee: string | null;
     homeScore: number | null;
     awayScore: number | null;
+    extraTimeHome: number | null;
+    extraTimeAway: number | null;
+    penaltiesHome: number | null;
+    penaltiesAway: number | null;
+    resultDuration: 'regular' | 'extra_time' | 'penalties' | null;
+    scoreLabel: string | null;
     marketsCount: number;
     settledMarketsCount: number;
 };

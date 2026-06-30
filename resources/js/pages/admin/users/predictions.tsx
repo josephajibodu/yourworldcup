@@ -4,6 +4,7 @@ import Heading from '@/components/heading';
 import { SeoHead } from '@/components/seo-head';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatFixtureCenterScore } from '@/lib/fixture-score';
 import { privatePageRobots } from '@/lib/seo';
 import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { cn } from '@/lib/utils';
@@ -133,13 +134,17 @@ export default function AdminUserPredictions({ user, predictions }: PageProps) {
                                                     {prediction.fixture.homeTeam ?? 'TBD'} vs{' '}
                                                     {prediction.fixture.awayTeam ?? 'TBD'}
                                                 </span>
-                                                {prediction.fixture.homeScore !== null &&
-                                                    prediction.fixture.awayScore !== null && (
-                                                        <span className="font-mono text-muted-foreground">
-                                                            ({prediction.fixture.homeScore}-
-                                                            {prediction.fixture.awayScore})
-                                                        </span>
-                                                    )}
+                                                {formatFixtureCenterScore(
+                                                    prediction.fixture,
+                                                ) && (
+                                                    <span className="font-mono text-muted-foreground">
+                                                        (
+                                                        {formatFixtureCenterScore(
+                                                            prediction.fixture,
+                                                        )}
+                                                        )
+                                                    </span>
+                                                )}
                                                 <span className="text-muted-foreground">
                                                     · {prediction.fixture.stageLabel}
                                                 </span>

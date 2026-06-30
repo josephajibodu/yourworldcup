@@ -18,16 +18,16 @@ class FixtureAdminUpdater
     public function update(
         Fixture $fixture,
         FixtureStatus $status,
-        ?int $homeScore,
-        ?int $awayScore,
+        ?FixtureResult $result,
         bool $settle,
     ): int {
+        $wasFinal = $fixture->status === FixtureStatus::Final;
+        $resultChanged = $wasFinal
+            && $result !== null
+            && ! $result->matchesFixture($fixture);
+
         match ($status) {
-            FixtureStatus::Final => $this->recorder->record(
-                $fixture,
-                $homeScore ?? 0,
-                $awayScore ?? 0,
-            ),
+            FixtureStatus::Final => $this->recorder->record($fixture, $result ?? new FixtureResult(0, 0)),
             FixtureStatus::Live => $this->markLive($fixture),
             FixtureStatus::Void => $this->markVoid($fixture),
             FixtureStatus::Scheduled => $this->markScheduled($fixture),
@@ -35,7 +35,11 @@ class FixtureAdminUpdater
 
         $fixture->refresh();
 
-        return $settle ? $this->settlement->settleFixture($fixture) : 0;
+        if (! $settle) {
+            return 0;
+        }
+
+        return $this->settlement->settleFixture($fixture, includeSettled: $resultChanged);
     }
 
     private function markLive(Fixture $fixture): void
@@ -54,6 +58,11 @@ class FixtureAdminUpdater
             'status' => FixtureStatus::Void,
             'home_score' => null,
             'away_score' => null,
+            'extra_time_home' => null,
+            'extra_time_away' => null,
+            'penalties_home' => null,
+            'penalties_away' => null,
+            'result_duration' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();
@@ -65,6 +74,11 @@ class FixtureAdminUpdater
             'status' => FixtureStatus::Scheduled,
             'home_score' => null,
             'away_score' => null,
+            'extra_time_home' => null,
+            'extra_time_away' => null,
+            'penalties_home' => null,
+            'penalties_away' => null,
+            'result_duration' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();

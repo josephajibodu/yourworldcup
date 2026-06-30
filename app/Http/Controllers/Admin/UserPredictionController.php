@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Fixtures\FixtureScorePresenter;
 use App\Http\Controllers\Controller;
 use App\Models\Prediction;
 use App\Models\User;
@@ -11,6 +12,8 @@ use Inertia\Response;
 
 class UserPredictionController extends Controller
 {
+    public function __construct(private FixtureScorePresenter $scores) {}
+
     public function index(Request $request, User $user): Response
     {
         $predictions = Prediction::query()
@@ -18,7 +21,7 @@ class UserPredictionController extends Controller
             ->with([
                 'fixtureMarket:id,fixture_id,prediction_market_id,status',
                 'fixtureMarket.market:id,name',
-                'fixtureMarket.fixture:id,stage,status,home_team_id,away_team_id,home_score,away_score,kickoff_at',
+                'fixtureMarket.fixture:id,stage,status,home_team_id,away_team_id,home_score,away_score,extra_time_home,extra_time_away,penalties_home,penalties_away,result_duration,kickoff_at',
                 'fixtureMarket.fixture.homeTeam:id,name',
                 'fixtureMarket.fixture.awayTeam:id,name',
             ])
@@ -63,8 +66,7 @@ class UserPredictionController extends Controller
                 'kickoffAt' => $fixture->kickoff_at->toISOString(),
                 'homeTeam' => $fixture->homeTeam === null ? null : $fixture->homeTeam->name,
                 'awayTeam' => $fixture->awayTeam === null ? null : $fixture->awayTeam->name,
-                'homeScore' => $fixture->status->isComplete() ? $fixture->home_score : null,
-                'awayScore' => $fixture->status->isComplete() ? $fixture->away_score : null,
+                ...$this->scores->present($fixture, onlyWhenVisible: $fixture->status->isComplete()),
             ],
         ];
     }

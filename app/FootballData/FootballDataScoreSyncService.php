@@ -4,6 +4,8 @@ namespace App\FootballData;
 
 use App\Cache\TournamentCache;
 use App\Enums\FixtureStatus;
+use App\Enums\ResultDuration;
+use App\Fixtures\FixtureResult;
 use App\Fixtures\FixtureResultRecorder;
 use App\Models\Fixture;
 use App\Predictions\Settlement\SettlementService;
@@ -123,34 +125,28 @@ class FootballDataScoreSyncService
         bool $settle,
         FootballDataSyncResult $result,
     ): void {
-        $scores = $this->extractSettlementScores($match);
+        $fixtureResult = $this->extractProviderResult($fixture, $match, finished: true);
 
-        if ($scores === null) {
+        if ($fixtureResult === null) {
             $result->skipped++;
 
             return;
         }
 
-        [$homeScore, $awayScore] = $scores;
+        $resultChanged = $fixture->status === FixtureStatus::Final
+            && ! $fixtureResult->matchesFixture($fixture);
 
-        $winnerTeamId = $homeScore === $awayScore
-            ? $this->extractProviderWinnerTeamId($fixture, $match)
-            : null;
-
-        $scoreCorrection = $fixture->status === FixtureStatus::Final
-            && ($fixture->home_score !== $homeScore || $fixture->away_score !== $awayScore);
-
-        if ($this->alreadyRecorded($fixture, $homeScore, $awayScore, $winnerTeamId)) {
+        if ($fixture->status === FixtureStatus::Final && $fixtureResult->matchesFixture($fixture)) {
             $result->skipped++;
 
             return;
         }
 
-        $updated = $this->recorder->record($fixture, $homeScore, $awayScore, $winnerTeamId);
+        $updated = $this->recorder->record($fixture, $fixtureResult);
         $result->updated++;
 
         if ($settle) {
-            $result->settledPredictions += $this->settlement->settleFixture($updated, includeSettled: $scoreCorrection);
+            $result->settledPredictions += $this->settlement->settleFixture($updated, includeSettled: $resultChanged);
         }
     }
 
@@ -168,9 +164,9 @@ class FootballDataScoreSyncService
             return;
         }
 
-        $scores = $this->extractProviderScores($match);
+        $fixtureResult = $this->extractProviderResult($fixture, $match, finished: false);
 
-        if ($scores === null) {
+        if ($fixtureResult === null) {
             if ($fixture->status === FixtureStatus::Live) {
                 $result->skipped++;
 
@@ -185,49 +181,72 @@ class FootballDataScoreSyncService
             return;
         }
 
-        [$homeScore, $awayScore] = $scores;
-
-        if ($this->alreadyRecordedLive($fixture, $homeScore, $awayScore)) {
+        if ($this->alreadyRecordedLive($fixture, $fixtureResult)) {
             $result->skipped++;
 
             return;
         }
 
-        $this->recorder->recordLive($fixture, $homeScore, $awayScore);
+        $this->recorder->recordLive($fixture, $fixtureResult);
         $result->updated++;
     }
 
     /**
      * @param  array<string, mixed>  $match
-     * @return array{0: int, 1: int}|null
      */
-    private function extractProviderScores(array $match): ?array
-    {
-        return $this->extractSettlementScores($match);
+    private function extractProviderResult(
+        Fixture $fixture,
+        array $match,
+        bool $finished,
+    ): ?FixtureResult {
+        $score = $match['score'] ?? [];
+        $regularScores = $this->extractPeriodScores($score, 'regularTime')
+            ?? $this->extractPeriodScores($score, 'fullTime');
+
+        if ($regularScores === null) {
+            return null;
+        }
+
+        [$homeScore, $awayScore] = $regularScores;
+        $extraTime = $this->extractPeriodScores($score, 'extraTime');
+        $penalties = $finished ? $this->extractPeriodScores($score, 'penalties') : null;
+        $duration = ResultDuration::fromProvider($score['duration'] ?? null);
+
+        if (! $finished && strtoupper((string) ($match['status'] ?? '')) === 'PENALTY_SHOOTOUT') {
+            $duration = ResultDuration::Penalties;
+            $penalties = null;
+        }
+
+        $winnerTeamId = $homeScore === $awayScore
+            ? $this->extractProviderWinnerTeamId($fixture, $match)
+            : null;
+
+        return new FixtureResult(
+            homeScore: $homeScore,
+            awayScore: $awayScore,
+            winnerTeamId: $winnerTeamId,
+            extraTimeHome: $extraTime[0] ?? null,
+            extraTimeAway: $extraTime[1] ?? null,
+            penaltiesHome: $penalties[0] ?? null,
+            penaltiesAway: $penalties[1] ?? null,
+            resultDuration: $duration,
+        );
     }
 
     /**
-     * Predictions settle on regular-time scores. Prefer regularTime when the
-     * provider supplies it (knockout extra time / penalties), otherwise fall
-     * back to fullTime for standard 90-minute finishes.
-     *
-     * @param  array<string, mixed>  $match
+     * @param  array<string, mixed>  $score
      * @return array{0: int, 1: int}|null
      */
-    private function extractSettlementScores(array $match): ?array
+    private function extractPeriodScores(array $score, string $period): ?array
     {
-        $score = $match['score'] ?? [];
+        $homeScore = $score[$period]['home'] ?? null;
+        $awayScore = $score[$period]['away'] ?? null;
 
-        foreach (['regularTime', 'fullTime'] as $period) {
-            $homeScore = $score[$period]['home'] ?? null;
-            $awayScore = $score[$period]['away'] ?? null;
-
-            if (is_numeric($homeScore) && is_numeric($awayScore)) {
-                return [(int) $homeScore, (int) $awayScore];
-            }
+        if (! is_numeric($homeScore) || ! is_numeric($awayScore)) {
+            return null;
         }
 
-        return null;
+        return [(int) $homeScore, (int) $awayScore];
     }
 
     /**
@@ -244,11 +263,15 @@ class FootballDataScoreSyncService
         };
     }
 
-    private function alreadyRecordedLive(Fixture $fixture, int $homeScore, int $awayScore): bool
+    private function alreadyRecordedLive(Fixture $fixture, FixtureResult $result): bool
     {
         return $fixture->status === FixtureStatus::Live
-            && $fixture->home_score === $homeScore
-            && $fixture->away_score === $awayScore;
+            && $result->homeScore === $fixture->home_score
+            && $result->awayScore === $fixture->away_score
+            && $result->extraTimeHome === $fixture->extra_time_home
+            && $result->extraTimeAway === $fixture->extra_time_away
+            && $fixture->penalties_home === null
+            && $fixture->penalties_away === null;
     }
 
     private function isLiveProviderStatus(string $providerStatus): bool
@@ -265,17 +288,5 @@ class FootballDataScoreSyncService
         $yesterday = Carbon::now($this->timezone)->subDay()->toDateString();
 
         return [$yesterday, $today];
-    }
-
-    private function alreadyRecorded(
-        Fixture $fixture,
-        int $homeScore,
-        int $awayScore,
-        ?int $winnerTeamId = null,
-    ): bool {
-        return $fixture->status === FixtureStatus::Final
-            && $fixture->home_score === $homeScore
-            && $fixture->away_score === $awayScore
-            && $fixture->winner_team_id === $winnerTeamId;
     }
 }

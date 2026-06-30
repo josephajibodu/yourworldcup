@@ -1,3 +1,5 @@
+import type { FixtureScoreParts } from '@/lib/fixture-score';
+
 export interface StandingRow {
     id: number;
     name: string;
@@ -37,7 +39,7 @@ export interface Slot {
     label: string | null;
 }
 
-export interface KnockoutMatch {
+export type KnockoutMatch = FixtureScoreParts & {
     id: number;
     code: string;
     stage: string;
@@ -52,10 +54,8 @@ export interface KnockoutMatch {
     timezone: string | null;
     home: Slot;
     away: Slot;
-    homeScore: number | null;
-    awayScore: number | null;
     feeders: [number, number] | null;
-}
+};
 
 export interface GroupNodeData {
     [key: string]: unknown;

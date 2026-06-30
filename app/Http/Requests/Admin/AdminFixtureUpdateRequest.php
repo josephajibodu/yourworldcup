@@ -3,9 +3,12 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\FixtureStatus;
+use App\Enums\ResultDuration;
+use App\Fixtures\FixtureResult;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class AdminFixtureUpdateRequest extends FormRequest
 {
@@ -30,12 +33,57 @@ class AdminFixtureUpdateRequest extends FormRequest
                 'max:30',
                 Rule::requiredIf(fn (): bool => $this->input('status') === FixtureStatus::Final->value),
             ],
+            'extra_time_home' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'extra_time_away' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'penalties_home' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'penalties_away' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'result_duration' => ['nullable', Rule::enum(ResultDuration::class)],
             'settle' => ['boolean'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($this->input('status') !== FixtureStatus::Final->value) {
+                return;
+            }
+
+            $home = $this->input('home_score');
+            $away = $this->input('away_score');
+            $penHome = $this->input('penalties_home');
+            $penAway = $this->input('penalties_away');
+
+            if ($penHome !== null && $penAway !== null && $home !== $away) {
+                $validator->errors()->add(
+                    'penalties_home',
+                    'Penalty shootout scores require a level regular-time score.',
+                );
+            }
+        });
     }
 
     public function shouldSettle(): bool
     {
         return $this->boolean('settle');
+    }
+
+    public function toFixtureResult(): ?FixtureResult
+    {
+        if ($this->input('status') !== FixtureStatus::Final->value) {
+            return null;
+        }
+
+        return new FixtureResult(
+            homeScore: (int) $this->input('home_score'),
+            awayScore: (int) $this->input('away_score'),
+            extraTimeHome: $this->filled('extra_time_home') ? (int) $this->input('extra_time_home') : null,
+            extraTimeAway: $this->filled('extra_time_away') ? (int) $this->input('extra_time_away') : null,
+            penaltiesHome: $this->filled('penalties_home') ? (int) $this->input('penalties_home') : null,
+            penaltiesAway: $this->filled('penalties_away') ? (int) $this->input('penalties_away') : null,
+            resultDuration: $this->filled('result_duration')
+                ? ResultDuration::from($this->input('result_duration'))
+                : null,
+        );
     }
 }

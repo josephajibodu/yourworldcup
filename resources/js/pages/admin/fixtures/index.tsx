@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { formatFixtureCenterScore } from '@/lib/fixture-score';
 import { privatePageRobots } from '@/lib/seo';
 import { index as fixturesIndex } from '@/routes/admin/fixtures';
 import { dashboard } from '@/routes';
@@ -294,10 +295,8 @@ export default function AdminFixturesIndex({
                                             {fixture.referee ?? '—'}
                                         </td>
                                         <td className="px-4 py-3 font-mono tabular-nums">
-                                            {fixture.homeScore !== null &&
-                                            fixture.awayScore !== null
-                                                ? `${fixture.homeScore}-${fixture.awayScore}`
-                                                : '—'}
+                                            {formatFixtureCenterScore(fixture) ??
+                                                '—'}
                                         </td>
                                         <td className="px-4 py-3">
                                             <Badge

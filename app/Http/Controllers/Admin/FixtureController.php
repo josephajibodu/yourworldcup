@@ -7,6 +7,7 @@ use App\Enums\FixtureStatus;
 use App\Enums\MarketStatus;
 use App\Fixtures\FixtureAdminUpdater;
 use App\Fixtures\FixtureParticipantPresenter;
+use App\Fixtures\FixtureScorePresenter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminFixtureUpdateRequest;
 use App\Models\Fixture;
@@ -20,7 +21,10 @@ use Inertia\Response;
 
 class FixtureController extends Controller
 {
-    public function __construct(private FixtureParticipantPresenter $participants) {}
+    public function __construct(
+        private FixtureParticipantPresenter $participants,
+        private FixtureScorePresenter $scores,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -36,8 +40,7 @@ class FixtureController extends Controller
         $settled = $updater->update(
             $fixture,
             FixtureStatus::from($validated['status']),
-            $validated['home_score'] ?? null,
-            $validated['away_score'] ?? null,
+            $request->toFixtureResult(),
             $request->shouldSettle(),
         );
 
@@ -135,8 +138,7 @@ class FixtureController extends Controller
                     'city' => $fixture->stadium->city,
                 ],
             'referee' => $fixture->referee,
-            'homeScore' => $fixture->home_score,
-            'awayScore' => $fixture->away_score,
+            ...$this->scores->present($fixture, onlyWhenVisible: false),
             'marketsCount' => $fixture->markets_count,
             'settledMarketsCount' => $fixture->settled_markets_count,
         ];

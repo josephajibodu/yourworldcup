@@ -16,6 +16,13 @@ const STATUS_OPTIONS = [
     { value: 'void', label: 'Void' },
 ] as const;
 
+const RESULT_DURATION_OPTIONS = [
+    { value: '', label: 'Auto / not set' },
+    { value: 'regular', label: 'Regular time (FT)' },
+    { value: 'extra_time', label: 'After extra time (AET)' },
+    { value: 'penalties', label: 'After penalties (PEN)' },
+] as const;
+
 interface FixtureEditDialogContentProps {
     fixture: AdminFixtureSummary;
     onCancel: () => void;
@@ -74,36 +81,187 @@ export function FixtureEditDialogContent({
                     </div>
 
                     {showScores && (
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="grid gap-2">
-                                <Label htmlFor={`fixture-home-score-${fixture.id}`}>
-                                    Home score
-                                </Label>
-                                <Input
-                                    id={`fixture-home-score-${fixture.id}`}
-                                    name="home_score"
-                                    type="number"
-                                    min={0}
-                                    max={30}
-                                    defaultValue={fixture.homeScore ?? ''}
-                                    required
-                                />
-                                <InputError message={errors.home_score} />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">
+                                    Regular time
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Used for match winner and exact score
+                                    predictions.
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-home-score-${fixture.id}`}
+                                        >
+                                            Home
+                                        </Label>
+                                        <Input
+                                            id={`fixture-home-score-${fixture.id}`}
+                                            name="home_score"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.homeScore ?? ''
+                                            }
+                                            required
+                                        />
+                                        <InputError
+                                            message={errors.home_score}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-away-score-${fixture.id}`}
+                                        >
+                                            Away
+                                        </Label>
+                                        <Input
+                                            id={`fixture-away-score-${fixture.id}`}
+                                            name="away_score"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.awayScore ?? ''
+                                            }
+                                            required
+                                        />
+                                        <InputError
+                                            message={errors.away_score}
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">
+                                    Extra time
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Goals scored in extra time only. Leave blank
+                                    if the match did not go to extra time.
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-extra-home-${fixture.id}`}
+                                        >
+                                            Home
+                                        </Label>
+                                        <Input
+                                            id={`fixture-extra-home-${fixture.id}`}
+                                            name="extra_time_home"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.extraTimeHome ?? ''
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.extra_time_home}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-extra-away-${fixture.id}`}
+                                        >
+                                            Away
+                                        </Label>
+                                        <Input
+                                            id={`fixture-extra-away-${fixture.id}`}
+                                            name="extra_time_away"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.extraTimeAway ?? ''
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.extra_time_away}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">
+                                    Penalties
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Shootout score only, e.g. 2–3 for a 1(2)–1(3)
+                                    display.
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-pen-home-${fixture.id}`}
+                                        >
+                                            Home
+                                        </Label>
+                                        <Input
+                                            id={`fixture-pen-home-${fixture.id}`}
+                                            name="penalties_home"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.penaltiesHome ?? ''
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.penalties_home}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label
+                                            htmlFor={`fixture-pen-away-${fixture.id}`}
+                                        >
+                                            Away
+                                        </Label>
+                                        <Input
+                                            id={`fixture-pen-away-${fixture.id}`}
+                                            name="penalties_away"
+                                            type="number"
+                                            min={0}
+                                            max={30}
+                                            defaultValue={
+                                                fixture.penaltiesAway ?? ''
+                                            }
+                                        />
+                                        <InputError
+                                            message={errors.penalties_away}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid gap-2">
-                                <Label htmlFor={`fixture-away-score-${fixture.id}`}>
-                                    Away score
+                                <Label
+                                    htmlFor={`fixture-result-duration-${fixture.id}`}
+                                >
+                                    Result type
                                 </Label>
-                                <Input
-                                    id={`fixture-away-score-${fixture.id}`}
-                                    name="away_score"
-                                    type="number"
-                                    min={0}
-                                    max={30}
-                                    defaultValue={fixture.awayScore ?? ''}
-                                    required
-                                />
-                                <InputError message={errors.away_score} />
+                                <select
+                                    id={`fixture-result-duration-${fixture.id}`}
+                                    name="result_duration"
+                                    defaultValue={fixture.resultDuration ?? ''}
+                                    className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                >
+                                    {RESULT_DURATION_OPTIONS.map((option) => (
+                                        <option
+                                            key={option.value || 'auto'}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.result_duration} />
                             </div>
                         </div>
                     )}

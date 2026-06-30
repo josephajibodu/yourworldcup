@@ -5,6 +5,7 @@ namespace App\Admin;
 use App\Bracket\GroupStandingsService;
 use App\Enums\FixtureStatus;
 use App\Enums\MarketStatus;
+use App\Fixtures\FixtureScorePresenter;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
 use App\Models\Prediction;
@@ -21,6 +22,7 @@ class AdminDashboardService
     public function __construct(
         private LeaderboardService $leaderboard,
         private GroupStandingsService $standings,
+        private FixtureScorePresenter $scores,
     ) {}
 
     /**
@@ -142,8 +144,7 @@ class AdminDashboardService
             'kickoffAt' => $fixture->kickoff_at->toIso8601String(),
             'homeTeam' => $fixture->homeTeam?->name,
             'awayTeam' => $fixture->awayTeam?->name,
-            'homeScore' => $fixture->home_score,
-            'awayScore' => $fixture->away_score,
+            ...$this->scores->present($fixture, onlyWhenVisible: false),
         ];
     }
 }

@@ -3,6 +3,10 @@ import type {FocusEvent} from 'react';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
+import {
+    formatFixtureCenterScore,
+    formatFixtureStatusLabel,
+} from '@/lib/fixture-score';
 import { cn } from '@/lib/utils';
 import { MarketInput } from './market-input';
 import { useScoreStepper } from './score-stepper-context';
@@ -94,11 +98,10 @@ export function FixtureCard({
         now,
     );
     const final = isFixtureFinal(fixture.status);
+    const scoreLabel = formatFixtureStatusLabel(fixture, final);
     const centerLabel =
-        final &&
-        fixture.homeScore !== null &&
-        fixture.awayScore !== null
-            ? `${fixture.homeScore} – ${fixture.awayScore}`
+        final || live
+            ? (formatFixtureCenterScore(fixture) ?? time)
             : time;
     const { dismiss } = useScoreStepper();
 
@@ -123,9 +126,9 @@ export function FixtureCard({
                         ? `Group ${fixture.group}`
                         : fixture.stageLabel}
                     {live && <LiveIndicator label="" />}
-                    {final && (
+                    {scoreLabel && (
                         <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
-                            FT
+                            {scoreLabel}
                         </span>
                     )}
                 </span>
@@ -145,7 +148,7 @@ export function FixtureCard({
                 <span
                     className={cn(
                         'shrink-0 font-mono text-sm font-semibold tabular-nums',
-                        final ? 'text-foreground' : 'text-muted-foreground',
+                        final || live ? 'text-foreground' : 'text-muted-foreground',
                     )}
                 >
                     {centerLabel}

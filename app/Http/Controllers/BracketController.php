@@ -7,6 +7,7 @@ use App\Cache\TournamentCache;
 use App\Enums\BracketSlotSide;
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
+use App\Fixtures\FixtureScorePresenter;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
 use App\Models\Stadium;
@@ -20,6 +21,7 @@ class BracketController extends Controller
     public function __construct(
         private GroupStandingsService $standings,
         private TournamentCache $cache,
+        private FixtureScorePresenter $scores,
     ) {}
 
     public function index(): Response
@@ -187,8 +189,7 @@ class BracketController extends Controller
                     'timezone' => $fixture->stadium?->timezone,
                     'home' => $this->slot($fixture->homeTeam, $homeSlot, $pair[0] ?? null, $isThird),
                     'away' => $this->slot($fixture->awayTeam, $awaySlot, $pair[1] ?? null, $isThird),
-                    'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,
-                    'awayScore' => $fixture->status === FixtureStatus::Final ? $fixture->away_score : null,
+                    ...$this->scores->present($fixture),
                     'feeders' => $pair,
                 ];
             })

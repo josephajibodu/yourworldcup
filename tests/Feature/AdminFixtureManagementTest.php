@@ -203,3 +203,32 @@ test('site admins can mark a fixture live', function () {
 
     expect($fixture->fresh()->status)->toBe(FixtureStatus::Live);
 });
+
+test('site admins can record regular time, extra time, and penalty scores', function () {
+    $fixture = Fixture::factory()->create([
+        'home_team_id' => Team::factory()->create()->id,
+        'away_team_id' => Team::factory()->create()->id,
+    ]);
+
+    $this->actingAs(siteAdmin())
+        ->patch(route('admin.fixtures.update', $fixture), [
+            'status' => FixtureStatus::Final->value,
+            'home_score' => 1,
+            'away_score' => 1,
+            'extra_time_home' => 0,
+            'extra_time_away' => 0,
+            'penalties_home' => 2,
+            'penalties_away' => 3,
+            'result_duration' => 'penalties',
+            'settle' => false,
+        ])
+        ->assertRedirect(route('admin.fixtures.index'));
+
+    $fixture->refresh();
+
+    expect($fixture->home_score)->toBe(1)
+        ->and($fixture->away_score)->toBe(1)
+        ->and($fixture->penalties_home)->toBe(2)
+        ->and($fixture->penalties_away)->toBe(3)
+        ->and($fixture->winner_team_id)->toBe($fixture->away_team_id);
+});

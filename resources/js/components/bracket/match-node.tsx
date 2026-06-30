@@ -6,6 +6,11 @@ import { useMatchDurationMinutes } from '@/hooks/use-match-duration-minutes';
 import { useNow } from '@/hooks/use-now';
 import { isFixtureFinal, isFixtureLive } from '@/lib/fixture-live';
 import {
+    formatFixtureSideScore,
+    formatFixtureStatusLabel,
+    fixtureHasPenaltyScore,
+} from '@/lib/fixture-score';
+import {
     formatMatchKickoff,
     isShowpieceStage,
     SHOWPIECE_HANDLE_TOP,
@@ -17,6 +22,36 @@ import type { KnockoutMatch, MatchNodeData, Slot } from './types';
 
 type MatchNode = Node<MatchNodeData, 'match'>;
 
+function matchSideScores(
+    match: KnockoutMatch,
+    showScores: boolean,
+): { home: string | null; away: string | null } {
+    if (
+        !showScores ||
+        match.homeScore === null ||
+        match.awayScore === null
+    ) {
+        return { home: null, away: null };
+    }
+
+    const hasPenalties = fixtureHasPenaltyScore(match);
+
+    return {
+        home: formatFixtureSideScore(
+            match.homeScore,
+            match.extraTimeHome,
+            match.penaltiesHome,
+            hasPenalties,
+        ),
+        away: formatFixtureSideScore(
+            match.awayScore,
+            match.extraTimeAway,
+            match.penaltiesAway,
+            hasPenalties,
+        ),
+    };
+}
+
 function SlotRow({
     slot,
     divider,
@@ -25,7 +60,7 @@ function SlotRow({
 }: {
     slot: Slot;
     divider: boolean;
-    score?: number | null;
+    score?: string | null;
     showpiece?: boolean;
 }) {
     return (
@@ -94,6 +129,8 @@ function ShowpieceMatchCard({
 }) {
     const isThird = match.stage === 'third_place';
     const kickoffLabel = formatMatchKickoff(match.kickoffAt, match.timezone);
+    const sideScores = matchSideScores(match, final || live);
+    const statusLabel = formatFixtureStatusLabel(match, final);
 
     return (
         <div
@@ -119,9 +156,9 @@ function ShowpieceMatchCard({
                         {match.headline ?? match.stageLabel}
                     </h3>
                     {live && <LiveIndicator label="" />}
-                    {final && (
+                    {statusLabel && (
                         <span className="rounded bg-wc-ink/10 px-1 py-0.5 text-[9px] font-semibold text-wc-ink">
-                            FT
+                            {statusLabel}
                         </span>
                     )}
                 </div>
@@ -135,13 +172,13 @@ function ShowpieceMatchCard({
             <SlotRow
                 slot={match.home}
                 divider={false}
-                score={final ? match.homeScore : null}
+                score={sideScores.home}
                 showpiece
             />
             <SlotRow
                 slot={match.away}
                 divider
-                score={final ? match.awayScore : null}
+                score={sideScores.away}
                 showpiece
             />
             <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
@@ -184,6 +221,8 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
     }
 
     const kickoffLabel = formatMatchKickoff(match.kickoffAt, match.timezone);
+    const sideScores = matchSideScores(match, final || live);
+    const statusLabel = formatFixtureStatusLabel(match, final);
 
     return (
         <div
@@ -203,9 +242,9 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
                 <span className="flex shrink-0 items-center gap-1.5 font-mono text-[10px] font-semibold tracking-wider text-wc-ink/70">
                     {match.code}
                     {live && <LiveIndicator label="" />}
-                    {final && (
+                    {statusLabel && (
                         <span className="rounded bg-wc-ink/10 px-1 py-0.5 text-[9px] font-semibold text-wc-ink">
-                            FT
+                            {statusLabel}
                         </span>
                     )}
                 </span>
@@ -216,12 +255,12 @@ export function MatchNode({ data }: NodeProps<MatchNode>) {
             <SlotRow
                 slot={match.home}
                 divider={false}
-                score={final ? match.homeScore : null}
+                score={sideScores.home}
             />
             <SlotRow
                 slot={match.away}
                 divider
-                score={final ? match.awayScore : null}
+                score={sideScores.away}
             />
             <Handle
                 type="source"

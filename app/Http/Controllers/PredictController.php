@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Cache\TournamentCache;
-use App\Enums\FixtureStatus;
+use App\Fixtures\FixtureScorePresenter;
 use App\Http\Requests\SubmitPredictionsRequest;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
@@ -23,7 +23,10 @@ use Laravel\Fortify\Features;
 
 class PredictController extends Controller
 {
-    public function __construct(private TournamentCache $cache) {}
+    public function __construct(
+        private TournamentCache $cache,
+        private FixtureScorePresenter $scores,
+    ) {}
 
     public function index(Request $request, PredictionVisibility $visibility): Response
     {
@@ -191,8 +194,7 @@ class PredictController extends Controller
             'city' => $fixture->stadium?->city,
             'home' => $this->team($fixture->homeTeam),
             'away' => $this->team($fixture->awayTeam),
-            'homeScore' => $fixture->status === FixtureStatus::Final ? $fixture->home_score : null,
-            'awayScore' => $fixture->status === FixtureStatus::Final ? $fixture->away_score : null,
+            ...$this->scores->present($fixture),
             'markets' => $fixture->markets
                 ->sortBy(fn (FixtureMarket $market): int => $market->market->sort_order)
                 ->values()

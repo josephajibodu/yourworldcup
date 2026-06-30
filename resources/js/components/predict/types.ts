@@ -1,3 +1,5 @@
+import type { FixtureScoreParts } from '@/lib/fixture-score';
+
 export type MarketInputType =
     | 'single_select'
     | 'boolean'
@@ -34,7 +36,7 @@ export interface PredictTeam {
     flag: string | null;
 }
 
-export interface PredictFixture {
+export type PredictFixture = FixtureScoreParts & {
     id: number;
     stage: string;
     stageLabel: string;
@@ -47,7 +49,5 @@ export interface PredictFixture {
     city: string | null;
     home: PredictTeam | null;
     away: PredictTeam | null;
-    homeScore: number | null;
-    awayScore: number | null;
     markets: PredictMarket[];
-}
+};

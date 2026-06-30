@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Fixtures\FixtureResult;
 use App\Fixtures\FixtureResultRecorder;
 use Illuminate\Console\Command;
 use Illuminate\Validation\ValidationException;
@@ -70,7 +71,7 @@ class SetFixtureResultCommand extends Command
         $awayScore = (int) $this->ask('Away score');
 
         try {
-            $updated = $recorder->record($fixture, $homeScore, $awayScore);
+            $updated = $recorder->record($fixture, new FixtureResult($homeScore, $awayScore));
         } catch (ValidationException $exception) {
             $this->error($exception->getMessage());
 
@@ -112,7 +113,7 @@ class SetFixtureResultCommand extends Command
         foreach ($entries as $entry) {
             try {
                 $fixture = $recorder->findByExternalId($entry['id']);
-                $updated = $recorder->record($fixture, $entry['home'], $entry['away']);
+                $updated = $recorder->record($fixture, new FixtureResult($entry['home'], $entry['away']));
             } catch (ValidationException $exception) {
                 foreach ($exception->errors() as $messages) {
                     $this->error("M{$entry['id']}: ".(is_array($messages) ? $messages[0] : (string) $messages));

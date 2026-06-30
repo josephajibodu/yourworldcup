@@ -97,62 +97,36 @@ class FixtureResultRecorder
         return $fixture;
     }
 
-    public function record(Fixture $fixture, int $homeScore, int $awayScore, ?int $winnerTeamId = null): Fixture
+    public function record(Fixture $fixture, FixtureResult $result): Fixture
     {
-        if ($homeScore < 0 || $homeScore > 30 || $awayScore < 0 || $awayScore > 30) {
-            throw ValidationException::withMessages([
-                'scores' => 'Scores must be between 0 and 30.',
-            ]);
-        }
+        $this->assertValidScores($result);
 
-        $homeTeamId = $fixture->home_team_id;
-        $awayTeamId = $fixture->away_team_id;
-
-        $winnerId = match (true) {
-            $winnerTeamId !== null => $winnerTeamId,
-            $homeTeamId !== null && $awayTeamId !== null && $homeScore !== $awayScore => $homeScore > $awayScore ? $homeTeamId : $awayTeamId,
-            default => null,
-        };
+        $winnerId = $this->resolveWinnerId($fixture, $result);
 
         $fixture->update([
             'status' => FixtureStatus::Final,
-            'home_score' => $homeScore,
-            'away_score' => $awayScore,
+            ...$result->toAttributes(),
             'winner_team_id' => $winnerId,
         ]);
 
-        $this->cache->bump('bracket');
-        $this->cache->bump('predict');
+        $this->bumpCaches();
 
         return $fixture->fresh(['homeTeam', 'awayTeam']);
     }
 
-    public function recordLive(Fixture $fixture, int $homeScore, int $awayScore): Fixture
+    public function recordLive(Fixture $fixture, FixtureResult $result): Fixture
     {
-        if ($homeScore < 0 || $homeScore > 30 || $awayScore < 0 || $awayScore > 30) {
-            throw ValidationException::withMessages([
-                'scores' => 'Scores must be between 0 and 30.',
-            ]);
-        }
-
-        $homeTeamId = $fixture->home_team_id;
-        $awayTeamId = $fixture->away_team_id;
-
-        $winnerId = null;
-
-        if ($homeTeamId !== null && $awayTeamId !== null && $homeScore !== $awayScore) {
-            $winnerId = $homeScore > $awayScore ? $homeTeamId : $awayTeamId;
-        }
+        $this->assertValidScores($result);
 
         $fixture->update([
             'status' => FixtureStatus::Live,
-            'home_score' => $homeScore,
-            'away_score' => $awayScore,
-            'winner_team_id' => $winnerId,
+            ...$result->toAttributes(),
+            'winner_team_id' => null,
+            'penalties_home' => null,
+            'penalties_away' => null,
         ]);
 
-        $this->cache->bump('bracket');
-        $this->cache->bump('predict');
+        $this->bumpCaches();
 
         return $fixture->fresh(['homeTeam', 'awayTeam']);
     }
@@ -169,5 +143,74 @@ class FixtureResultRecorder
             $away,
             $fixture->stage->label(),
         );
+    }
+
+    private function resolveWinnerId(Fixture $fixture, FixtureResult $result): ?int
+    {
+        if ($result->winnerTeamId !== null) {
+            return $result->winnerTeamId;
+        }
+
+        $homeTeamId = $fixture->home_team_id;
+        $awayTeamId = $fixture->away_team_id;
+
+        if ($homeTeamId === null || $awayTeamId === null) {
+            return null;
+        }
+
+        if (
+            $result->penaltiesHome !== null
+            && $result->penaltiesAway !== null
+            && $result->penaltiesHome !== $result->penaltiesAway
+        ) {
+            return $result->penaltiesHome > $result->penaltiesAway ? $homeTeamId : $awayTeamId;
+        }
+
+        $totalHome = $result->homeScore + ($result->extraTimeHome ?? 0);
+        $totalAway = $result->awayScore + ($result->extraTimeAway ?? 0);
+
+        if ($totalHome === $totalAway) {
+            return null;
+        }
+
+        return $totalHome > $totalAway ? $homeTeamId : $awayTeamId;
+    }
+
+    private function assertValidScores(FixtureResult $result): void
+    {
+        foreach ([
+            $result->homeScore,
+            $result->awayScore,
+            $result->extraTimeHome,
+            $result->extraTimeAway,
+            $result->penaltiesHome,
+            $result->penaltiesAway,
+        ] as $score) {
+            if ($score === null) {
+                continue;
+            }
+
+            if ($score < 0 || $score > 30) {
+                throw ValidationException::withMessages([
+                    'scores' => 'Scores must be between 0 and 30.',
+                ]);
+            }
+        }
+
+        if (
+            $result->penaltiesHome !== null
+            && $result->penaltiesAway !== null
+            && $result->homeScore !== $result->awayScore
+        ) {
+            throw ValidationException::withMessages([
+                'penalties' => 'Penalty shootout scores require a level regular-time score.',
+            ]);
+        }
+    }
+
+    private function bumpCaches(): void
+    {
+        $this->cache->bump('bracket');
+        $this->cache->bump('predict');
     }
 }

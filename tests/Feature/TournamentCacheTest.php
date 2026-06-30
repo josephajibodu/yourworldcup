@@ -4,6 +4,7 @@ use App\Bracket\GroupStandingsService;
 use App\Cache\TournamentCache;
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
+use App\Fixtures\FixtureResult;
 use App\Fixtures\FixtureResultRecorder;
 use App\Models\Fixture;
 use App\Models\Prediction;
@@ -90,7 +91,7 @@ it('busts standings cache when a group fixture result is recorded', function () 
         ->where('status', '!=', FixtureStatus::Final)
         ->firstOrFail();
 
-    app(FixtureResultRecorder::class)->record($fixture, 2, 1);
+    app(FixtureResultRecorder::class)->record($fixture, new FixtureResult(2, 1));
 
     $after = $service->standingsForGroup('A');
 
@@ -110,7 +111,7 @@ it('includes live group fixtures with scores in standings', function () {
         ->where('status', '!=', FixtureStatus::Final)
         ->firstOrFail();
 
-    app(FixtureResultRecorder::class)->recordLive($fixture, 2, 1);
+    app(FixtureResultRecorder::class)->recordLive($fixture, new FixtureResult(2, 1));
 
     $after = $service->standingsForGroup('A');
 

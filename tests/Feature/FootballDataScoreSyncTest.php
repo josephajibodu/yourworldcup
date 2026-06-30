@@ -2,6 +2,7 @@
 
 use App\Enums\FixtureStatus;
 use App\Enums\MarketStatus;
+use App\Enums\ResultDuration;
 use App\FootballData\FootballDataLinker;
 use App\Models\Fixture;
 use App\Models\Prediction;
@@ -332,6 +333,11 @@ it('uses regular time scores for penalty shootouts and keeps the advancing team'
         ->and($fixture->home_score)->toBe(1)
         ->and($fixture->away_score)->toBe(1)
         ->and($fixture->winner_team_id)->toBe($fixture->away_team_id)
+        ->and($fixture->extra_time_home)->toBe(0)
+        ->and($fixture->extra_time_away)->toBe(0)
+        ->and($fixture->penalties_home)->toBe(2)
+        ->and($fixture->penalties_away)->toBe(3)
+        ->and($fixture->result_duration)->toBe(ResultDuration::Penalties)
         ->and($winner->fresh()->status)->toBe(MarketStatus::Settled)
         ->and($winner->fresh()->settlement_value)->toBe(['winner' => 'draw'])
         ->and($score->fresh()->status)->toBe(MarketStatus::Settled)

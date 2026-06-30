@@ -13,6 +13,7 @@ import Heading from '@/components/heading';
 import { StandingsTable } from '@/components/leaderboard/standings-table';
 import { SeoHead } from '@/components/seo-head';
 import { Badge } from '@/components/ui/badge';
+import { formatFixtureCenterScore } from '@/lib/fixture-score';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -104,11 +105,15 @@ function FixtureRow({
                 {fixture.status === 'live' && (
                     <Badge variant="destructive">Live</Badge>
                 )}
-                {fixture.homeScore !== null && fixture.awayScore !== null && (
-                    <span className="font-mono text-sm font-semibold tabular-nums">
-                        {fixture.homeScore}-{fixture.awayScore}
-                    </span>
-                )}
+                {(() => {
+                    const score = formatFixtureCenterScore(fixture);
+
+                    return score ? (
+                        <span className="font-mono text-sm font-semibold tabular-nums">
+                            {score}
+                        </span>
+                    ) : null;
+                })()}
                 {trailing}
             </div>
         </li>

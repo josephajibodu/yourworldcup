@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
+use App\Enums\ResultDuration;
 use Database\Factories\FixtureFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +31,11 @@ use Illuminate\Support\Carbon;
  * @property FixtureStatus $status
  * @property int|null $home_score
  * @property int|null $away_score
+ * @property int|null $extra_time_home
+ * @property int|null $extra_time_away
+ * @property int|null $penalties_home
+ * @property int|null $penalties_away
+ * @property ResultDuration|null $result_duration
  * @property int|null $winner_team_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -46,6 +52,7 @@ class Fixture extends Model
         return [
             'stage' => FixtureStage::class,
             'status' => FixtureStatus::class,
+            'result_duration' => ResultDuration::class,
             'matchday' => 'integer',
             'kickoff_at' => 'datetime',
             'lock_at' => 'datetime',
