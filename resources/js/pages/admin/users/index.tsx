@@ -1,7 +1,8 @@
 import { Form, Link, router } from '@inertiajs/react';
-import { Eye, ListChecks, Pencil, Search, Users } from 'lucide-react';
+import { Eye, ListChecks, Pencil, Search, Users, VenetianMask } from 'lucide-react';
 import { useState } from 'react';
 import { show } from '@/actions/App/Http/Controllers/Admin/UserController';
+import { store as impersonateUser } from '@/actions/App/Http/Controllers/Admin/UserImpersonationController';
 import { UserEditDialogContent } from '@/components/admin/user-edit-dialog';
 import { UserViewDialogContent } from '@/components/admin/user-view-dialog';
 import Heading from '@/components/heading';
@@ -296,7 +297,22 @@ export default function AdminUsersIndex({
                     ) : (
                         <>
                             <UserViewDialogContent user={viewUser} />
-                            <div className="flex justify-end gap-2">
+                            <div className="flex flex-wrap justify-end gap-2">
+                                {!viewUser.isSiteAdmin && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        data-test="impersonate-user"
+                                        onClick={() =>
+                                            router.post(
+                                                impersonateUser.url(viewUser.id),
+                                            )
+                                        }
+                                    >
+                                        <VenetianMask className="size-4" />
+                                        Impersonate
+                                    </Button>
+                                )}
                                 <Button type="button" variant="secondary" asChild>
                                     <Link
                                         href={userPredictionsIndex.url(viewUser.id)}

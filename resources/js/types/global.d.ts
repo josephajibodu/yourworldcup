@@ -1,4 +1,4 @@
-import type { Auth } from '@/types/auth';
+import type { Auth, Impersonating } from '@/types/auth';
 import type { PredictionsConfig } from '@/types/predictions';
 import type { TurnstileConfig } from '@/types/turnstile';
 
@@ -15,6 +15,7 @@ declare module '@inertiajs/core' {
             name: string;
             appUrl: string;
             auth: Auth;
+            impersonating: Impersonating | null;
             sidebarOpen: boolean;
             turnstile: TurnstileConfig;
             predictions: PredictionsConfig;

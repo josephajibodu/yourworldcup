@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Auth\ImpersonationManager;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'isAdmin' => $request->user()?->isSiteAdmin() ?? false,
             ],
+            'impersonating' => $this->impersonating($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'turnstile' => [
                 'enabled' => (bool) config('turnstile.enabled'),
@@ -51,6 +53,26 @@ class HandleInertiaRequests extends Middleware
             'predictions' => [
                 'matchDurationMinutes' => (int) config('predictions.match_duration_minutes'),
             ],
+        ];
+    }
+
+    /**
+     * @return array{userName: string}|null
+     */
+    private function impersonating(Request $request): ?array
+    {
+        if (! $request->session()->has(ImpersonationManager::SESSION_KEY)) {
+            return null;
+        }
+
+        $user = $request->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return [
+            'userName' => $user->name,
         ];
     }
 }

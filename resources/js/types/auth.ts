@@ -15,6 +15,10 @@ export type Auth = {
     isAdmin: boolean;
 };
 
+export type Impersonating = {
+    userName: string;
+};
+
 /* @chisel-passkeys */
 export type Passkey = {
     id: number;

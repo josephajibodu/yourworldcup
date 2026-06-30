@@ -4,10 +4,12 @@ use App\Http\Controllers\Admin\BracketSlotController as AdminBracketSlotControll
 use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
 use App\Http\Controllers\Admin\LeaderboardController as AdminLeaderboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\UserImpersonationController as AdminUserImpersonationController;
 use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
 use App\Http\Controllers\BestThirdController;
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PlayerCountController;
 use App\Http\Controllers\PredictController;
@@ -29,6 +31,7 @@ Route::post('predict/return-url', [PredictController::class, 'rememberReturnUrl'
 Route::middleware('auth')->group(function () {
     Route::post('predict', [PredictController::class, 'store'])->name('predict.store');
     Route::get('predict/history', [SettledPredictionsController::class, 'index'])->name('predict.history');
+    Route::delete('impersonation', [ImpersonationController::class, 'destroy'])->name('impersonation.destroy');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
@@ -48,6 +51,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::patch('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::post('users/{user}/impersonate', [AdminUserImpersonationController::class, 'store'])->name('users.impersonate');
         Route::get('users/{user}/predictions', [AdminUserPredictionController::class, 'index'])->name('users.predictions.index');
     });
 });

@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { ImpersonationBanner } from '@/components/impersonation-banner';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -33,6 +34,7 @@ createInertiaApp({
     withApp(app) {
         return (
             <TooltipProvider delayDuration={0}>
+                <ImpersonationBanner />
                 {app}
                 <Toaster />
             </TooltipProvider>
