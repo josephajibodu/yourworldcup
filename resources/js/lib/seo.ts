@@ -16,6 +16,12 @@ export const seo = {
             'Submit your daily World Cup predictions before kickoff. Choose match winners, exact scores, and a banker pick to double your points.',
         path: '/predict',
     },
+    predictHistory: {
+        title: 'Your settled picks',
+        description:
+            'Review your scored World Cup predictions and see how many points you earned from picks and referrals.',
+        path: '/predict/history',
+    },
     bracket: {
         title: 'Living bracket',
         description:

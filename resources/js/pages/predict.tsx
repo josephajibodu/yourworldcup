@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, History } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -23,6 +23,7 @@ import {
 import { hasSavedPicksForDay } from '@/lib/predict-saved-picks';
 import { seo } from '@/lib/seo';
 import { predict } from '@/routes';
+import { history as predictHistory } from '@/routes/predict';
 import type { Auth } from '@/types';
 
 interface PredictPageProps {
@@ -359,10 +360,20 @@ function PredictDay({
                             to double its points.
                         </p>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 font-mono text-xs tracking-wider text-muted-foreground uppercase">
-                        <CalendarDays className="size-3.5" />
-                        {pickCount} picked · {openCount} open
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {!isGuest && (
+                            <Button asChild variant="ghost" size="sm">
+                                <Link href={predictHistory()}>
+                                    <History className="size-4" />
+                                    View my picks
+                                </Link>
+                            </Button>
+                        )}
+                        <span className="inline-flex items-center gap-1.5 font-mono text-xs tracking-wider text-muted-foreground uppercase">
+                            <CalendarDays className="size-3.5" />
+                            {pickCount} picked · {openCount} open
+                        </span>
+                    </div>
                 </div>
 
                 <div className="mt-5 flex items-center justify-between gap-2 rounded-lg border bg-card px-2 py-2">

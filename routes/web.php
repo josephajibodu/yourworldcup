@@ -12,6 +12,7 @@ use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PlayerCountController;
 use App\Http\Controllers\PredictController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\SettledPredictionsController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -27,6 +28,7 @@ Route::post('predict/return-url', [PredictController::class, 'rememberReturnUrl'
 
 Route::middleware('auth')->group(function () {
     Route::post('predict', [PredictController::class, 'store'])->name('predict.store');
+    Route::get('predict/history', [SettledPredictionsController::class, 'index'])->name('predict.history');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
