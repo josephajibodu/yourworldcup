@@ -3,6 +3,7 @@ import {
     BookOpen,
     CalendarDays,
     FolderGit2,
+    Gift,
     LayoutGrid,
     Medal,
     Network,
@@ -27,6 +28,7 @@ import { bracket, bestThirds, dashboard, leaderboard, predict } from '@/routes';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
 import { index as adminBracketSlotsIndex } from '@/routes/admin/bracket-slots';
 import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
+import { index as adminRewardClaimsIndex } from '@/routes/admin/reward-claims';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import type { Auth, NavItem } from '@/types';
 
@@ -47,6 +49,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 title: 'Leaderboard',
                 href: adminLeaderboard(),
                 icon: Trophy,
+            },
+            {
+                title: 'Reward claims',
+                href: adminRewardClaimsIndex(),
+                icon: Gift,
             },
             {
                 title: 'Fixtures',

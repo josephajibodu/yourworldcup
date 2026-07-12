@@ -147,6 +147,37 @@ export type AdminDashboardBracketSlot = {
     feedsFixtureStageLabel: string | null;
 };
 
+export type AdminRewardClaimSummary = {
+    id: number;
+    weekStart: string;
+    leaderboardRank: number;
+    passedOn: boolean;
+    preference: 'airtime' | 'data' | 'cash' | null;
+    preferenceLabel: string | null;
+    phoneNumber: string | null;
+    mobileNetwork: string | null;
+    mobileNetworkLabel: string | null;
+    accountHolderName: string | null;
+    bankName: string | null;
+    accountNumber: string | null;
+    passOnMessage: string | null;
+    submittedAt: string | null;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+    };
+};
+
+export type AdminRewardClaimsSummary = {
+    total: number;
+    passed: number;
+    claimed: number;
+    airtime: number;
+    data: number;
+    cash: number;
+};
+
 export type AdminDashboardSummary = {
     stats: {
         users: {

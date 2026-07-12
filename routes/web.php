@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\LeaderboardController as AdminLeaderboardControll
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserImpersonationController as AdminUserImpersonationController;
 use App\Http\Controllers\Admin\UserPredictionController as AdminUserPredictionController;
+use App\Http\Controllers\Admin\WeeklyRewardClaimController as AdminWeeklyRewardClaimController;
 use App\Http\Controllers\BestThirdController;
 use App\Http\Controllers\BracketController;
 use App\Http\Controllers\DashboardController;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::patch('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::post('users/{user}/impersonate', [AdminUserImpersonationController::class, 'store'])->name('users.impersonate');
         Route::get('users/{user}/predictions', [AdminUserPredictionController::class, 'index'])->name('users.predictions.index');
+
+        Route::get('reward-claims', [AdminWeeklyRewardClaimController::class, 'index'])->name('reward-claims.index');
     });
 });
 
