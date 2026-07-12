@@ -4,15 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\RewardPreference;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminPassOnWeeklyRewardRequest;
+use App\Models\User;
 use App\Models\WeeklyRewardClaim;
 use App\Predictions\Leaderboard\LeaderboardService;
+use App\Rewards\WeeklyRewardService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class WeeklyRewardClaimController extends Controller
 {
-    public function __construct(private LeaderboardService $leaderboard) {}
+    public function __construct(
+        private LeaderboardService $leaderboard,
+        private WeeklyRewardService $rewards,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -37,7 +44,23 @@ class WeeklyRewardClaimController extends Controller
             'dates' => $weeks,
             'selectedWeek' => $selectedWeek,
             'summary' => $this->summary($selectedWeek),
+            'pendingPassOns' => $selectedWeek === null
+                ? []
+                : $this->rewards->unansweredConsiderationUsers($selectedWeek),
         ]);
+    }
+
+    public function passOn(
+        AdminPassOnWeeklyRewardRequest $request,
+        User $user,
+    ): RedirectResponse {
+        $this->rewards->adminPassOn(
+            $user,
+            $request->validated('week_start'),
+            $request->validated('pass_on_message'),
+        );
+
+        return back()->with('rewardPassOnRecorded', true);
     }
 
     /**

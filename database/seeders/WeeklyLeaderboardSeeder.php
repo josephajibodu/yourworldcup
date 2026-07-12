@@ -127,7 +127,7 @@ class WeeklyLeaderboardSeeder extends Seeder
         }
 
         $this->command?->newLine();
-        $this->command?->line('Reward claims: '.($rewardsReady ? 'open' : 'waiting for Sunday final'));
+        $this->command?->line('Reward claims: '.($rewardsReady ? 'open (Sunday/Monday window)' : 'closed until Sunday or Monday'));
         $this->command?->line('Leaderboard: /leaderboard?date='.$weekStart);
         $this->command?->newLine();
     }

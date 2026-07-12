@@ -6,11 +6,13 @@ use Database\Seeders\WeeklyLeaderboardSeeder;
 use Illuminate\Support\Carbon;
 
 it('seeds a ranked weekly leaderboard for the current wat week', function () {
-    $this->seed(WeeklyLeaderboardSeeder::class);
-
     $weekStart = Carbon::now(config('predictions.timezone'))
         ->startOfWeek(Carbon::MONDAY)
         ->toDateString();
+
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
+
+    $this->seed(WeeklyLeaderboardSeeder::class);
 
     $weekly = app(LeaderboardService::class)->weekly($weekStart);
 

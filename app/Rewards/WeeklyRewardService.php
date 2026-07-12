@@ -2,9 +2,7 @@
 
 namespace App\Rewards;
 
-use App\Enums\FixtureStatus;
 use App\Enums\RewardPreference;
-use App\Models\Fixture;
 use App\Models\User;
 use App\Models\WeeklyRewardClaim;
 use App\Predictions\Leaderboard\LeaderboardService;
@@ -17,20 +15,121 @@ class WeeklyRewardService
     public function __construct(private LeaderboardService $leaderboard) {}
 
     /**
-     * Whether the week's Sunday fixtures have finished — the last Sunday
-     * match must be final before reward claims open.
+     * Whether the self-service claim window is open for this week.
+     * Claims are available on the week's Sunday and the following Monday (WAT).
      */
     public function isWeekReadyForClaims(string $weekStart): bool
     {
-        $lastSundayMatch = $this->lastSundayFixture($weekStart);
+        return $this->openClaimWeekStart() === $weekStart;
+    }
 
-        return $lastSundayMatch !== null
-            && $lastSundayMatch->status === FixtureStatus::Final;
+    public function openClaimWeekStart(): ?string
+    {
+        return $this->claimWeekStart();
+    }
+
+    /**
+     * Weekly ranks still waiting for a claim or pass-on response.
+     *
+     * @return list<int>
+     */
+    public function pendingConsiderationRanks(string $weekStart): array
+    {
+        if (! $this->isWeekReadyForClaims($weekStart)) {
+            return [];
+        }
+
+        if ($this->rewardsRemaining($weekStart) === 0) {
+            return [];
+        }
+
+        $ceiling = $this->considerationCeiling($weekStart);
+        $claimedUserIds = WeeklyRewardClaim::query()
+            ->where('week_start', $weekStart)
+            ->pluck('user_id')
+            ->all();
+
+        $pending = [];
+
+        foreach ($this->leaderboard->weekly($weekStart, $ceiling) as $row) {
+            if ($row['rank'] > $ceiling) {
+                continue;
+            }
+
+            if (! in_array($row['userId'], $claimedUserIds, true)) {
+                $pending[] = (int) $row['rank'];
+            }
+        }
+
+        return $pending;
+    }
+
+    /**
+     * Players within the consideration pool who have not responded yet.
+     *
+     * @return list<array{
+     *     userId: int,
+     *     rank: int,
+     *     name: string,
+     *     email: string
+     * }>
+     */
+    public function unansweredConsiderationUsers(string $weekStart): array
+    {
+        if ($this->rewardsRemaining($weekStart) === 0) {
+            return [];
+        }
+
+        $ceiling = $this->considerationCeiling($weekStart);
+        $claimedUserIds = WeeklyRewardClaim::query()
+            ->where('week_start', $weekStart)
+            ->pluck('user_id')
+            ->all();
+
+        $pendingRows = $this->leaderboard
+            ->weekly($weekStart, $ceiling)
+            ->filter(fn (array $row): bool => $row['rank'] <= $ceiling
+                && ! in_array($row['userId'], $claimedUserIds, true));
+
+        if ($pendingRows->isEmpty()) {
+            return [];
+        }
+
+        $emails = User::query()
+            ->whereIn('id', $pendingRows->pluck('userId'))
+            ->pluck('email', 'id');
+
+        return $pendingRows
+            ->map(fn (array $row): array => [
+                'userId' => $row['userId'],
+                'rank' => $row['rank'],
+                'name' => $row['name'],
+                'email' => (string) $emails->get($row['userId'], ''),
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function adminPassOn(User $user, string $weekStart, ?string $passOnMessage = null): WeeklyRewardClaim
+    {
+        if (! $this->canPassOn($user, $weekStart)) {
+            throw ValidationException::withMessages([
+                'week_start' => 'This player cannot be passed on for the selected week.',
+            ]);
+        }
+
+        return $this->submitClaim($user, [
+            'week_start' => $weekStart,
+            'passed_on' => true,
+            'pass_on_message' => $passOnMessage,
+        ], allowOutsideClaimWindow: true);
     }
 
     /**
      * @return array{
      *     ready: bool,
+     *     considerationCeiling: int,
+     *     pendingRanks: list<int>,
      *     eligible: array<int, array{
      *         rank: int,
      *         passedDown: bool,
@@ -42,9 +141,13 @@ class WeeklyRewardService
      */
     public function statusForUser(?User $user, string $weekStart): array
     {
+        $ready = $this->isWeekReadyForClaims($weekStart);
+
         if ($user === null) {
             return [
-                'ready' => $this->isWeekReadyForClaims($weekStart),
+                'ready' => $ready,
+                'considerationCeiling' => $ready ? $this->considerationCeiling($weekStart) : 0,
+                'pendingRanks' => $this->pendingConsiderationRanks($weekStart),
                 'eligible' => [],
                 'submitted' => [],
             ];
@@ -61,9 +164,11 @@ class WeeklyRewardService
             'passOnMessage' => $existingClaim->pass_on_message,
         ]];
 
-        if (! $this->isWeekReadyForClaims($weekStart)) {
+        if (! $ready) {
             return [
                 'ready' => false,
+                'considerationCeiling' => 0,
+                'pendingRanks' => [],
                 'eligible' => [],
                 'submitted' => $submitted,
             ];
@@ -71,7 +176,7 @@ class WeeklyRewardService
 
         $eligible = [];
 
-        if ($existingClaim === null && $this->isUserEligible($user, $weekStart)) {
+        if ($existingClaim === null && $this->canPassOn($user, $weekStart)) {
             $rank = $this->userWeeklyRank($user, $weekStart);
 
             $eligible[] = [
@@ -82,6 +187,8 @@ class WeeklyRewardService
 
         return [
             'ready' => true,
+            'considerationCeiling' => $this->considerationCeiling($weekStart),
+            'pendingRanks' => $this->pendingConsiderationRanks($weekStart),
             'eligible' => $eligible,
             'submitted' => $submitted,
         ];
@@ -90,12 +197,12 @@ class WeeklyRewardService
     /**
      * @param  array{week_start: string, passed_on: bool, preference?: string|null, pass_on_message?: string|null}  $data
      */
-    public function submitClaim(User $user, array $data): WeeklyRewardClaim
+    public function submitClaim(User $user, array $data, bool $allowOutsideClaimWindow = false): WeeklyRewardClaim
     {
         $weekStart = $data['week_start'];
         $passedOn = filter_var($data['passed_on'], FILTER_VALIDATE_BOOLEAN);
 
-        if (! $this->isWeekReadyForClaims($weekStart)) {
+        if (! $allowOutsideClaimWindow && ! $this->isWeekReadyForClaims($weekStart)) {
             throw ValidationException::withMessages([
                 'week_start' => 'Weekly rewards are not open for this week yet.',
             ]);
@@ -110,7 +217,13 @@ class WeeklyRewardService
             ]);
         }
 
-        if (! $this->isUserEligible($user, $weekStart)) {
+        if ($passedOn) {
+            if (! $this->canPassOn($user, $weekStart)) {
+                throw ValidationException::withMessages([
+                    'week_start' => 'You are not currently eligible for this week\'s airtime.',
+                ]);
+            }
+        } elseif (! $this->isUserEligible($user, $weekStart)) {
             throw ValidationException::withMessages([
                 'week_start' => 'You are not currently eligible for this week\'s airtime.',
             ]);
@@ -182,6 +295,11 @@ class WeeklyRewardService
 
     public function isUserEligible(User $user, string $weekStart): bool
     {
+        return $this->canPassOn($user, $weekStart);
+    }
+
+    public function canPassOn(User $user, string $weekStart): bool
+    {
         $rank = $this->userWeeklyRank($user, $weekStart);
 
         if ($rank === null || $rank > $this->considerationCeiling($weekStart)) {
@@ -206,19 +324,19 @@ class WeeklyRewardService
         return $this->weeklyPositions() + $this->passCount($weekStart);
     }
 
-    public function lastSundayFixture(string $weekStart): ?Fixture
+    private function claimWeekStart(): ?string
     {
-        $weekSunday = Carbon::parse($weekStart, config('predictions.timezone'))
-            ->addDays(6)
-            ->toDateString();
+        $now = Carbon::now(config('predictions.timezone'));
 
-        [$start, $end] = $this->watWeekWindow($weekStart);
+        if ($now->isSunday()) {
+            return $now->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
+        }
 
-        return Fixture::query()
-            ->onWatDate($weekSunday)
-            ->whereBetween('kickoff_at', [$start, $end])
-            ->orderByDesc('kickoff_at')
-            ->first();
+        if ($now->isMonday()) {
+            return $now->copy()->startOfWeek(Carbon::MONDAY)->subWeek()->toDateString();
+        }
+
+        return null;
     }
 
     private function userWeeklyRank(User $user, string $weekStart): ?int
@@ -281,15 +399,5 @@ class WeeklyRewardService
             'passedFromName' => $lastPass?->user?->name,
             'passOnMessage' => $lastPass?->pass_on_message,
         ];
-    }
-
-    /**
-     * @return array{0: Carbon, 1: Carbon}
-     */
-    private function watWeekWindow(string $weekStart): array
-    {
-        $start = Carbon::parse($weekStart, config('predictions.timezone'))->startOfDay();
-
-        return [$start->copy()->utc(), $start->copy()->addWeek()->utc()];
     }
 }

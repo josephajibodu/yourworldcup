@@ -58,6 +58,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('users/{user}/predictions', [AdminUserPredictionController::class, 'index'])->name('users.predictions.index');
 
         Route::get('reward-claims', [AdminWeeklyRewardClaimController::class, 'index'])->name('reward-claims.index');
+        Route::post('reward-claims/users/{user}/pass-on', [AdminWeeklyRewardClaimController::class, 'passOn'])->name('reward-claims.pass-on');
     });
 });
 

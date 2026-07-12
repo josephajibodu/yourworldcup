@@ -1,12 +1,16 @@
 <?php
 
+use App\Enums\FixtureStatus;
 use App\Models\Fixture;
 use App\Models\FixtureMarket;
+use App\Models\Prediction;
 use App\Models\PredictionMarket;
 use App\Models\Team;
 use App\Models\User;
+use App\Predictions\Settlement\SettlementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 /*
@@ -92,6 +96,80 @@ function watWeekStart(string $watDate): string
     return Carbon::parse($watDate, config('predictions.timezone'))
         ->startOfWeek(Carbon::MONDAY)
         ->toDateString();
+}
+
+function travelToWeeklyClaimWindow(string $weekStart, string $day = 'sunday'): void
+{
+    $timezone = config('predictions.timezone');
+    $weekSunday = Carbon::parse($weekStart, $timezone)->addDays(6);
+
+    $target = $day === 'monday'
+        ? $weekSunday->copy()->addDay()->setTime(10, 0)
+        : $weekSunday->copy()->setTime(10, 0);
+
+    Carbon::setTestNow($target);
+}
+
+/**
+ * @return array{weekStart: string, weekSunday: string, fixture: Fixture, winner: FixtureMarket}
+ */
+function weeklySundayFixture(int $home = 2, int $away = 1, ?string $weekStart = null): array
+{
+    $timezone = config('predictions.timezone');
+    $weekStart ??= Carbon::now($timezone)->startOfWeek(Carbon::MONDAY)->toDateString();
+    $weekSunday = Carbon::parse($weekStart, $timezone)->addDays(6)->toDateString();
+    $kickoff = Carbon::parse("{$weekSunday} 21:00:00", $timezone)->utc();
+
+    $fixture = Fixture::factory()->create([
+        'home_team_id' => Team::factory()->create()->id,
+        'away_team_id' => Team::factory()->create()->id,
+        'kickoff_at' => $kickoff,
+        'lock_at' => $kickoff->copy()->subHour(),
+        'status' => FixtureStatus::Scheduled,
+        'home_score' => null,
+        'away_score' => null,
+    ]);
+
+    ['matchWinner' => $matchWinner] = predictionMarkets();
+
+    $winner = FixtureMarket::factory()->create([
+        'fixture_id' => $fixture->id,
+        'prediction_market_id' => $matchWinner->id,
+    ]);
+
+    return compact('weekStart', 'weekSunday', 'fixture', 'winner');
+}
+
+function settleWeeklyFixture(Fixture $fixture, int $home, int $away): void
+{
+    $fixture->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => $home,
+        'away_score' => $away,
+        'winner_team_id' => $home > $away ? $fixture->home_team_id : $fixture->away_team_id,
+    ]);
+
+    app(SettlementService::class)->settleFixture($fixture->fresh());
+}
+
+/**
+ * @param  array<int, User>|Collection<int, User>  $users
+ */
+function rankUsersForWeek(string $weekStart, Fixture $fixture, $winnerMarket, array|Collection $users): void
+{
+    $users = collect($users);
+
+    $points = $users->count();
+
+    foreach ($users as $index => $user) {
+        Prediction::factory()->for($user)->create([
+            'fixture_market_id' => $winnerMarket->id,
+            'value' => ['selected' => 'home'],
+            'submitted_at' => now()->subHours($points - $index),
+        ]);
+    }
+
+    settleWeeklyFixture($fixture, 2, 1);
 }
 
 function siteAdmin(): User

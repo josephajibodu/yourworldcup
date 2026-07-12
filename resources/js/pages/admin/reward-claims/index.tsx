@@ -1,20 +1,29 @@
-import { Link } from '@inertiajs/react';
-import { Gift } from 'lucide-react';
+import { Form, Link } from '@inertiajs/react';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import { DateNav } from '@/components/leaderboard/date-nav';
 import { SeoHead } from '@/components/seo-head';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { privatePageRobots } from '@/lib/seo';
 import { dashboard } from '@/routes';
-import { index as rewardClaimsIndex } from '@/routes/admin/reward-claims';
-import type { AdminRewardClaimSummary, AdminRewardClaimsSummary, Paginated } from '@/types/admin';
+import { index as rewardClaimsIndex, passOn as passOnReward } from '@/routes/admin/reward-claims';
+import type {
+    AdminPendingPassOnSummary,
+    AdminRewardClaimSummary,
+    AdminRewardClaimsSummary,
+    Paginated,
+} from '@/types/admin';
 
 interface PageProps {
     claims: Paginated<AdminRewardClaimSummary>;
     dates: string[];
     selectedWeek: string | null;
     summary: AdminRewardClaimsSummary;
+    pendingPassOns: AdminPendingPassOnSummary[];
 }
 
 function formatWeek(weekStart: string): string {
@@ -52,11 +61,70 @@ function payoutDetails(claim: AdminRewardClaimSummary): string {
     return '—';
 }
 
+function PendingPassOnRow({
+    player,
+    weekStart,
+}: {
+    player: AdminPendingPassOnSummary;
+    weekStart: string;
+}) {
+    return (
+        <Form
+            {...passOnReward.form(player.userId)}
+            options={{ preserveScroll: true }}
+            className="flex flex-col gap-4 rounded-xl border bg-card p-4 lg:flex-row lg:items-end"
+        >
+            {({ processing, errors, wasSuccessful }) => (
+                <>
+                    <input type="hidden" name="week_start" value={weekStart} />
+                    <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">
+                                {formatTwitterHandle(player.name)}
+                            </p>
+                            <Badge variant="outline">#{player.rank}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            {player.email}
+                        </p>
+                    </div>
+                    <div className="w-full space-y-2 lg:max-w-md">
+                        <Label htmlFor={`pass-message-${player.userId}`}>
+                            Optional message
+                        </Label>
+                        <Input
+                            id={`pass-message-${player.userId}`}
+                            name="pass_on_message"
+                            placeholder="Recorded as passed on by admin"
+                            maxLength={500}
+                        />
+                        <InputError message={errors.pass_on_message} />
+                        <InputError message={errors.week_start} />
+                    </div>
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        disabled={processing || wasSuccessful}
+                        className="shrink-0"
+                    >
+                        {processing
+                            ? 'Passing on...'
+                            : wasSuccessful
+                              ? 'Passed on'
+                              : 'Pass on for player'}
+                    </Button>
+                </>
+            )}
+        </Form>
+    );
+}
+
 export default function AdminRewardClaimsIndex({
     claims,
     dates,
     selectedWeek,
     summary,
+    pendingPassOns,
 }: PageProps) {
     return (
         <>
@@ -107,6 +175,30 @@ export default function AdminRewardClaimsIndex({
                         </div>
                     ))}
                 </div>
+
+                {selectedWeek && pendingPassOns.length > 0 && (
+                    <div className="space-y-3">
+                        <div>
+                            <h2 className="text-base font-semibold">
+                                Awaiting response
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                Pass on behalf of players who have not
+                                submitted yet. This extends consideration to
+                                the next rank.
+                            </p>
+                        </div>
+                        <div className="space-y-3">
+                            {pendingPassOns.map((player) => (
+                                <PendingPassOnRow
+                                    key={player.userId}
+                                    player={player}
+                                    weekStart={selectedWeek}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="overflow-hidden rounded-xl border bg-card">
                     <div className="overflow-x-auto">

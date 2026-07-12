@@ -3,92 +3,46 @@
 use App\Enums\FixtureStatus;
 use App\Enums\MobileNetwork;
 use App\Enums\RewardPreference;
-use App\Models\Fixture;
-use App\Models\FixtureMarket;
 use App\Models\Prediction;
-use App\Models\Team;
 use App\Models\User;
 use App\Models\WeeklyRewardClaim;
 use App\Predictions\Leaderboard\LeaderboardService;
-use App\Predictions\Settlement\SettlementService;
 use App\Rewards\WeeklyRewardService;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
-/**
- * @return array{weekStart: string, weekSunday: string, fixture: Fixture, winner: FixtureMarket}
- */
-function weeklySundayFixture(int $home = 2, int $away = 1, ?string $weekStart = null): array
-{
-    $timezone = config('predictions.timezone');
-    $weekStart ??= Carbon::now($timezone)->startOfWeek(Carbon::MONDAY)->toDateString();
-    $weekSunday = Carbon::parse($weekStart, $timezone)->addDays(6)->toDateString();
-    $kickoff = Carbon::parse("{$weekSunday} 21:00:00", $timezone)->utc();
-
-    $fixture = Fixture::factory()->create([
-        'home_team_id' => Team::factory()->create()->id,
-        'away_team_id' => Team::factory()->create()->id,
-        'kickoff_at' => $kickoff,
-        'lock_at' => $kickoff->copy()->subHour(),
-        'status' => FixtureStatus::Scheduled,
-        'home_score' => null,
-        'away_score' => null,
-    ]);
-
-    ['matchWinner' => $matchWinner] = predictionMarkets();
-
-    $winner = FixtureMarket::factory()->create([
-        'fixture_id' => $fixture->id,
-        'prediction_market_id' => $matchWinner->id,
-    ]);
-
-    return compact('weekStart', 'weekSunday', 'fixture', 'winner');
-}
-
-function settleWeeklyFixture(Fixture $fixture, int $home, int $away): void
-{
-    $fixture->update([
-        'status' => FixtureStatus::Final,
-        'home_score' => $home,
-        'away_score' => $away,
-        'winner_team_id' => $home > $away ? $fixture->home_team_id : $fixture->away_team_id,
-    ]);
-
-    app(SettlementService::class)->settleFixture($fixture->fresh());
-}
-
-/**
- * @param  array<int, User>|Collection<int, User>  $users
- */
-function rankUsersForWeek(string $weekStart, Fixture $fixture, $winnerMarket, array|Collection $users): void
-{
-    $users = collect($users);
-
-    $points = $users->count();
-
-    foreach ($users as $index => $user) {
-        Prediction::factory()->for($user)->create([
-            'fixture_market_id' => $winnerMarket->id,
-            'value' => ['selected' => 'home'],
-            'submitted_at' => now()->subHours($points - $index),
-        ]);
-    }
-
-    settleWeeklyFixture($fixture, 2, 1);
-}
-
-it('opens weekly rewards after the last Sunday match is final', function () {
+it('opens weekly rewards on sunday for the current week regardless of fixture status', function () {
     ['weekStart' => $weekStart, 'fixture' => $fixture] = weeklySundayFixture();
     $service = app(WeeklyRewardService::class);
 
+    Carbon::setTestNow(Carbon::parse($weekStart, config('predictions.timezone'))->addDays(3));
+
     expect($service->isWeekReadyForClaims($weekStart))->toBeFalse();
 
-    settleWeeklyFixture($fixture, 2, 1);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
+
+    expect($service->isWeekReadyForClaims($weekStart))->toBeTrue()
+        ->and($fixture->fresh()->status)->toBe(FixtureStatus::Scheduled);
+});
+
+it('opens weekly rewards on monday for the previous week', function () {
+    ['weekStart' => $weekStart] = weeklySundayFixture();
+    $service = app(WeeklyRewardService::class);
+
+    travelToWeeklyClaimWindow($weekStart, 'monday');
 
     expect($service->isWeekReadyForClaims($weekStart))->toBeTrue();
+});
+
+it('keeps weekly rewards closed on other weekdays', function () {
+    ['weekStart' => $weekStart] = weeklySundayFixture();
+    $timezone = config('predictions.timezone');
+
+    Carbon::setTestNow(Carbon::parse($weekStart, $timezone)->addDays(2)->setTime(10, 0));
+
+    expect(app(WeeklyRewardService::class)->isWeekReadyForClaims($weekStart))->toBeFalse();
 });
 
 it('considers the top three weekly ranks initially', function () {
@@ -136,6 +90,7 @@ it('does not skip ranks when the first and third players pass', function () {
     $users = User::factory()->count(6)->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     WeeklyRewardClaim::factory()->passedOn('from first')->create([
         'week_start' => $weekStart,
@@ -165,6 +120,7 @@ it('stores a weekly reward claim with the chosen preference', function () {
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $claim = app(WeeklyRewardService::class)->submitClaim($first, [
         'week_start' => $weekStart,
@@ -186,6 +142,7 @@ it('stores bank details for a cash equivalent claim', function () {
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $claim = app(WeeklyRewardService::class)->submitClaim($first, [
         'week_start' => $weekStart,
@@ -208,6 +165,7 @@ it('requires phone and network details when claiming airtime', function () {
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $this->actingAs($first)
         ->post(route('rewards.weekly-claim.store'), [
@@ -223,6 +181,7 @@ it('requires bank details when claiming cash', function () {
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $this->actingAs($first)
         ->post(route('rewards.weekly-claim.store'), [
@@ -238,6 +197,7 @@ it('opens the next rank after a pass-on response', function () {
     $users = User::factory()->count(4)->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     app(WeeklyRewardService::class)->submitClaim($users[0], [
         'week_start' => $weekStart,
@@ -253,6 +213,7 @@ it('rejects a second claim once all rewards are taken', function () {
     $users = User::factory()->count(3)->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     app(WeeklyRewardService::class)->submitClaim($users[0], [
         'week_start' => $weekStart,
@@ -287,6 +248,7 @@ it('rejects duplicate responses from the same user', function () {
     $users = User::factory()->count(2)->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     app(WeeklyRewardService::class)->submitClaim($users[0], [
         'week_start' => $weekStart,
@@ -307,6 +269,7 @@ it('lets an authenticated top player submit a weekly reward claim', function () 
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $this->actingAs($first)
         ->post(route('rewards.weekly-claim.store'), [
@@ -330,6 +293,7 @@ it('includes weekly reward eligibility on the leaderboard page', function () {
     $first = User::factory()->create();
 
     rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
 
     $this->actingAs($first)
         ->get('/leaderboard?date='.$weekStart)
@@ -338,11 +302,96 @@ it('includes weekly reward eligibility on the leaderboard page', function () {
             ->component('leaderboard')
             ->where('selectedDate', $weekStart)
             ->where('weeklyReward.ready', true)
+            ->where('weeklyReward.pendingRanks', [1])
             ->where('weeklyReward.eligible', [
                 [
                     'rank' => 1,
                     'passedDown' => false,
                     'passedFromName' => null,
+                    'passOnMessage' => null,
+                ],
+            ]));
+});
+
+it('updates pending ranks when a pass extends consideration', function () {
+    ['weekStart' => $weekStart, 'fixture' => $fixture, 'winner' => $winner] = weeklySundayFixture();
+    $users = User::factory()->count(4)->create();
+
+    rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
+
+    app(WeeklyRewardService::class)->submitClaim($users[0], [
+        'week_start' => $weekStart,
+        'passed_on' => true,
+    ]);
+
+    expect(app(WeeklyRewardService::class)->pendingConsiderationRanks($weekStart))
+        ->toBe([2, 3, 4]);
+});
+
+it('shows pending ranks to guests during the claim window', function () {
+    Cache::flush();
+
+    ['weekStart' => $weekStart, 'fixture' => $fixture, 'winner' => $winner] = weeklySundayFixture();
+    $users = User::factory()->count(3)->create();
+
+    rankUsersForWeek($weekStart, $fixture, $winner, $users);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
+
+    $this->get('/leaderboard?date='.$weekStart)
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leaderboard')
+            ->where('weeklyReward.ready', true)
+            ->where('weeklyReward.pendingRanks', [1, 2, 3])
+            ->where('weeklyReward.eligible', []));
+});
+
+it('defaults to the open claim week on monday', function () {
+    Cache::flush();
+
+    ['weekStart' => $weekStart, 'fixture' => $fixture, 'winner' => $winner] = weeklySundayFixture();
+    $first = User::factory()->create();
+
+    rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'monday');
+
+    $this->get('/leaderboard')
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leaderboard')
+            ->where('selectedDate', $weekStart)
+            ->where('weeklyReward.ready', true));
+});
+
+it('keeps submitted responses visible after the claim window closes', function () {
+    Cache::flush();
+
+    ['weekStart' => $weekStart, 'fixture' => $fixture, 'winner' => $winner] = weeklySundayFixture();
+    $first = User::factory()->create();
+
+    rankUsersForWeek($weekStart, $fixture, $winner, [$first]);
+    travelToWeeklyClaimWindow($weekStart, 'sunday');
+
+    app(WeeklyRewardService::class)->submitClaim($first, [
+        'week_start' => $weekStart,
+        'passed_on' => false,
+        'preference' => RewardPreference::Airtime->value,
+        'phone_number' => '08011111111',
+        'mobile_network' => 'mtn',
+    ]);
+
+    Carbon::setTestNow(Carbon::parse($weekStart, config('predictions.timezone'))->addDays(2));
+
+    $this->actingAs($first)
+        ->get('/leaderboard?date='.$weekStart)
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('weeklyReward.ready', false)
+            ->where('weeklyReward.submitted', [
+                [
+                    'passedOn' => false,
+                    'preference' => 'airtime',
                     'passOnMessage' => null,
                 ],
             ]));

@@ -16,7 +16,7 @@ class LeaderboardController extends Controller
         WeeklyRewardService $rewards,
     ): Response {
         $weeks = $leaderboard->weeklyDates();
-        $selected = $this->selectedDate($request->query('date'), $weeks);
+        $selected = $this->selectedDate($request->query('date'), $weeks, $rewards);
 
         return Inertia::render('leaderboard', [
             'overall' => $leaderboard->overall(),
@@ -32,12 +32,22 @@ class LeaderboardController extends Controller
     /**
      * @param  array<int, string>  $dates
      */
-    private function selectedDate(?string $requested, array $dates): ?string
+    private function selectedDate(?string $requested, array $dates, WeeklyRewardService $rewards): ?string
     {
         if ($requested !== null && in_array($requested, $dates, true)) {
             return $requested;
         }
 
-        return $dates === [] ? null : end($dates);
+        if ($dates === []) {
+            return null;
+        }
+
+        $openWeek = $rewards->openClaimWeekStart();
+
+        if ($openWeek !== null && in_array($openWeek, $dates, true)) {
+            return $openWeek;
+        }
+
+        return end($dates);
     }
 }

@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react';
+import { Gift, Star } from 'lucide-react';
 import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,7 @@ interface StandingsTableProps {
     rows: StandingsRow[];
     currentUserId: number | null;
     emptyMessage: string;
+    rewardNudgeRanks?: number[];
 }
 
 function rankAccent(rank: number): string {
@@ -31,6 +32,7 @@ export function StandingsTable({
     rows,
     currentUserId,
     emptyMessage,
+    rewardNudgeRanks = [],
 }: StandingsTableProps) {
     if (rows.length === 0) {
         return (
@@ -44,6 +46,7 @@ export function StandingsTable({
         <ul className="overflow-hidden rounded-xl border border-wc-ink/10 bg-card">
             {rows.map((row) => {
                 const isCurrent = row.userId === currentUserId;
+                const showRewardNudge = rewardNudgeRanks.includes(row.rank);
 
                 return (
                     <li
@@ -51,6 +54,7 @@ export function StandingsTable({
                         className={cn(
                             'flex items-center gap-3 border-b border-wc-ink/8 px-3 py-2.5 last:border-b-0',
                             isCurrent && 'bg-wc-gold/8',
+                            showRewardNudge && !isCurrent && 'bg-wc-gold/5',
                         )}
                     >
                         <span
@@ -69,6 +73,12 @@ export function StandingsTable({
                             {isCurrent && (
                                 <span className="ml-2 rounded bg-wc-ink px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-wc-surface uppercase">
                                     You
+                                </span>
+                            )}
+                            {showRewardNudge && (
+                                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-wc-gold/20 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-wc-gold-deep uppercase">
+                                    <Gift className="size-3" />
+                                    {isCurrent ? 'Claim below' : 'Reward open'}
                                 </span>
                             )}
                         </span>

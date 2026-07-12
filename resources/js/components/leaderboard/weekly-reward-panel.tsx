@@ -1,11 +1,12 @@
-import { Form, usePage } from '@inertiajs/react';
-import { Gift, Sparkles } from 'lucide-react';
+import { Form, Link, usePage } from '@inertiajs/react';
+import { Gift, LogIn, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { login } from '@/routes';
 import { store } from '@/routes/rewards/weekly-claim';
 
 type RewardPreference = 'airtime' | 'data' | 'cash';
@@ -25,6 +26,8 @@ interface SubmittedClaim {
 
 export interface WeeklyRewardStatus {
     ready: boolean;
+    considerationCeiling: number;
+    pendingRanks: number[];
     eligible: EligibleSlot[];
     submitted: SubmittedClaim[];
 }
@@ -59,6 +62,66 @@ function rankLabel(rank: number): string {
     }
 
     return `${rank}th`;
+}
+
+function formatPendingRanks(ranks: number[]): string {
+    if (ranks.length === 0) {
+        return '';
+    }
+
+    if (ranks.length === 1) {
+        return rankLabel(ranks[0]);
+    }
+
+    if (ranks.length === 2) {
+        return `${rankLabel(ranks[0])} and ${rankLabel(ranks[1])}`;
+    }
+
+    const last = ranks[ranks.length - 1];
+    const rest = ranks.slice(0, -1).map(rankLabel).join(', ');
+
+    return `${rest}, and ${rankLabel(last)}`;
+}
+
+function GuestRewardNudge({
+    pendingRanks,
+}: {
+    pendingRanks: number[];
+}) {
+    return (
+        <div className="rounded-2xl border border-wc-gold/30 bg-wc-gold/10 p-5">
+            <div className="flex items-start gap-4">
+                <div className="grid size-12 shrink-0 place-items-center rounded-full bg-wc-gold/15 ring-1 ring-wc-gold/35">
+                    <Gift className="size-6 text-wc-gold" />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className="font-mono text-[11px] font-bold tracking-[0.18em] text-wc-gold uppercase">
+                        weekly airtime reward
+                    </p>
+                    <h3 className="mt-1 text-lg font-bold text-wc-ink">
+                        Claim window is open
+                    </h3>
+                    <p className="mt-1 text-sm leading-relaxed text-wc-ink/65">
+                        If you finished{' '}
+                        <span className="font-semibold text-wc-ink">
+                            {formatPendingRanks(pendingRanks)}
+                        </span>{' '}
+                        this week, log in to claim your airtime or pass it on
+                        to the next player.
+                    </p>
+                    <Button
+                        asChild
+                        className="mt-4 rounded-full"
+                    >
+                        <Link href={login()}>
+                            <LogIn className="size-4" />
+                            Log in to claim
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function rewardHeading(): string {
@@ -429,13 +492,46 @@ export function WeeklyRewardPanel({
     status: WeeklyRewardStatus;
 }) {
     const { auth } = usePage().props as { auth: { user: unknown } };
+    const isLoggedIn = auth.user !== null;
+    const hasSubmitted = status.submitted.length > 0;
 
-    if (!auth.user) {
-        return null;
+    if (!status.ready) {
+        if (!isLoggedIn || !hasSubmitted) {
+            return null;
+        }
+
+        return (
+            <div className="mt-8 space-y-4">
+                <div className="rounded-2xl border border-wc-ink/10 bg-card p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                        <Sparkles className="size-4 text-wc-gold" />
+                        <p className="text-sm font-semibold text-wc-ink">
+                            Your response this week
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        {status.submitted.map((claim, index) => (
+                            <SubmittedClaimSummary
+                                key={index}
+                                claim={claim}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
-    if (!status.ready && status.submitted.length === 0) {
-        return null;
+    if (!isLoggedIn) {
+        if (status.pendingRanks.length === 0) {
+            return null;
+        }
+
+        return (
+            <div className="mt-8">
+                <GuestRewardNudge pendingRanks={status.pendingRanks} />
+            </div>
+        );
     }
 
     if (status.eligible.length === 0 && status.submitted.length === 0) {

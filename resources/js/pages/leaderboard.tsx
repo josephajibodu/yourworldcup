@@ -182,6 +182,11 @@ export default function Leaderboard() {
                                 rows={weekly}
                                 currentUserId={currentUserId}
                                 emptyMessage="No picks or referrals this week yet."
+                                rewardNudgeRanks={
+                                    weeklyReward?.ready
+                                        ? weeklyReward.pendingRanks
+                                        : []
+                                }
                             />
                             {selectedDate && weeklyReward && (
                                 <WeeklyRewardPanel

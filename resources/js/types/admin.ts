@@ -178,6 +178,13 @@ export type AdminRewardClaimsSummary = {
     cash: number;
 };
 
+export type AdminPendingPassOnSummary = {
+    userId: number;
+    rank: number;
+    name: string;
+    email: string;
+};
+
 export type AdminDashboardSummary = {
     stats: {
         users: {
