@@ -6,41 +6,14 @@ interface Team {
     flag: string;
 }
 
-const TEAMS: Team[] = [
-    { name: 'Brazil',       code: 'BRA', flag: 'https://flagcdn.com/w80/br.png' },
-    { name: 'France',       code: 'FRA', flag: 'https://flagcdn.com/w80/fr.png' },
-    { name: 'Morocco',      code: 'MAR', flag: 'https://flagcdn.com/w80/ma.png' },
-    { name: 'Argentina',    code: 'ARG', flag: 'https://flagcdn.com/w80/ar.png' },
-    { name: 'Mexico',       code: 'MEX', flag: 'https://flagcdn.com/w80/mx.png' },
-    { name: 'Portugal',     code: 'POR', flag: 'https://flagcdn.com/w80/pt.png' },
-    { name: 'Senegal',      code: 'SEN', flag: 'https://flagcdn.com/w80/sn.png' },
-    { name: 'South Africa', code: 'RSA', flag: 'https://flagcdn.com/w80/za.png' },
-    { name: 'Germany',      code: 'GER', flag: 'https://flagcdn.com/w80/de.png' },
-    { name: 'Spain',        code: 'ESP', flag: 'https://flagcdn.com/w80/es.png' },
-    { name: 'USA',          code: 'USA', flag: 'https://flagcdn.com/w80/us.png' },
-    { name: 'South Korea',  code: 'KOR', flag: 'https://flagcdn.com/w80/kr.png' },
-    { name: 'Japan',        code: 'JPN', flag: 'https://flagcdn.com/w80/jp.png' },
-    { name: 'Colombia',     code: 'COL', flag: 'https://flagcdn.com/w80/co.png' },
-    { name: 'Netherlands',  code: 'NED', flag: 'https://flagcdn.com/w80/nl.png' },
-    { name: 'Canada',       code: 'CAN', flag: 'https://flagcdn.com/w80/ca.png' },
+const SEMIFINALISTS: Team[] = [
+    { name: 'Argentina', code: 'ARG', flag: 'https://flagcdn.com/w80/ar.png' },
+    { name: 'Spain', code: 'ESP', flag: 'https://flagcdn.com/w80/es.png' },
+    { name: 'France', code: 'FRA', flag: 'https://flagcdn.com/w80/fr.png' },
+    { name: 'England', code: 'ENG', flag: 'https://flagcdn.com/w80/gb-eng.png' },
 ];
 
-const T = TEAMS;
-
-const CHAMPION_CYCLE: Team[] = [
-    T[0],  // Brazil
-    T[2],  // Morocco
-    T[8],  // Germany
-    T[4],  // Mexico
-    T[9],  // Spain
-    T[1],  // France
-    T[10], // USA
-    T[3],  // Argentina
-    T[11], // South Korea
-    T[5],  // Portugal
-    T[12], // Japan
-    T[14], // Netherlands
-];
+const CHAMPION_CYCLE = SEMIFINALISTS;
 
 const CYCLE_MS = 5_000;
 
@@ -57,41 +30,56 @@ interface LaneDef {
     blur?: number;
 }
 
-// 4 lanes with depth variation — background lanes are small/faded, foreground is large/sharp
 const LANES: LaneDef[] = [
     {
-        // Deep background — tiny, slow, very faded
-        teams: [T[0], T[1], T[8], T[6], T[13], T[2], T[15], T[12]],
-        dir: 'ltr', sec: 40, offset: '-8s',
-        w: 46, h: 30, gap: 22,
-        opacity: 0.18, top: '9%', blur: 1.5,
+        teams: SEMIFINALISTS,
+        dir: 'ltr',
+        sec: 40,
+        offset: '-8s',
+        w: 46,
+        h: 30,
+        gap: 22,
+        opacity: 0.18,
+        top: '9%',
+        blur: 1.5,
     },
     {
-        // Mid background — RTL, medium fade
-        teams: [T[3], T[9], T[6], T[0], T[7], T[14], T[1], T[11]],
-        dir: 'rtl', sec: 28, offset: '-5s',
-        w: 64, h: 43, gap: 30,
-        opacity: 0.52, top: '34%',
+        teams: [...SEMIFINALISTS].reverse(),
+        dir: 'rtl',
+        sec: 28,
+        offset: '-5s',
+        w: 64,
+        h: 43,
+        gap: 30,
+        opacity: 0.52,
+        top: '34%',
     },
     {
-        // Primary foreground — LTR, full opacity, largest flags
-        teams: [T[0], T[2], T[10], T[1], T[5], T[8], T[4], T[14]],
-        dir: 'ltr', sec: 22, offset: '-14s',
-        w: 88, h: 58, gap: 42,
-        opacity: 1.0, top: '63%',
+        teams: SEMIFINALISTS,
+        dir: 'ltr',
+        sec: 22,
+        offset: '-14s',
+        w: 88,
+        h: 58,
+        gap: 42,
+        opacity: 1.0,
+        top: '63%',
     },
     {
-        // Far background — RTL, barely visible
-        teams: [T[7], T[12], T[2], T[15], T[11], T[9], T[13], T[4]],
-        dir: 'rtl', sec: 34, offset: '-20s',
-        w: 36, h: 24, gap: 18,
-        opacity: 0.13, top: '89%', blur: 2,
+        teams: [...SEMIFINALISTS].reverse(),
+        dir: 'rtl',
+        sec: 34,
+        offset: '-20s',
+        w: 36,
+        h: 24,
+        gap: 18,
+        opacity: 0.13,
+        top: '89%',
+        blur: 2,
     },
 ];
 
 function Lane({ lane, championCode }: { lane: LaneDef; championCode: string }) {
-    // Double the list so the seamless loop works:
-    // LTR animates translateX(-50% → 0), RTL animates translateX(0 → -50%)
     const doubled = [...lane.teams, ...lane.teams];
 
     return (
@@ -114,8 +102,6 @@ function Lane({ lane, championCode }: { lane: LaneDef; championCode: string }) {
                     alignItems: 'center',
                     width: 'max-content',
                     filter: lane.blur ? `blur(${lane.blur}px)` : undefined,
-                    // LTR: enter from left → track moves right (-50% → 0)
-                    // RTL: enter from right → track moves left (0 → -50%)
                     animationName: lane.dir === 'ltr' ? 'mob-ltr' : 'mob-rtl',
                     animationDuration: `${lane.sec}s`,
                     animationDelay: lane.offset,
@@ -125,6 +111,7 @@ function Lane({ lane, championCode }: { lane: LaneDef; championCode: string }) {
             >
                 {doubled.map((team, i) => {
                     const isChamp = team.code === championCode;
+
                     return (
                         <img
                             key={`${team.code}-${i}`}
@@ -174,7 +161,6 @@ function ChampionMoment({ team }: { team: Team }) {
                     animation: `mob-champion-appear ${CYCLE_MS / 1000}s ease-in-out forwards`,
                 }}
             >
-                {/* Flag with gold glow */}
                 <div style={{ position: 'relative' }}>
                     <div
                         style={{
@@ -204,7 +190,6 @@ function ChampionMoment({ team }: { team: Team }) {
                     />
                 </div>
 
-                {/* Country badge */}
                 <div
                     style={{
                         display: 'flex',
@@ -250,6 +235,7 @@ export function QualificationFlowMobile() {
             () => setIdx((n) => (n + 1) % CHAMPION_CYCLE.length),
             CYCLE_MS,
         );
+
         return () => window.clearInterval(id);
     }, []);
 
@@ -266,10 +252,8 @@ export function QualificationFlowMobile() {
                 <Lane key={i} lane={lane} championCode={champion.code} />
             ))}
 
-            {/* key forces remount so champion-appear animation restarts each cycle */}
             <ChampionMoment key={idx} team={champion} />
 
-            {/* Soft edge fade — left and right only, very narrow */}
             <div
                 aria-hidden
                 style={{
@@ -282,7 +266,6 @@ export function QualificationFlowMobile() {
                 }}
             />
 
-            {/* Subtle gold light streaks */}
             <div className="mob-streak mob-streak-1" aria-hidden />
             <div className="mob-streak mob-streak-2" aria-hidden />
         </div>
@@ -290,13 +273,11 @@ export function QualificationFlowMobile() {
 }
 
 const CSS = `
-    /* LTR: track moves right so flags enter from the left */
     @keyframes mob-ltr {
         from { transform: translateX(-50%); }
         to   { transform: translateX(0); }
     }
 
-    /* RTL: track moves left so flags enter from the right */
     @keyframes mob-rtl {
         from { transform: translateX(0); }
         to   { transform: translateX(-50%); }

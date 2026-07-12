@@ -29,10 +29,14 @@ interface LabelNodeData {
     pulseDelay?: string;
 }
 
+const semifinalistCodes = ['ARG', 'ESP', 'FRA', 'ENG'] as const;
+
 const teams: Team[] = [
     { name: 'Argentina', code: 'ARG', flag: 'https://flagcdn.com/w80/ar.png' },
-    { name: 'Brazil', code: 'BRA', flag: 'https://flagcdn.com/w80/br.png' },
+    { name: 'Spain', code: 'ESP', flag: 'https://flagcdn.com/w80/es.png' },
     { name: 'France', code: 'FRA', flag: 'https://flagcdn.com/w80/fr.png' },
+    { name: 'England', code: 'ENG', flag: 'https://flagcdn.com/w80/gb-eng.png' },
+    { name: 'Brazil', code: 'BRA', flag: 'https://flagcdn.com/w80/br.png' },
     { name: 'Senegal', code: 'SEN', flag: 'https://flagcdn.com/w80/sn.png' },
     { name: 'Mexico', code: 'MEX', flag: 'https://flagcdn.com/w80/mx.png' },
     {
@@ -44,7 +48,7 @@ const teams: Team[] = [
     { name: 'Portugal', code: 'POR', flag: 'https://flagcdn.com/w80/pt.png' },
 ];
 
-const championCodes = ['BRA', 'MAR', 'MEX', 'FRA', 'ARG', 'POR'];
+const championCodes = [...semifinalistCodes];
 const cycleMs = 14000;
 
 const championPool = championCodes
@@ -413,10 +417,13 @@ export function QualificationFlow() {
     const { nodes, edges } = useMemo(() => {
         const flagNodes: Node<FlagNodeData, 'flag'>[] = teams.map(
             (team, index) => {
+                const isSemifinalist = semifinalistCodes.includes(
+                    team.code as (typeof semifinalistCodes)[number],
+                );
                 const status =
                     team.code === champion.code
                         ? 'active'
-                        : index > 1 && index % 3 === championIndex % 3
+                        : !isSemifinalist
                           ? 'eliminated'
                           : undefined;
 
@@ -510,7 +517,7 @@ export function QualificationFlow() {
             nodes: allNodes,
             edges: [...inEdges, ...knockoutEdges, railEdge],
         };
-    }, [champion, championIndex]);
+    }, [champion]);
 
     return (
         <div

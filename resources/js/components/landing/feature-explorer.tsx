@@ -100,7 +100,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     stroke="rgba(10,10,11,0.1)"
                 />
                 <image
-                    href="https://flagcdn.com/de.svg"
+                    href="https://flagcdn.com/ar.svg"
                     x="44"
                     y="88"
                     width="52"
@@ -114,7 +114,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="13"
                 >
-                    GER
+                    ARG
                 </text>
             </g>
 
@@ -130,7 +130,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     stroke="rgba(10,10,11,0.1)"
                 />
                 <image
-                    href="https://flagcdn.com/cw.svg"
+                    href="https://flagcdn.com/ch.svg"
                     x="264"
                     y="88"
                     width="52"
@@ -144,7 +144,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="13"
                 >
-                    CUW
+                    SUI
                 </text>
             </g>
 
@@ -185,7 +185,7 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
                     className="fill-wc-ink font-mono font-bold"
                     fontSize="22"
                 >
-                    7–1
+                    3–1
                 </text>
             </g>
             <rect
@@ -242,6 +242,11 @@ function PredictionsDemo({ reduced }: { reduced: boolean }) {
 
 const GOLD = '#E9A721';
 const INK_FAINT = 'rgba(10,10,11,0.14)';
+
+const BRACKET_CHAMPION = {
+    name: 'France',
+    flag: 'https://flagcdn.com/fr.svg',
+} as const;
 
 const BRACKET_STYLE = `
 .fxb-team { transform-box: fill-box; transform-origin: center; animation: fxb-team 4.8s ease-in-out infinite both; }
@@ -345,7 +350,7 @@ function BracketDemo({ reduced }: { reduced: boolean }) {
 
             {/* Winning team flag entering round one */}
             <image
-                href="https://flagcdn.com/br.svg"
+                href={BRACKET_CHAMPION.flag}
                 x="24"
                 y="27"
                 width="22"
@@ -370,7 +375,7 @@ function BracketDemo({ reduced }: { reduced: boolean }) {
             <g className={reduced ? undefined : 'fxb-team'}>
                 <circle cx="346" cy="60" r="16" fill="#0A0A0B" />
                 <image
-                    href="https://flagcdn.com/br.svg"
+                    href={BRACKET_CHAMPION.flag}
                     x="334"
                     y="53"
                     width="24"
