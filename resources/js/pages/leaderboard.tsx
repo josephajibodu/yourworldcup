@@ -1,5 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    WeeklyRewardPanel,
+    type WeeklyRewardStatus,
+} from '@/components/leaderboard/weekly-reward-panel';
 import { StandingsTable } from '@/components/leaderboard/standings-table';
 import type { StandingsRow } from '@/components/leaderboard/standings-table';
 import { ProductShell } from '@/components/product-shell';
@@ -16,6 +20,7 @@ interface LeaderboardPageProps {
     weekly: StandingsRow[];
     dates: string[];
     selectedDate: string | null;
+    weeklyReward: WeeklyRewardStatus | null;
     [key: string]: unknown;
 }
 
@@ -30,7 +35,7 @@ function formatWeek(weekStart: string): string {
 }
 
 export default function Leaderboard() {
-    const { overall, weekly, dates, selectedDate, auth } =
+    const { overall, weekly, dates, selectedDate, weeklyReward, auth } =
         usePage<LeaderboardPageProps>().props;
     const currentUserId = auth.user?.id ?? null;
 
@@ -178,6 +183,12 @@ export default function Leaderboard() {
                                 currentUserId={currentUserId}
                                 emptyMessage="No picks or referrals this week yet."
                             />
+                            {selectedDate && weeklyReward && (
+                                <WeeklyRewardPanel
+                                    weekStart={selectedDate}
+                                    status={weeklyReward}
+                                />
+                            )}
                         </div>
                     </div>
 

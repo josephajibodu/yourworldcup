@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Predictions\Leaderboard\LeaderboardService;
+use App\Rewards\WeeklyRewardService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LeaderboardController extends Controller
 {
-    public function index(Request $request, LeaderboardService $leaderboard): Response
-    {
+    public function index(
+        Request $request,
+        LeaderboardService $leaderboard,
+        WeeklyRewardService $rewards,
+    ): Response {
         $weeks = $leaderboard->weeklyDates();
         $selected = $this->selectedDate($request->query('date'), $weeks);
 
@@ -19,6 +23,9 @@ class LeaderboardController extends Controller
             'dates' => $weeks,
             'selectedDate' => $selected,
             'weekly' => $selected === null ? [] : $leaderboard->weekly($selected),
+            'weeklyReward' => $selected === null
+                ? null
+                : $rewards->statusForUser($request->user(), $selected),
         ]);
     }
 
