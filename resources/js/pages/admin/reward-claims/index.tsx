@@ -1,4 +1,6 @@
 import { Form, Link } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { DateNav } from '@/components/leaderboard/date-nav';
@@ -7,6 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    maskDigits,
+    maskEmail,
+    maskName,
+} from '@/lib/mask-sensitive';
 import { formatTwitterHandle } from '@/lib/twitter-handle';
 import { privatePageRobots } from '@/lib/seo';
 import { dashboard } from '@/routes';
@@ -45,17 +52,35 @@ function formatSubmittedAt(value: string): string {
     });
 }
 
-function payoutDetails(claim: AdminRewardClaimSummary): string {
+function payoutDetails(
+    claim: AdminRewardClaimSummary,
+    showSensitive: boolean,
+): string {
     if (claim.passedOn) {
         return claim.passOnMessage ?? '—';
     }
 
     if (claim.preference === 'cash') {
-        return `${claim.accountHolderName ?? '—'} · ${claim.bankName ?? '—'} · ${claim.accountNumber ?? '—'}`;
+        const accountHolderName = claim.accountHolderName ?? '—';
+        const bankName = claim.bankName ?? '—';
+        const accountNumber = claim.accountNumber ?? '—';
+
+        if (!showSensitive) {
+            return `${accountHolderName === '—' ? '—' : maskName(accountHolderName)} · ${bankName} · ${accountNumber === '—' ? '—' : maskDigits(accountNumber)}`;
+        }
+
+        return `${accountHolderName} · ${bankName} · ${accountNumber}`;
     }
 
     if (claim.preference === 'airtime' || claim.preference === 'data') {
-        return `${claim.phoneNumber ?? '—'} · ${claim.mobileNetworkLabel ?? '—'}`;
+        const phoneNumber = claim.phoneNumber ?? '—';
+        const mobileNetworkLabel = claim.mobileNetworkLabel ?? '—';
+
+        if (!showSensitive) {
+            return `${phoneNumber === '—' ? '—' : maskDigits(phoneNumber)} · ${mobileNetworkLabel}`;
+        }
+
+        return `${phoneNumber} · ${mobileNetworkLabel}`;
     }
 
     return '—';
@@ -64,9 +89,11 @@ function payoutDetails(claim: AdminRewardClaimSummary): string {
 function PendingPassOnRow({
     player,
     weekStart,
+    showSensitive,
 }: {
     player: AdminPendingPassOnSummary;
     weekStart: string;
+    showSensitive: boolean;
 }) {
     return (
         <Form
@@ -85,7 +112,9 @@ function PendingPassOnRow({
                             <Badge variant="outline">#{player.rank}</Badge>
                         </div>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            {player.email}
+                            {showSensitive
+                                ? player.email
+                                : maskEmail(player.email)}
                         </p>
                     </div>
                     <div className="w-full space-y-2 lg:max-w-md">
@@ -126,6 +155,8 @@ export default function AdminRewardClaimsIndex({
     summary,
     pendingPassOns,
 }: PageProps) {
+    const [showSensitive, setShowSensitive] = useState(true);
+
     return (
         <>
             <SeoHead
@@ -141,16 +172,38 @@ export default function AdminRewardClaimsIndex({
                         title="Reward claims"
                         description="Review weekly airtime submissions, payout details, and pass-ons."
                     />
-                    {dates.length > 0 && (
-                        <DateNav
-                            dates={dates}
-                            selectedDate={selectedWeek}
-                            formatLabel={formatWeek}
-                            hrefForDate={(week) =>
-                                rewardClaimsIndex({ query: { week } })
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                                setShowSensitive((visible) => !visible)
                             }
-                        />
-                    )}
+                        >
+                            {showSensitive ? (
+                                <>
+                                    <EyeOff className="size-4" />
+                                    Hide sensitive data
+                                </>
+                            ) : (
+                                <>
+                                    <Eye className="size-4" />
+                                    Show sensitive data
+                                </>
+                            )}
+                        </Button>
+                        {dates.length > 0 && (
+                            <DateNav
+                                dates={dates}
+                                selectedDate={selectedWeek}
+                                formatLabel={formatWeek}
+                                hrefForDate={(week) =>
+                                    rewardClaimsIndex({ query: { week } })
+                                }
+                            />
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
@@ -194,6 +247,7 @@ export default function AdminRewardClaimsIndex({
                                     key={player.userId}
                                     player={player}
                                     weekStart={selectedWeek}
+                                    showSensitive={showSensitive}
                                 />
                             ))}
                         </div>
@@ -249,7 +303,11 @@ export default function AdminRewardClaimsIndex({
                                                     )}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    {claim.user.email}
+                                                    {showSensitive
+                                                        ? claim.user.email
+                                                        : maskEmail(
+                                                              claim.user.email,
+                                                          )}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 align-top whitespace-nowrap">
@@ -270,7 +328,10 @@ export default function AdminRewardClaimsIndex({
                                                 )}
                                             </td>
                                             <td className="max-w-md px-4 py-3 align-top text-muted-foreground">
-                                                {payoutDetails(claim)}
+                                                {payoutDetails(
+                                                    claim,
+                                                    showSensitive,
+                                                )}
                                             </td>
                                             <td className="px-4 py-3 align-top whitespace-nowrap text-muted-foreground">
                                                 {claim.submittedAt
