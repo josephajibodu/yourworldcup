@@ -3,6 +3,7 @@ import {
     BookOpen,
     CalendarDays,
     Folder,
+    Gift,
     LayoutGrid,
     Menu,
     Network,
@@ -44,6 +45,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { bracket, dashboard, leaderboard, predict } from '@/routes';
+import { index as adminRewardClaimsIndex } from '@/routes/admin/reward-claims';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import { index as adminFixturesIndex } from '@/routes/admin/fixtures';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
@@ -70,6 +72,11 @@ function mainNavItems(isAdmin: boolean): NavItem[] {
                 title: 'Leaderboard',
                 href: adminLeaderboard(),
                 icon: Trophy,
+            },
+            {
+                title: 'Reward claims',
+                href: adminRewardClaimsIndex(),
+                icon: Gift,
             },
             {
                 title: 'Fixtures',

@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 import {
     ArrowRight,
     CalendarDays,
+    Gift,
     ListChecks,
     Network,
     Target,
@@ -27,6 +28,7 @@ import { dashboard } from '@/routes';
 import { index as bracketSlotsIndex } from '@/routes/admin/bracket-slots';
 import { index as fixturesIndex } from '@/routes/admin/fixtures';
 import { leaderboard as adminLeaderboard } from '@/routes/admin';
+import { index as rewardClaimsIndex } from '@/routes/admin/reward-claims';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { AdminDashboardSummary } from '@/types/admin';
 
@@ -250,6 +252,11 @@ export default function Dashboard({
                                     title: 'Leaderboard',
                                     href: adminLeaderboard(),
                                     icon: Trophy,
+                                },
+                                {
+                                    title: 'Reward claims',
+                                    href: rewardClaimsIndex(),
+                                    icon: Gift,
                                 },
                             ].map((item) => (
                                 <Button
