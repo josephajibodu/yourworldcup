@@ -29,8 +29,6 @@ class BracketSlotImporter
             ->pluck('id', 'external_id');
 
         DB::transaction(function () use ($fixturesByExternalId): void {
-            BracketSlot::query()->delete();
-
             foreach ($this->read('football.matches.json') as $row) {
                 $stage = $row['type'] ?? 'group';
 
@@ -73,6 +71,11 @@ class BracketSlotImporter
 
         $parsed = $this->parser->parse($label);
 
+        $existing = BracketSlot::query()
+            ->where('feeds_fixture_id', $fixtureId)
+            ->where('side', $side)
+            ->first();
+
         BracketSlot::updateOrCreate(
             [
                 'feeds_fixture_id' => $fixtureId,
@@ -83,7 +86,7 @@ class BracketSlotImporter
                 'slot_type' => $parsed['type'],
                 'slot_spec' => $parsed['spec'],
                 'source_fixture_id' => $sourceFixtureId,
-                'resolved_team_id' => null,
+                'resolved_team_id' => $existing?->resolved_team_id,
             ],
         );
     }

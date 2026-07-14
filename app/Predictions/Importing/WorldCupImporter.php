@@ -12,6 +12,7 @@ use App\Models\PredictionMarket;
 use App\Models\Stadium;
 use App\Models\Team;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Imports the World Cup teams, stadiums, and fixtures from the JSON exports in
@@ -127,24 +128,39 @@ class WorldCupImporter
         $stadiumsByExternalId = Stadium::query()->pluck('id', 'external_id');
 
         foreach ($this->read('football.matches.json') as $row) {
+            $externalId = (string) $row['id'];
+            $existing = Fixture::query()->where('external_id', $externalId)->first();
+
             $stadiumExternalId = (string) ($row['stadium_id'] ?? '');
             $timezone = self::STADIUM_TIMEZONES[$stadiumExternalId] ?? 'UTC';
             $kickoff = Carbon::createFromFormat('m/d/Y H:i', $row['local_date'], $timezone)->utc();
 
             $stage = self::TYPE_TO_STAGE[$row['type']] ?? FixtureStage::Group;
-            $homeId = $teamsByExternalId[(string) ($row['home_team_id'] ?? '')] ?? null;
-            $awayId = $teamsByExternalId[(string) ($row['away_team_id'] ?? '')] ?? null;
+            $jsonHomeId = $this->teamIdFromRow($row, 'home_team_id', $teamsByExternalId);
+            $jsonAwayId = $this->teamIdFromRow($row, 'away_team_id', $teamsByExternalId);
+            $homeId = $jsonHomeId ?? $existing?->home_team_id;
+            $awayId = $jsonAwayId ?? $existing?->away_team_id;
             $finished = strtoupper((string) ($row['finished'] ?? 'FALSE')) === 'TRUE';
 
-            $homeScore = $finished ? (int) $row['home_score'] : null;
-            $awayScore = $finished ? (int) $row['away_score'] : null;
-            $winnerId = null;
-            if ($finished && $homeId !== null && $awayId !== null && $homeScore !== $awayScore) {
-                $winnerId = $homeScore > $awayScore ? $homeId : $awayId;
+            if ($existing !== null && $existing->status === FixtureStatus::Final && ! $finished) {
+                $status = $existing->status;
+                $homeScore = $existing->home_score;
+                $awayScore = $existing->away_score;
+                $winnerId = $existing->winner_team_id;
+            } else {
+                $homeScore = $finished ? (int) $row['home_score'] : null;
+                $awayScore = $finished ? (int) $row['away_score'] : null;
+                $winnerId = null;
+
+                if ($finished && $homeId !== null && $awayId !== null && $homeScore !== $awayScore) {
+                    $winnerId = $homeScore > $awayScore ? $homeId : $awayId;
+                }
+
+                $status = $finished ? FixtureStatus::Final : ($existing?->status ?? FixtureStatus::Scheduled);
             }
 
             Fixture::updateOrCreate(
-                ['external_id' => (string) $row['id']],
+                ['external_id' => $externalId],
                 [
                     'stage' => $stage,
                     'group_code' => $stage === FixtureStage::Group ? ($row['group'] ?? null) : null,
@@ -154,13 +170,27 @@ class WorldCupImporter
                     'stadium_id' => $stadiumsByExternalId[$stadiumExternalId] ?? null,
                     'kickoff_at' => $kickoff,
                     'lock_at' => $kickoff->copy()->subHour(),
-                    'status' => $finished ? FixtureStatus::Final : FixtureStatus::Scheduled,
+                    'status' => $status,
                     'home_score' => $homeScore,
                     'away_score' => $awayScore,
                     'winner_team_id' => $winnerId,
                 ],
             );
         }
+    }
+
+    /**
+     * @param  Collection<string, int>  $teamsByExternalId
+     */
+    private function teamIdFromRow(array $row, string $key, $teamsByExternalId): ?int
+    {
+        $externalTeamId = (string) ($row[$key] ?? '');
+
+        if ($externalTeamId === '' || $externalTeamId === '0') {
+            return null;
+        }
+
+        return $teamsByExternalId[$externalTeamId] ?? null;
     }
 
     public function attachEnabledMarkets(): void

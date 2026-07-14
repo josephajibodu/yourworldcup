@@ -14,7 +14,7 @@ class ImportWorldCupData extends Command
 {
     protected $signature = 'worldcup:import';
 
-    protected $description = 'Import World Cup teams, stadiums, and fixtures from database/data and attach enabled markets';
+    protected $description = 'Import World Cup teams, stadiums, and fixtures from database/data and attach enabled markets (overwrites fixture data from JSON — use markets:attach-enabled to add markets only)';
 
     public function handle(): int
     {
