@@ -13,7 +13,7 @@ use App\Http\Requests\Admin\AdminFixtureUpdateRequest;
 use App\Models\Fixture;
 use App\Models\Stadium;
 use App\Models\Team;
-use App\Predictions\Markets\M101PlayerMarkets;
+use App\Predictions\Markets\SpecialPlayerMarkets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -144,9 +144,11 @@ class FixtureController extends Controller
             'settledMarketsCount' => $fixture->settled_markets_count,
         ];
 
-        if ($fixture->external_id === M101PlayerMarkets::MATCH_NUMBER) {
+        $playerMarkets = SpecialPlayerMarkets::definitionsForMatch($fixture->external_id);
+
+        if ($playerMarkets !== []) {
             $data['playerOutcomes'] = $fixture->player_outcomes ?? [];
-            $data['playerMarkets'] = collect(M101PlayerMarkets::definitions())
+            $data['playerMarkets'] = collect($playerMarkets)
                 ->map(fn (array $definition): array => [
                     'key' => $definition['key'],
                     'name' => $definition['name'],

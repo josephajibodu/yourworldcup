@@ -343,8 +343,9 @@ export function FixtureEditDialogContent({
                                                 Player outcomes
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                Required to settle M101 player
-                                                markets.
+                                                Required to settle player
+                                                prediction markets for this
+                                                match.
                                             </p>
                                         </div>
                                         {fixture.playerMarkets.map((market) => (

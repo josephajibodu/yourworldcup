@@ -4,9 +4,8 @@ namespace App\Console\Commands;
 
 use App\Cache\TournamentCache;
 use App\Fixtures\FixtureInspector;
-use App\Models\FixtureMarket;
-use App\Models\PredictionMarket;
 use App\Predictions\Markets\M101PlayerMarkets;
+use App\Predictions\Markets\PlayerMarketAttachmentService;
 use Illuminate\Console\Command;
 use Illuminate\Validation\ValidationException;
 
@@ -17,46 +16,47 @@ class AttachM101PlayerMarketsCommand extends Command
 
     protected $description = 'Create M101 player prediction markets and attach them only to match 101';
 
-    public function handle(FixtureInspector $inspector, TournamentCache $cache): int
-    {
+    public function handle(
+        FixtureInspector $inspector,
+        PlayerMarketAttachmentService $attachment,
+        TournamentCache $cache,
+    ): int {
+        return $this->attach(
+            $inspector,
+            $attachment,
+            $cache,
+            M101PlayerMarkets::MATCH_NUMBER,
+            M101PlayerMarkets::EXPECTED_TEAMS,
+            M101PlayerMarkets::definitions(),
+        );
+    }
+
+    /**
+     * @param  list<string>  $expectedTeams
+     * @param  list<array<string, mixed>>  $definitions
+     */
+    protected function attach(
+        FixtureInspector $inspector,
+        PlayerMarketAttachmentService $attachment,
+        TournamentCache $cache,
+        string $matchNumber,
+        array $expectedTeams,
+        array $definitions,
+    ): int {
         try {
-            $fixture = $inspector->findByMatchNumber(M101PlayerMarkets::MATCH_NUMBER);
+            $fixture = $inspector->findByMatchNumber($matchNumber);
 
             if (! $this->option('force')) {
-                $inspector->assertTeams($fixture, M101PlayerMarkets::EXPECTED_TEAMS);
+                $inspector->assertTeams($fixture, $expectedTeams);
             }
         } catch (ValidationException $exception) {
             $this->error($exception->getMessage());
-            $this->line('Use fixture:show 101 to verify the match, or pass --force to override.');
+            $this->line("Use fixture:show {$matchNumber} to verify the match, or pass --force to override.");
 
             return self::FAILURE;
         }
 
-        $attached = 0;
-
-        foreach (M101PlayerMarkets::definitions() as $definition) {
-            $market = PredictionMarket::updateOrCreate(
-                ['key' => $definition['key']],
-                [
-                    'name' => $definition['name'],
-                    'description' => $definition['description'],
-                    'input_type' => $definition['input_type'],
-                    'options' => null,
-                    'base_points' => $definition['base_points'],
-                    'scorer' => $definition['key'],
-                    'is_default' => false,
-                    'is_enabled' => false,
-                    'sort_order' => $definition['sort_order'],
-                ],
-            );
-
-            FixtureMarket::firstOrCreate([
-                'fixture_id' => $fixture->id,
-                'prediction_market_id' => $market->id,
-            ]);
-
-            $attached++;
-        }
+        $attached = $attachment->attach($fixture, $definitions);
 
         $cache->bump('predict');
 

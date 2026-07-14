@@ -13,7 +13,7 @@ use App\Http\Responses\RedirectAsIntended as AppRedirectAsIntended;
 use App\Http\Responses\RegisterResponse;
 use App\Http\Responses\TwoFactorLoginResponse;
 use App\Http\Responses\VerifyEmailResponse;
-use App\Predictions\Markets\M101PlayerMarkets;
+use App\Predictions\Markets\SpecialPlayerMarkets;
 use App\Predictions\Scoring\BooleanAnswerScorer;
 use App\Predictions\Scoring\ScorerRegistry;
 use App\Predictions\Settlement\PlayerOutcomeSettler;
@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
                 $registry->register($key, $app->make($scorerClass));
             }
 
-            foreach (M101PlayerMarkets::keys() as $key) {
+            foreach (SpecialPlayerMarkets::keys() as $key) {
                 $registry->register($key, $app->make(BooleanAnswerScorer::class));
             }
 
@@ -63,7 +63,7 @@ class AppServiceProvider extends ServiceProvider
                 $registry->register($key, $app->make($settlerClass));
             }
 
-            foreach (M101PlayerMarkets::keys() as $key) {
+            foreach (SpecialPlayerMarkets::keys() as $key) {
                 $registry->register($key, new PlayerOutcomeSettler($key));
             }
 

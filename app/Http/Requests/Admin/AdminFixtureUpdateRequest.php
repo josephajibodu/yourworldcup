@@ -7,7 +7,8 @@ use App\Enums\HighestBookingOutcome;
 use App\Enums\LastGoalOutcome;
 use App\Enums\ResultDuration;
 use App\Fixtures\FixtureResult;
-use App\Predictions\Markets\M101PlayerMarkets;
+use App\Models\Fixture;
+use App\Predictions\Markets\SpecialPlayerMarkets;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,7 @@ class AdminFixtureUpdateRequest extends FormRequest
             'settle' => ['boolean'],
         ];
 
-        foreach (M101PlayerMarkets::keys() as $key) {
+        foreach (SpecialPlayerMarkets::keys() as $key) {
             $rules["player_outcomes.{$key}"] = ['nullable', 'boolean'];
         }
 
@@ -116,10 +117,19 @@ class AdminFixtureUpdateRequest extends FormRequest
             return null;
         }
 
-        $outcomes = [];
+        /** @var Fixture $fixture */
+        $fixture = $this->route('fixture');
+        $allowedKeys = SpecialPlayerMarkets::keysForMatch($fixture->external_id);
+        $outcomes = $fixture->player_outcomes ?? [];
 
-        foreach (M101PlayerMarkets::keys() as $key) {
-            if (! array_key_exists($key, $raw) || $raw[$key] === '' || $raw[$key] === null) {
+        foreach ($allowedKeys as $key) {
+            if (! array_key_exists($key, $raw)) {
+                continue;
+            }
+
+            if ($raw[$key] === '' || $raw[$key] === null) {
+                unset($outcomes[$key]);
+
                 continue;
             }
 
