@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\FixtureStatus;
+use App\Enums\HighestBookingOutcome;
+use App\Enums\LastGoalOutcome;
 use App\Enums\ResultDuration;
 use App\Fixtures\FixtureResult;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -38,6 +40,8 @@ class AdminFixtureUpdateRequest extends FormRequest
             'penalties_home' => ['nullable', 'integer', 'min:0', 'max:30'],
             'penalties_away' => ['nullable', 'integer', 'min:0', 'max:30'],
             'result_duration' => ['nullable', Rule::enum(ResultDuration::class)],
+            'last_goal' => ['nullable', Rule::enum(LastGoalOutcome::class)],
+            'highest_booking' => ['nullable', Rule::enum(HighestBookingOutcome::class)],
             'settle' => ['boolean'],
         ];
     }
@@ -83,6 +87,12 @@ class AdminFixtureUpdateRequest extends FormRequest
             penaltiesAway: $this->filled('penalties_away') ? (int) $this->input('penalties_away') : null,
             resultDuration: $this->filled('result_duration')
                 ? ResultDuration::from($this->input('result_duration'))
+                : null,
+            lastGoal: $this->filled('last_goal')
+                ? LastGoalOutcome::from($this->input('last_goal'))
+                : null,
+            highestBooking: $this->filled('highest_booking')
+                ? HighestBookingOutcome::from($this->input('highest_booking'))
                 : null,
         );
     }

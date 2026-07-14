@@ -63,6 +63,8 @@ class FixtureAdminUpdater
             'penalties_home' => null,
             'penalties_away' => null,
             'result_duration' => null,
+            'last_goal' => null,
+            'highest_booking' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();
@@ -79,6 +81,8 @@ class FixtureAdminUpdater
             'penalties_home' => null,
             'penalties_away' => null,
             'result_duration' => null,
+            'last_goal' => null,
+            'highest_booking' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();

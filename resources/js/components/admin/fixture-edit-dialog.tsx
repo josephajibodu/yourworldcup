@@ -23,6 +23,20 @@ const RESULT_DURATION_OPTIONS = [
     { value: 'penalties', label: 'After penalties (PEN)' },
 ] as const;
 
+const LAST_GOAL_OPTIONS = [
+    { value: '', label: 'Not set' },
+    { value: 'home', label: 'Home' },
+    { value: 'none', label: 'None' },
+    { value: 'away', label: 'Away' },
+] as const;
+
+const HIGHEST_BOOKING_OPTIONS = [
+    { value: '', label: 'Not set' },
+    { value: 'home', label: 'Home' },
+    { value: 'draw', label: 'Draw' },
+    { value: 'away', label: 'Away' },
+] as const;
+
 interface FixtureEditDialogContentProps {
     fixture: AdminFixtureSummary;
     onCancel: () => void;
@@ -262,6 +276,63 @@ export function FixtureEditDialogContent({
                                     ))}
                                 </select>
                                 <InputError message={errors.result_duration} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label
+                                    htmlFor={`fixture-last-goal-${fixture.id}`}
+                                >
+                                    Last goal
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Required to settle the Last goal market.
+                                </p>
+                                <select
+                                    id={`fixture-last-goal-${fixture.id}`}
+                                    name="last_goal"
+                                    defaultValue={fixture.lastGoal ?? ''}
+                                    className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                >
+                                    {LAST_GOAL_OPTIONS.map((option) => (
+                                        <option
+                                            key={option.value || 'unset'}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.last_goal} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label
+                                    htmlFor={`fixture-highest-booking-${fixture.id}`}
+                                >
+                                    Highest booking
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Required to settle the Highest booking
+                                    market.
+                                </p>
+                                <select
+                                    id={`fixture-highest-booking-${fixture.id}`}
+                                    name="highest_booking"
+                                    defaultValue={fixture.highestBooking ?? ''}
+                                    className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                >
+                                    {HIGHEST_BOOKING_OPTIONS.map((option) => (
+                                        <option
+                                            key={option.value || 'unset'}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <InputError
+                                    message={errors.highest_booking}
+                                />
                             </div>
                         </div>
                     )}

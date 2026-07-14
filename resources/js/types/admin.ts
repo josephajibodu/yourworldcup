@@ -83,6 +83,8 @@ export type AdminFixtureSummary = {
     penaltiesHome: number | null;
     penaltiesAway: number | null;
     resultDuration: 'regular' | 'extra_time' | 'penalties' | null;
+    lastGoal: 'home' | 'none' | 'away' | null;
+    highestBooking: 'home' | 'draw' | 'away' | null;
     scoreLabel: string | null;
     marketsCount: number;
     settledMarketsCount: number;

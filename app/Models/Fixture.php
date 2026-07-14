@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\FixtureStage;
 use App\Enums\FixtureStatus;
+use App\Enums\HighestBookingOutcome;
+use App\Enums\LastGoalOutcome;
 use App\Enums\ResultDuration;
 use Database\Factories\FixtureFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,6 +38,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $penalties_home
  * @property int|null $penalties_away
  * @property ResultDuration|null $result_duration
+ * @property LastGoalOutcome|null $last_goal
+ * @property HighestBookingOutcome|null $highest_booking
  * @property int|null $winner_team_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -53,6 +57,8 @@ class Fixture extends Model
             'stage' => FixtureStage::class,
             'status' => FixtureStatus::class,
             'result_duration' => ResultDuration::class,
+            'last_goal' => LastGoalOutcome::class,
+            'highest_booking' => HighestBookingOutcome::class,
             'matchday' => 'integer',
             'kickoff_at' => 'datetime',
             'lock_at' => 'datetime',

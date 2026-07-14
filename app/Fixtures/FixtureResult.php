@@ -2,6 +2,8 @@
 
 namespace App\Fixtures;
 
+use App\Enums\HighestBookingOutcome;
+use App\Enums\LastGoalOutcome;
 use App\Enums\ResultDuration;
 use App\Models\Fixture;
 
@@ -16,6 +18,8 @@ final class FixtureResult
         public ?int $penaltiesHome = null,
         public ?int $penaltiesAway = null,
         public ?ResultDuration $resultDuration = null,
+        public ?LastGoalOutcome $lastGoal = null,
+        public ?HighestBookingOutcome $highestBooking = null,
     ) {}
 
     public function matchesFixture(Fixture $fixture): bool
@@ -27,7 +31,9 @@ final class FixtureResult
             && $fixture->penalties_home === $this->penaltiesHome
             && $fixture->penalties_away === $this->penaltiesAway
             && $fixture->winner_team_id === $this->winnerTeamId
-            && $fixture->result_duration === $this->resultDuration;
+            && $fixture->result_duration === $this->resultDuration
+            && $fixture->last_goal === $this->lastGoal
+            && $fixture->highest_booking === $this->highestBooking;
     }
 
     /**
@@ -44,6 +50,8 @@ final class FixtureResult
             'penalties_away' => $this->penaltiesAway,
             'winner_team_id' => $this->winnerTeamId,
             'result_duration' => $this->resultDuration?->value,
+            'last_goal' => $this->lastGoal?->value,
+            'highest_booking' => $this->highestBooking?->value,
         ];
     }
 }

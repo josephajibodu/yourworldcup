@@ -232,3 +232,26 @@ test('site admins can record regular time, extra time, and penalty scores', func
         ->and($fixture->penalties_away)->toBe(3)
         ->and($fixture->winner_team_id)->toBe($fixture->away_team_id);
 });
+
+test('site admins can record last goal and highest booking outcomes', function () {
+    $fixture = Fixture::factory()->create([
+        'home_team_id' => Team::factory()->create()->id,
+        'away_team_id' => Team::factory()->create()->id,
+    ]);
+
+    $this->actingAs(siteAdmin())
+        ->patch(route('admin.fixtures.update', $fixture), [
+            'status' => FixtureStatus::Final->value,
+            'home_score' => 2,
+            'away_score' => 1,
+            'last_goal' => 'home',
+            'highest_booking' => 'draw',
+            'settle' => false,
+        ])
+        ->assertRedirect(route('admin.fixtures.index'));
+
+    $fixture->refresh();
+
+    expect($fixture->last_goal?->value)->toBe('home')
+        ->and($fixture->highest_booking?->value)->toBe('draw');
+});

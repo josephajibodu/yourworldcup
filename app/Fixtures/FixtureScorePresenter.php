@@ -25,6 +25,8 @@ class FixtureScorePresenter
             'penaltiesHome' => $fixture->penalties_home,
             'penaltiesAway' => $fixture->penalties_away,
             'resultDuration' => $fixture->result_duration?->value,
+            'lastGoal' => $fixture->last_goal?->value,
+            'highestBooking' => $fixture->highest_booking?->value,
             'scoreLabel' => $this->scoreLabel($fixture),
         ];
     }
@@ -58,6 +60,8 @@ class FixtureScorePresenter
             'penaltiesHome' => null,
             'penaltiesAway' => null,
             'resultDuration' => null,
+            'lastGoal' => null,
+            'highestBooking' => null,
             'scoreLabel' => null,
         ];
     }

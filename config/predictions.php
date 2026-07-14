@@ -1,9 +1,17 @@
 <?php
 
+use App\Predictions\Scoring\BooleanAnswerScorer;
 use App\Predictions\Scoring\ExactScoreScorer;
 use App\Predictions\Scoring\MatchWinnerScorer;
+use App\Predictions\Scoring\SelectedOptionScorer;
+use App\Predictions\Settlement\AwayCleanSheetSettler;
 use App\Predictions\Settlement\ExactScoreSettler;
+use App\Predictions\Settlement\HighestBookingSettler;
+use App\Predictions\Settlement\HomeCleanSheetSettler;
+use App\Predictions\Settlement\LastGoalSettler;
 use App\Predictions\Settlement\MatchWinnerSettler;
+use App\Predictions\Settlement\PenaltyShootoutSettler;
+use App\Predictions\Settlement\ToQualifySettler;
 
 return [
     /*
@@ -20,6 +28,12 @@ return [
     'scorers' => [
         'match_winner' => MatchWinnerScorer::class,
         'exact_score' => ExactScoreScorer::class,
+        'to_qualify' => SelectedOptionScorer::class,
+        'penalty_shootout' => BooleanAnswerScorer::class,
+        'home_clean_sheet' => BooleanAnswerScorer::class,
+        'away_clean_sheet' => BooleanAnswerScorer::class,
+        'last_goal' => SelectedOptionScorer::class,
+        'highest_booking' => SelectedOptionScorer::class,
     ],
 
     /*
@@ -37,6 +51,12 @@ return [
     'settlers' => [
         'match_winner' => MatchWinnerSettler::class,
         'exact_score' => ExactScoreSettler::class,
+        'to_qualify' => ToQualifySettler::class,
+        'penalty_shootout' => PenaltyShootoutSettler::class,
+        'home_clean_sheet' => HomeCleanSheetSettler::class,
+        'away_clean_sheet' => AwayCleanSheetSettler::class,
+        'last_goal' => LastGoalSettler::class,
+        'highest_booking' => HighestBookingSettler::class,
     ],
 
     /*

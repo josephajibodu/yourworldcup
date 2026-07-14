@@ -41,8 +41,8 @@ it('imports knockout fixtures with unresolved teams and no group', function () {
 });
 
 it('attaches every enabled market to every fixture', function () {
-    // 2 enabled markets (winner + exact score) across 104 fixtures.
-    expect(FixtureMarket::count())->toBe(208);
+    // 8 enabled markets across 104 fixtures.
+    expect(FixtureMarket::count())->toBe(832);
 });
 
 it('is idempotent when re-run', function () {
@@ -50,5 +50,5 @@ it('is idempotent when re-run', function () {
 
     expect(Team::count())->toBe(48)
         ->and(Fixture::count())->toBe(104)
-        ->and(FixtureMarket::count())->toBe(208);
+        ->and(FixtureMarket::count())->toBe(832);
 });
