@@ -41,12 +41,32 @@ test('tournament repair backfills winners from penalties and extra time', functi
     ]);
 
     $this->artisan('tournament:repair --backfill')
-        ->expectsOutputToContain('Backfilled 1 winner(s)')
+        ->expectsOutputToContain('Backfilled 1 knockout winner(s)')
         ->assertSuccessful();
 
     $fixture->refresh();
 
     expect($fixture->winner_team_id)->toBe($fixture->away_team_id);
+});
+
+test('tournament repair backfill ignores group draws', function () {
+    $groupDraw = Fixture::query()
+        ->where('stage', FixtureStage::Group)
+        ->firstOrFail();
+
+    $groupDraw->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => 1,
+        'away_score' => 1,
+        'winner_team_id' => null,
+    ]);
+
+    $this->artisan('tournament:repair --backfill')
+        ->expectsOutputToContain('Group draws are left without a winner on purpose')
+        ->doesntExpectOutputToContain('M'.$groupDraw->external_id)
+        ->assertSuccessful();
+
+    expect($groupDraw->fresh()->winner_team_id)->toBeNull();
 });
 
 test('tournament repair propagates r32 winners into r16 fixtures', function () {

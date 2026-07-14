@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Collection;
 class RepairTournamentCommand extends Command
 {
     protected $signature = 'tournament:repair
-                            {--backfill : Backfill winner_team_id on final fixtures from scores, extra time, and penalties}
+                            {--backfill : Backfill winner_team_id on final knockout fixtures from scores, extra time, and penalties}
                             {--verify : List knockout fixtures and flag missing winners or teams}
                             {--propagate-r32 : Push R32 winners into R16 fixture slots}
                             {--check-r16 : Show R16 team assignments}
@@ -50,7 +50,7 @@ class RepairTournamentCommand extends Command
             $this->warn('No step selected.');
             $this->newLine();
             $this->line('Available steps (combine any flags):');
-            $this->line('  --backfill       Backfill winner_team_id from scores / ET / pens');
+            $this->line('  --backfill       Backfill knockout winner_team_id from scores / ET / pens');
             $this->line('  --verify         Audit knockout fixtures for missing data');
             $this->line('  --propagate-r32  Resolve R32 winners into R16 slots');
             $this->line('  --check-r16      Show R16 home/away assignments');
@@ -112,6 +112,7 @@ class RepairTournamentCommand extends Command
             ->whereNull('winner_team_id')
             ->whereNotNull('home_team_id')
             ->whereNotNull('away_team_id')
+            ->whereNot('stage', FixtureStage::Group)
             ->orderBy('external_id')
             ->each(function (Fixture $fixture) use ($recorder, &$fixed, &$blocked): void {
                 $recorder->record($fixture, new FixtureResult(
@@ -137,10 +138,11 @@ class RepairTournamentCommand extends Command
             });
 
         $this->newLine();
-        $this->line("Backfilled {$fixed} winner(s).");
+        $this->line("Backfilled {$fixed} knockout winner(s).");
+        $this->line('Group draws are left without a winner on purpose.');
 
         if ($blocked !== []) {
-            $this->warn(count($blocked).' fixture(s) still have no winner:');
+            $this->warn(count($blocked).' knockout fixture(s) still have no winner (need ET/pens or a manual result):');
             foreach ($blocked as $line) {
                 $this->line("  {$line}");
             }

@@ -377,8 +377,8 @@ export default function AdminFixturesIndex({
                     }
                 }}
             >
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
+                <DialogContent className="flex max-h-[min(90vh,52rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+                    <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4 pr-12">
                         <DialogTitle>Edit fixture</DialogTitle>
                         <DialogDescription>
                             Update the match status and score. Optionally settle
