@@ -151,6 +151,45 @@ it('corrects group slots from fresh standings when the cache is stale', function
     expect($runnerUpSlot->resolved_team_id)->toBe($expectedRunnerUpId);
 });
 
+it('syncs fixture teams when a knockout slot is already resolved', function () {
+    finishGroup('A');
+    finishGroup('B');
+
+    app(BracketResolverService::class)->resolveGroup('A');
+    app(BracketResolverService::class)->resolveGroup('B');
+
+    $feeder = Fixture::query()->where('external_id', '73')->firstOrFail();
+
+    expect($feeder->home_team_id)->not->toBeNull()
+        ->and($feeder->away_team_id)->not->toBeNull();
+
+    $feeder->update([
+        'status' => FixtureStatus::Final,
+        'home_score' => 2,
+        'away_score' => 1,
+        'winner_team_id' => $feeder->home_team_id,
+    ]);
+
+    $slot = BracketSlot::query()
+        ->where('slot_type', BracketSlotType::KnockoutWinner)
+        ->where('slot_spec->match', '73')
+        ->firstOrFail();
+
+    $slot->update(['resolved_team_id' => $feeder->winner_team_id]);
+    $slot->feedsFixture?->update([
+        'home_team_id' => null,
+        'away_team_id' => null,
+    ]);
+
+    $resolved = app(BracketResolverService::class)->resolveKnockoutFeeders($feeder->fresh());
+
+    expect($resolved)->toBeGreaterThan(0);
+
+    $feedsFixture = $slot->feedsFixture?->fresh();
+
+    expect($feedsFixture?->home_team_id)->toBe($feeder->winner_team_id);
+});
+
 function finishGroup(string $groupCode): void
 {
     $teams = Team::query()

@@ -97,7 +97,7 @@ class BracketSlotEligibility
      */
     private function teamsFromSourceFixture(BracketSlot $slot): Collection
     {
-        $source = $slot->sourceFixture;
+        $source = $slot->feederFixture();
 
         if ($source === null || $source->home_team_id === null || $source->away_team_id === null) {
             return collect();

@@ -231,27 +231,34 @@ class BracketResolverService
     private function resolveSlot(BracketSlot $slot, Team $team): bool
     {
         if ($slot->resolved_team_id === $team->id) {
-            return false;
+            return $this->syncResolvedSlotToFixture($slot, $team);
         }
 
         return DB::transaction(function () use ($slot, $team): bool {
             $slot->update(['resolved_team_id' => $team->id]);
 
-            $feedsFixture = $slot->feedsFixture;
-
-            if ($feedsFixture === null) {
-                return true;
-            }
-
-            $column = $slot->side === BracketSlotSide::Home ? 'home_team_id' : 'away_team_id';
-
-            if ($feedsFixture->{$column} === $team->id) {
-                return true;
-            }
-
-            $feedsFixture->update([$column => $team->id]);
+            $this->syncResolvedSlotToFixture($slot, $team);
 
             return true;
         });
+    }
+
+    private function syncResolvedSlotToFixture(BracketSlot $slot, Team $team): bool
+    {
+        $feedsFixture = $slot->feedsFixture;
+
+        if ($feedsFixture === null) {
+            return false;
+        }
+
+        $column = $slot->side === BracketSlotSide::Home ? 'home_team_id' : 'away_team_id';
+
+        if ($feedsFixture->{$column} === $team->id) {
+            return false;
+        }
+
+        $feedsFixture->update([$column => $team->id]);
+
+        return true;
     }
 }

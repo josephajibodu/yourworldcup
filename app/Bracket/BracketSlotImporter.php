@@ -3,8 +3,10 @@
 namespace App\Bracket;
 
 use App\Enums\BracketSlotSide;
+use App\Enums\BracketSlotType;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BracketSlotImporter
@@ -47,6 +49,7 @@ class BracketSlotImporter
                     side: BracketSlotSide::Home,
                     label: $row['home_team_label'] ?? null,
                     sourceFixtureId: $fixturesByExternalId[(string) ($row['home_team_id'] ?? '')] ?? null,
+                    fixturesByExternalId: $fixturesByExternalId,
                 );
 
                 $this->importSide(
@@ -54,22 +57,32 @@ class BracketSlotImporter
                     side: BracketSlotSide::Away,
                     label: $row['away_team_label'] ?? null,
                     sourceFixtureId: $fixturesByExternalId[(string) ($row['away_team_id'] ?? '')] ?? null,
+                    fixturesByExternalId: $fixturesByExternalId,
                 );
             }
         });
     }
 
+    /**
+     * @param  Collection<string, int>  $fixturesByExternalId
+     */
     private function importSide(
         int $fixtureId,
         BracketSlotSide $side,
         ?string $label,
         ?int $sourceFixtureId,
+        $fixturesByExternalId,
     ): void {
         if ($label === null || trim($label) === '') {
             return;
         }
 
         $parsed = $this->parser->parse($label);
+
+        if (in_array($parsed['type'], [BracketSlotType::KnockoutWinner, BracketSlotType::KnockoutLoser], true)) {
+            $matchExternalId = (string) ($parsed['spec']['match'] ?? '');
+            $sourceFixtureId = $fixturesByExternalId[$matchExternalId] ?? null;
+        }
 
         $existing = BracketSlot::query()
             ->where('feeds_fixture_id', $fixtureId)

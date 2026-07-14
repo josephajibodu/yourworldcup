@@ -2,6 +2,7 @@
 
 use App\Enums\BracketSlotSide;
 use App\Enums\BracketSlotType;
+use App\Enums\FixtureStatus;
 use App\Models\BracketSlot;
 use App\Models\Fixture;
 use App\Models\Team;
@@ -123,6 +124,36 @@ test('site admins can assign a team to a bracket slot and update the feeder fixt
     $column = $slot->side === BracketSlotSide::Home ? 'home_team_id' : 'away_team_id';
 
     expect($fixture->{$column})->toBe($team->id);
+});
+
+test('knockout winner slots offer the feeder match winner even without source_fixture_id', function () {
+    $feeder = Fixture::query()->where('external_id', '73')->firstOrFail();
+    $feeder->update([
+        'home_team_id' => Team::query()->where('group_code', 'A')->firstOrFail()->id,
+        'away_team_id' => Team::query()->where('group_code', 'B')->firstOrFail()->id,
+        'status' => FixtureStatus::Final,
+        'home_score' => 2,
+        'away_score' => 1,
+        'winner_team_id' => null,
+    ]);
+    $feeder->update(['winner_team_id' => $feeder->home_team_id]);
+
+    $slot = BracketSlot::query()
+        ->where('slot_type', BracketSlotType::KnockoutWinner)
+        ->where('slot_spec->match', '73')
+        ->firstOrFail();
+
+    $slot->update(['source_fixture_id' => null]);
+
+    $response = $this->actingAs(siteAdmin())
+        ->get(route('admin.bracket-slots.index'));
+
+    $formatted = collect($response->original->getData()['page']['props']['slots'])
+        ->firstWhere('id', $slot->id);
+
+    expect($formatted)->not->toBeNull()
+        ->and(collect($formatted['eligibleTeams'])->pluck('id')->all())
+        ->toBe([$feeder->winner_team_id]);
 });
 
 test('site admins can clear a bracket slot assignment', function () {

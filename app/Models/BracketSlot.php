@@ -77,4 +77,21 @@ class BracketSlot extends Model
             default => null,
         };
     }
+
+    public function feederFixture(): ?Fixture
+    {
+        if ($this->source_fixture_id !== null) {
+            return $this->sourceFixture;
+        }
+
+        $matchId = $this->slot_spec['match'] ?? null;
+
+        if ($matchId === null) {
+            return null;
+        }
+
+        return Fixture::query()
+            ->where('external_id', (string) $matchId)
+            ->first();
+    }
 }
