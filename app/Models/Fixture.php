@@ -40,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property ResultDuration|null $result_duration
  * @property LastGoalOutcome|null $last_goal
  * @property HighestBookingOutcome|null $highest_booking
+ * @property array<string, bool>|null $player_outcomes
  * @property int|null $winner_team_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -59,6 +60,7 @@ class Fixture extends Model
             'result_duration' => ResultDuration::class,
             'last_goal' => LastGoalOutcome::class,
             'highest_booking' => HighestBookingOutcome::class,
+            'player_outcomes' => 'array',
             'matchday' => 'integer',
             'kickoff_at' => 'datetime',
             'lock_at' => 'datetime',

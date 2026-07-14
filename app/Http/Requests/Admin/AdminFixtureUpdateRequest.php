@@ -7,6 +7,7 @@ use App\Enums\HighestBookingOutcome;
 use App\Enums\LastGoalOutcome;
 use App\Enums\ResultDuration;
 use App\Fixtures\FixtureResult;
+use App\Predictions\Markets\M101PlayerMarkets;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,7 @@ class AdminFixtureUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'status' => ['required', Rule::enum(FixtureStatus::class)],
             'home_score' => [
                 'nullable',
@@ -44,6 +45,12 @@ class AdminFixtureUpdateRequest extends FormRequest
             'highest_booking' => ['nullable', Rule::enum(HighestBookingOutcome::class)],
             'settle' => ['boolean'],
         ];
+
+        foreach (M101PlayerMarkets::keys() as $key) {
+            $rules["player_outcomes.{$key}"] = ['nullable', 'boolean'];
+        }
+
+        return $rules;
     }
 
     public function withValidator(Validator $validator): void
@@ -94,6 +101,31 @@ class AdminFixtureUpdateRequest extends FormRequest
             highestBooking: $this->filled('highest_booking')
                 ? HighestBookingOutcome::from($this->input('highest_booking'))
                 : null,
+            playerOutcomes: $this->playerOutcomes(),
         );
+    }
+
+    /**
+     * @return array<string, bool>|null
+     */
+    private function playerOutcomes(): ?array
+    {
+        $raw = $this->input('player_outcomes');
+
+        if (! is_array($raw)) {
+            return null;
+        }
+
+        $outcomes = [];
+
+        foreach (M101PlayerMarkets::keys() as $key) {
+            if (! array_key_exists($key, $raw) || $raw[$key] === '' || $raw[$key] === null) {
+                continue;
+            }
+
+            $outcomes[$key] = filter_var($raw[$key], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return $outcomes === [] ? null : $outcomes;
     }
 }

@@ -334,6 +334,70 @@ export function FixtureEditDialogContent({
                                     message={errors.highest_booking}
                                 />
                             </div>
+
+                            {fixture.playerMarkets &&
+                                fixture.playerMarkets.length > 0 && (
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                Player outcomes
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Required to settle M101 player
+                                                markets.
+                                            </p>
+                                        </div>
+                                        {fixture.playerMarkets.map((market) => (
+                                            <div
+                                                key={market.key}
+                                                className="grid gap-2"
+                                            >
+                                                <Label
+                                                    htmlFor={`fixture-player-${market.key}-${fixture.id}`}
+                                                >
+                                                    {market.name}
+                                                </Label>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {market.description}
+                                                </p>
+                                                <select
+                                                    id={`fixture-player-${market.key}-${fixture.id}`}
+                                                    name={`player_outcomes[${market.key}]`}
+                                                    defaultValue={
+                                                        fixture.playerOutcomes?.[
+                                                            market.key
+                                                        ] === true
+                                                            ? '1'
+                                                            : fixture
+                                                                    .playerOutcomes?.[
+                                                                    market.key
+                                                                ] === false
+                                                              ? '0'
+                                                              : ''
+                                                    }
+                                                    className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                                >
+                                                    <option value="">
+                                                        Not set
+                                                    </option>
+                                                    <option value="1">
+                                                        Yes
+                                                    </option>
+                                                    <option value="0">
+                                                        No
+                                                    </option>
+                                                </select>
+                                                <InputError
+                                                    message={
+                                                        errors[
+                                                            `player_outcomes.${market.key}`
+                                                        ]
+                                                    }
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                         </div>
                     )}
 

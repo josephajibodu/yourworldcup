@@ -20,6 +20,8 @@ final class FixtureResult
         public ?ResultDuration $resultDuration = null,
         public ?LastGoalOutcome $lastGoal = null,
         public ?HighestBookingOutcome $highestBooking = null,
+        /** @var array<string, bool>|null */
+        public ?array $playerOutcomes = null,
     ) {}
 
     public function matchesFixture(Fixture $fixture): bool
@@ -33,7 +35,8 @@ final class FixtureResult
             && $fixture->winner_team_id === $this->winnerTeamId
             && $fixture->result_duration === $this->resultDuration
             && $fixture->last_goal === $this->lastGoal
-            && $fixture->highest_booking === $this->highestBooking;
+            && $fixture->highest_booking === $this->highestBooking
+            && $fixture->player_outcomes === $this->playerOutcomes;
     }
 
     /**
@@ -52,6 +55,7 @@ final class FixtureResult
             'result_duration' => $this->resultDuration?->value,
             'last_goal' => $this->lastGoal?->value,
             'highest_booking' => $this->highestBooking?->value,
+            'player_outcomes' => $this->playerOutcomes,
         ];
     }
 }

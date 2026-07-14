@@ -85,6 +85,12 @@ export type AdminFixtureSummary = {
     resultDuration: 'regular' | 'extra_time' | 'penalties' | null;
     lastGoal: 'home' | 'none' | 'away' | null;
     highestBooking: 'home' | 'draw' | 'away' | null;
+    playerOutcomes?: Record<string, boolean>;
+    playerMarkets?: Array<{
+        key: string;
+        name: string;
+        description: string;
+    }>;
     scoreLabel: string | null;
     marketsCount: number;
     settledMarketsCount: number;

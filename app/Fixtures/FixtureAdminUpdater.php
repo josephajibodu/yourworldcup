@@ -65,6 +65,7 @@ class FixtureAdminUpdater
             'result_duration' => null,
             'last_goal' => null,
             'highest_booking' => null,
+            'player_outcomes' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();
@@ -83,6 +84,7 @@ class FixtureAdminUpdater
             'result_duration' => null,
             'last_goal' => null,
             'highest_booking' => null,
+            'player_outcomes' => null,
             'winner_team_id' => null,
         ]);
         $this->bumpCaches();

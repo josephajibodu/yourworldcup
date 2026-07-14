@@ -13,6 +13,7 @@ use App\Http\Requests\Admin\AdminFixtureUpdateRequest;
 use App\Models\Fixture;
 use App\Models\Stadium;
 use App\Models\Team;
+use App\Predictions\Markets\M101PlayerMarkets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -120,7 +121,7 @@ class FixtureController extends Controller
      */
     private function formatFixture(Fixture $fixture): array
     {
-        return [
+        $data = [
             'id' => $fixture->id,
             'externalId' => $fixture->external_id,
             'stageLabel' => $fixture->stage->label(),
@@ -142,6 +143,20 @@ class FixtureController extends Controller
             'marketsCount' => $fixture->markets_count,
             'settledMarketsCount' => $fixture->settled_markets_count,
         ];
+
+        if ($fixture->external_id === M101PlayerMarkets::MATCH_NUMBER) {
+            $data['playerOutcomes'] = $fixture->player_outcomes ?? [];
+            $data['playerMarkets'] = collect(M101PlayerMarkets::definitions())
+                ->map(fn (array $definition): array => [
+                    'key' => $definition['key'],
+                    'name' => $definition['name'],
+                    'description' => $definition['description'],
+                ])
+                ->values()
+                ->all();
+        }
+
+        return $data;
     }
 
     /**
